@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  # Re-arm strand: a GITHUB_TOKEN merge starts no workflow on its own, so the
+  # auto-merge sweep must be able to start CI on main explicitly.
+  workflow_dispatch: {}
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      # pnpm version comes from "packageManager" in package.json (SSOT).
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # The browser check drives a real Chromium — the only way to prove the
+      # touch target is 44px, Escape closes the menu, and nothing overflows at
+      # 390px, in light and dark.
+      - run: pnpm exec playwright install --with-deps chromium
+      # Identical to what runs locally: format, lint, types, build, unit +
+      # render tests, browser check.
+      - run: pnpm run verify
+      # dist/ is committed so a `github:` install needs no build step (pnpm 11
+      # refuses git-dependency builds without a per-SHA allowBuilds entry in
+      # every consumer). It must be exactly what the source builds to.
+      - name: Committed dist/ matches the source
+        run: git diff --exit-code --stat -- dist

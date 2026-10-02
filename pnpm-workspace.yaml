@@ -1,0 +1,3 @@
+# esbuild only builds demo/ (the visual check); nothing it produces ships.
+allowBuilds:
+  esbuild: true

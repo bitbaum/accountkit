@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>accountkit demo</title>
+    <link
+      rel="stylesheet"
+      href="../node_modules/@bitbaum/design-tokens/tokens.css"
+    />
+    <link rel="stylesheet" href="../styles.css" />
+    <style>
+      /* Page chrome only — the menu's look comes from styles.css + tokens. */
+      body {
+        margin: 0;
+        font-family: system-ui, sans-serif;
+        background: hsl(var(--surface-page, 0 0% 98%));
+        color: hsl(var(--text-primary, 0 0% 10%));
+      }
+      header {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        border-bottom: 1px solid hsl(var(--border-subtle, 0 0% 90%));
+      }
+      h2 {
+        margin: 0 auto 0 0;
+        font-size: 14px;
+        font-weight: 500;
+        opacity: 0.6;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h2>Named</h2>
+      <div id="named"></div>
+    </header>
+    <header>
+      <h2>No name, no photo</h2>
+      <div id="anonymous"></div>
+    </header>
+    <header>
+      <h2>Broken photo, failing sign-out</h2>
+      <div id="failing"></div>
+    </header>
+    <script src="./dist/demo.js"></script>
+  </body>
+</html>
