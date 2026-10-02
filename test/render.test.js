@@ -70,3 +70,49 @@ test("defaults sit at zero specificity so an app's own variables win", () => {
   const css = readFileSync(new URL("../styles.css", import.meta.url), "utf8");
   assert.match(css, /:where\(:root\)\s*\{/);
 });
+
+// The sign-in error screen. loki, skif and substrata showed Auth.js's bare
+// "Error"; heidi's "Try again" went home. Try again must RESTART sign-in.
+test("SignInError: Try again posts to the retry action, not home", async () => {
+  const { SignInError } = await import("../dist/index.js");
+  const html = renderToStaticMarkup(
+    h(SignInError, {
+      error: "OAuthCallbackError",
+      retry: "/sign-in?from=%2Fsettings",
+      home: "/",
+    }),
+  );
+  assert.match(
+    html,
+    /<a class="acct-signin-button [^"]*" href="\/sign-in\?from=%2Fsettings">Try again</,
+  );
+  assert.match(html, /Sign-in did not finish/);
+  assert.ok(
+    !/OAuthCallbackError/.test(html),
+    "the provider's code is never shown",
+  );
+});
+
+test("SignInError: a server-action retry renders a form with its fields", async () => {
+  const { SignInError } = await import("../dist/index.js");
+  const html = renderToStaticMarkup(
+    h(SignInError, { retry: async () => {}, retryFields: { from: "/a" } }),
+  );
+  assert.match(html, /<form/);
+  assert.match(html, /<input type="hidden" name="from" value="\/a"\/>/);
+  assert.match(
+    html,
+    /<button type="submit" class="acct-signin-button[^"]*">Try again</,
+  );
+});
+
+test("SignInError: no retry when sign-in is not configured; denial says so", async () => {
+  const { SignInError, signInErrorKind } = await import("../dist/index.js");
+  const config = renderToStaticMarkup(
+    h(SignInError, { error: "Configuration", retry: "/sign-in" }),
+  );
+  assert.ok(!/Try again/.test(config));
+  assert.equal(signInErrorKind("AccessDenied"), "denied");
+  assert.equal(signInErrorKind("Verification"), "failed");
+  assert.equal(signInErrorKind(undefined), "failed");
+});

@@ -16,3 +16,10 @@ export {
   type AccountMenuProps,
   type RenderLinkProps,
 } from "./AccountMenu.js";
+export {
+  SignInError,
+  signInErrorKind,
+  type SignInErrorKind,
+  type SignInErrorLabels,
+  type SignInErrorProps,
+} from "./SignInError.js";

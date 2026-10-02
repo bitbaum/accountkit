@@ -1,6 +1,6 @@
 // The visual check: three menus as an app would mount them.
 import { createRoot } from "react-dom/client";
-import { AccountMenu } from "../src/index.js";
+import { AccountMenu, SignInError } from "../src/index.js";
 
 const groups = [
   {
@@ -51,4 +51,10 @@ mount(
     groups={groups}
     onSignOut={() => Promise.reject(new Error("network"))}
   />,
+);
+
+// The sign-in error screen: Try again restarts sign-in.
+mount(
+  "signin-error",
+  <SignInError error="OAuthCallbackError" retry="#restart" home="#home" />,
 );
