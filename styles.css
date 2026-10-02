@@ -27,6 +27,8 @@
   --acct-line: hsl(var(--border-subtle, 0 0% 90%));
   --acct-line-2: hsl(var(--border-default, 0 0% 82%));
   --acct-focus: var(--accent-primary, #ff5c00);
+  --acct-action: var(--accent-primary, #ff5c00);
+  --acct-on-action: hsl(var(--on-accent, 0 0% 100%));
   --acct-danger: hsl(var(--status-negative, 0 65% 50%));
   --acct-radius: var(--radius-surface, 0.75rem);
   --acct-radius-sm: var(--radius-control, 0.5rem);
@@ -174,4 +176,90 @@
   margin: 0.25rem 0.75rem 0.375rem;
   font-size: 0.8125rem;
   color: var(--acct-danger);
+}
+
+/*
+ * The sign-in error screen. "Try again" is the primary action and restarts
+ * sign-in; "Back to the start" is a plain link. 44px targets, readable at
+ * 320px, no colour of its own beyond the --acct-* variables.
+ */
+.acct-signin-error {
+  max-inline-size: 28rem;
+  margin-inline: auto;
+  padding-block: 4rem;
+  font-family: var(--acct-font);
+  color: var(--acct-fg);
+}
+.acct-signin-kicker {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--acct-fg-3);
+}
+.acct-signin-title {
+  margin: 0.75rem 0 0;
+  font-size: clamp(1.75rem, 1.4rem + 1.5vw, 2.25rem);
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+.acct-signin-body {
+  margin: 1rem 0 0;
+  font-size: 1.0625rem;
+  line-height: 1.55;
+  color: var(--acct-fg-2);
+}
+.acct-signin-actions {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 2.5rem;
+}
+.acct-signin-actions > form {
+  display: contents;
+}
+.acct-signin-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 100%;
+  min-block-size: var(--acct-target);
+  padding: 0 1.25rem;
+  border: 1px solid transparent;
+  border-radius: var(--acct-radius-sm);
+  background: var(--acct-action);
+  color: var(--acct-on-action);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+.acct-signin-button:hover {
+  filter: brightness(0.95);
+}
+.acct-signin-button.is-secondary {
+  border-color: var(--acct-line-2);
+  background: transparent;
+  color: var(--acct-fg);
+}
+.acct-signin-home {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-block-size: var(--acct-target);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--acct-fg-2);
+  text-underline-offset: 0.25em;
+}
+.acct-signin-home:hover {
+  color: var(--acct-fg);
+}
+.acct-signin-button:focus-visible,
+.acct-signin-home:focus-visible {
+  outline: 2px solid var(--acct-focus);
+  outline-offset: 2px;
 }

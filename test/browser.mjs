@@ -189,6 +189,37 @@ try {
   );
 
   await page.close();
+
+  // The sign-in error screen at 390px, both schemes: 44px targets, no
+  // sideways scroll, and Try again goes to the restart, not home.
+  for (const scheme of ["light", "dark"]) {
+    const p = await browser.newPage({
+      viewport: { width: 390, height: 844 },
+      colorScheme: scheme,
+    });
+    await p.goto(base);
+    const retry = p.locator("#signin-error .acct-signin-button");
+    await retry.waitFor();
+    const boxes = await p.$$eval(
+      "#signin-error .acct-signin-button, #signin-error .acct-signin-home",
+      (els) => els.map((e) => e.getBoundingClientRect().height),
+    );
+    check(
+      boxes.length === 2 && boxes.every((h) => h >= 44),
+      `[${scheme}] sign-in error: both actions are at least 44px (${boxes.join(", ")})`,
+    );
+    check(
+      (await retry.getAttribute("href")) === "#restart",
+      `[${scheme}] sign-in error: Try again restarts sign-in`,
+    );
+    check(
+      (await p.evaluate(
+        () => document.documentElement.scrollWidth - window.innerWidth,
+      )) <= 0,
+      `[${scheme}] sign-in error: no sideways scroll at 390px`,
+    );
+    await p.close();
+  }
 } finally {
   await browser.close();
   server.close();

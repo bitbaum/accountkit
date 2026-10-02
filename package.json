@@ -1,7 +1,7 @@
 {
   "name": "@bitbaum/accountkit",
-  "version": "0.1.0",
-  "description": "One account menu for every bitbaum product: who is signed in, where to go, how to sign out. Sign-in library agnostic; styled from @bitbaum/design-tokens.",
+  "version": "0.2.0",
+  "description": "One account for every bitbaum product: the account menu, and Sign in with OrangeCat (provider, session refresh, identity rules, error screen). Styled from @bitbaum/design-tokens.",
   "license": "MIT",
   "author": "Cato",
   "homepage": "https://github.com/bitbaum/accountkit#readme",
@@ -17,7 +17,11 @@
     "avatar",
     "sign-out",
     "react",
-    "headless-auth"
+    "headless-auth",
+    "orangecat",
+    "oidc",
+    "next-auth",
+    "auth.js"
   ],
   "type": "module",
   "sideEffects": [
@@ -39,6 +43,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    },
+    "./orangecat": {
+      "types": "./dist/orangecat.d.ts",
+      "default": "./dist/orangecat.js"
     },
     "./styles.css": "./styles.css"
   },
