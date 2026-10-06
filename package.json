@@ -1,6 +1,6 @@
 {
   "name": "@bitbaum/accountkit",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "One account for every bitbaum product: the account menu, and Sign in with OrangeCat (provider, session refresh, identity rules, error screen). Styled from @bitbaum/design-tokens.",
   "license": "MIT",
   "author": "Cato",
@@ -56,7 +56,7 @@
   "scripts": {
     "build": "rm -rf dist && tsc -p tsconfig.json",
     "lint": "eslint .",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.types.json",
     "test": "node --test test/*.test.js",
     "check:dist": "git diff --exit-code --stat -- dist",
     "verify": "pnpm run format:check && pnpm run lint && pnpm run typecheck && pnpm run build && pnpm test && pnpm run test:browser",
@@ -66,6 +66,7 @@
     "test:browser": "pnpm run demo && node test/browser.mjs"
   },
   "devDependencies": {
+    "@auth/core": "0.41.3",
     "@bitbaum/design-tokens": "^1.1.0",
     "@eslint/js": "^10.0.1",
     "@types/node": "^26.4.0",

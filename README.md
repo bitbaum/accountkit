@@ -9,7 +9,7 @@ It knows nothing about how you sign in. NextAuth, Supabase, better-auth: you pas
 ## Install
 
 ```sh
-pnpm add github:bitbaum/accountkit#v0.2.0
+pnpm add github:bitbaum/accountkit#v0.2.1
 ```
 
 `dist/` is committed, so the `github:` install needs no build step and no `allowBuilds` entry.
@@ -109,6 +109,8 @@ import { SignInError } from "@bitbaum/accountkit";
 // app/auth/error/page.tsx — Auth.js `pages.error`
 <SignInError error={searchParams.error} retry={restartSignIn} retryFields={{ from }} home="/" />
 ```
+
+**Import `@bitbaum/accountkit/styles.css`** (once, in the root layout or globals) and map the `--acct-*` variables onto the app's tokens, or the screen renders as bare text — solon shipped exactly that once, and no lint or typecheck can see it. Look at it at 390px before merging.
 
 **Try again restarts sign-in** (a server action calling `signIn("orangecat", …)`, or a GET route that does). It never goes home, and it never prints the provider's error code. No hooks: renders in a server component.
 
