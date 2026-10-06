@@ -613,10 +613,14 @@ interface AccountRef {
 interface LinkedAccount extends AccountRef {
   userId: string;
 }
+/* Method syntax on purpose: method parameters are checked bivariantly, so an
+ * Auth.js Adapter — whose methods take AdapterUser / AdapterAccount and return
+ * Awaitable<…>, not Promise — fits. v0.2.0 used property syntax with Promise
+ * returns, and no real adapter could be passed (test/types/adapter.ts). */
 export interface AdapterSlice {
-  getUserByAccount?: (ref: never) => Promise<unknown>;
-  createUser?: (user: never) => Promise<unknown>;
-  linkAccount?: (account: never) => Promise<unknown>;
+  getUserByAccount?(ref: never): unknown;
+  createUser?(user: never): unknown;
+  linkAccount?(account: never): unknown;
 }
 
 /**
@@ -637,7 +641,7 @@ export function withOrangecatIdentity<A extends AdapterSlice, U>(
   store: OrangecatUserStore<U>,
   options: { keepTokens?: boolean } = {},
 ): A {
-  type Fn = (arg: unknown) => Promise<unknown>;
+  type Fn = (arg: unknown) => unknown;
   const call = (name: keyof AdapterSlice, arg: unknown) => {
     const fn = base[name] as Fn | undefined;
     if (!fn) throw new Error(`base adapter has no ${name}`);

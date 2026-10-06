@@ -295,9 +295,9 @@ export declare function resolveOrangecatUser<U>(store: OrangecatUserStore<U>, id
     image?: string | null;
 }): Promise<U>;
 export interface AdapterSlice {
-    getUserByAccount?: (ref: never) => Promise<unknown>;
-    createUser?: (user: never) => Promise<unknown>;
-    linkAccount?: (account: never) => Promise<unknown>;
+    getUserByAccount?(ref: never): unknown;
+    createUser?(user: never): unknown;
+    linkAccount?(account: never): unknown;
 }
 /**
  * Wrap an Auth.js adapter so an OrangeCat sign-in resolves its user by
