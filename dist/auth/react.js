@@ -283,7 +283,8 @@ export function AccountPanel({ client, methods, labels = DEFAULT_AUTH_LABELS, cl
             return fail(e);
         if (!data || !("totpURI" in data))
             return fail({});
-        setTotp({ uri: data.totpURI, backupCodes: data.backupCodes });
+        const setup = data;
+        setTotp({ uri: setup.totpURI, backupCodes: setup.backupCodes });
         setBusy(false);
     }
     async function confirmTwoFactor(event) {
