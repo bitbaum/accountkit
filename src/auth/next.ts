@@ -1,6 +1,8 @@
 import { headers } from "next/headers.js";
 import { toNextJsHandler } from "better-auth/next-js";
+import { asc, eq } from "drizzle-orm";
 import { rateLimitAuthRequest } from "./limits.js";
+import { authSchema } from "./schema.js";
 import {
   authStatusFor,
   createAuthInstance,
@@ -20,11 +22,19 @@ export interface AuthRuntimeOptions {
   getDatabase: () => unknown;
   /** Only if the product keeps the account tables under its own definitions. */
   schema?: Record<string, unknown>;
+  /**
+   * For a product whose rows were keyed on an OIDC subject before it had
+   * accounts (an OrangeCat actor id). A person who FIRST came in through that
+   * provider keeps the subject as their `actorId`, so every existing row stays
+   * theirs with no data migration. Everyone else's `actorId` is their user id.
+   * Linking the provider later never changes an id that already has data.
+   */
+  legacyIdentityProvider?: string;
   /** See CreateAuthOptions.onAccountCreated. */
   onAccountCreated?: CreateAuthOptions["onAccountCreated"];
 }
 
-type SessionUser = { id: string; role?: unknown };
+type SessionUser = { id: string; actorId: string; role?: unknown };
 
 /**
  * Everything a Next.js product needs from accounts, from one call:
@@ -52,6 +62,33 @@ export function createAuthRuntime(options: AuthRuntimeOptions) {
   const authStatus = (env: NodeJS.ProcessEnv = process.env): AuthStatus =>
     authStatusFor(options.isDatabaseConfigured(env), env);
   const noStore = { "Cache-Control": "no-store" };
+  const actorIds = new Map<string, string>();
+
+  /** The id the product's own rows use for this person. */
+  async function actorIdOf(user: {
+    id: string;
+    createdAt?: Date | string;
+  }): Promise<string> {
+    const provider = options.legacyIdentityProvider;
+    if (!provider) return user.id;
+    const known = actorIds.get(user.id);
+    if (known) return known;
+    const table = (options.schema?.account ??
+      authSchema.account) as typeof authSchema.account;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const db = options.getDatabase() as any;
+    // The person's FIRST sign-in method decides: if it was the provider, their
+    // rows were written under its subject before this account existed.
+    const rows: { accountId: string; providerId: string }[] = await db
+      .select({ accountId: table.accountId, providerId: table.providerId })
+      .from(table)
+      .where(eq(table.userId, user.id))
+      .orderBy(asc(table.createdAt))
+      .limit(1);
+    const id = rows[0]?.providerId === provider ? rows[0].accountId : user.id;
+    actorIds.set(user.id, id);
+    return id;
+  }
 
   /** Who is signed in, for a server component. Null also when accounts are unavailable. */
   async function getSession() {
@@ -92,7 +129,9 @@ export function createAuthRuntime(options: AuthRuntimeOptions) {
         ),
       };
     }
-    return { user: session.user };
+    return {
+      user: { ...session.user, actorId: await actorIdOf(session.user) },
+    };
   }
 
   async function guard(request: Request): Promise<Response | null> {
@@ -122,6 +161,9 @@ export function createAuthRuntime(options: AuthRuntimeOptions) {
 export interface AuthSession {
   user: {
     id: string;
+    /** The id the product's rows use: the user id, or a legacy subject (see legacyIdentityProvider). */
+    actorId: string;
+    createdAt?: Date | string;
     name: string;
     email: string;
     emailVerified: boolean;

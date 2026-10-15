@@ -1,6 +1,8 @@
 import { headers } from "next/headers.js";
 import { toNextJsHandler } from "better-auth/next-js";
+import { asc, eq } from "drizzle-orm";
 import { rateLimitAuthRequest } from "./limits.js";
+import { authSchema } from "./schema.js";
 import { authStatusFor, createAuthInstance, } from "./server.js";
 /**
  * Everything a Next.js product needs from accounts, from one call:
@@ -27,6 +29,31 @@ export function createAuthRuntime(options) {
     };
     const authStatus = (env = process.env) => authStatusFor(options.isDatabaseConfigured(env), env);
     const noStore = { "Cache-Control": "no-store" };
+    const actorIds = new Map();
+    /** The id the product's own rows use for this person. */
+    async function actorIdOf(user) {
+        const provider = options.legacyIdentityProvider;
+        if (!provider)
+            return user.id;
+        const known = actorIds.get(user.id);
+        if (known)
+            return known;
+        const table = (options.schema?.account ??
+            authSchema.account);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const db = options.getDatabase();
+        // The person's FIRST sign-in method decides: if it was the provider, their
+        // rows were written under its subject before this account existed.
+        const rows = await db
+            .select({ accountId: table.accountId, providerId: table.providerId })
+            .from(table)
+            .where(eq(table.userId, user.id))
+            .orderBy(asc(table.createdAt))
+            .limit(1);
+        const id = rows[0]?.providerId === provider ? rows[0].accountId : user.id;
+        actorIds.set(user.id, id);
+        return id;
+    }
     /** Who is signed in, for a server component. Null also when accounts are unavailable. */
     async function getSession() {
         if (!authStatus().ready)
@@ -56,7 +83,9 @@ export function createAuthRuntime(options) {
                 response: Response.json({ error: "sign_in_required" }, { status: 401, headers: noStore }),
             };
         }
-        return { user: session.user };
+        return {
+            user: { ...session.user, actorId: await actorIdOf(session.user) },
+        };
     }
     async function guard(request) {
         const status = authStatus();
