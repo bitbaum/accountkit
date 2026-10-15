@@ -1,4 +1,4 @@
-import { type Auth, type AuthSite, type AuthMailer, type AuthStatus } from "./server.js";
+import { type Auth, type CreateAuthOptions, type AuthSite, type AuthMailer, type AuthStatus } from "./server.js";
 export interface AuthRuntimeOptions {
     site: AuthSite;
     mail: AuthMailer;
@@ -8,6 +8,8 @@ export interface AuthRuntimeOptions {
     getDatabase: () => unknown;
     /** Only if the product keeps the account tables under its own definitions. */
     schema?: Record<string, unknown>;
+    /** See CreateAuthOptions.onAccountCreated. */
+    onAccountCreated?: CreateAuthOptions["onAccountCreated"];
 }
 type SessionUser = {
     id: string;

@@ -113,3 +113,31 @@ test("a short password is refused", async () => {
 test("with no mail configured, no mail is ever sent", () => {
   assert.equal(sent.length, 0);
 });
+
+test("onAccountCreated is told about every sign-up, and a throw never blocks it", async () => {
+  const seen = [];
+  const other = createAuthInstance({
+    site: SITE,
+    database: db,
+    mail,
+    env: { ...process.env, NODE_ENV: "test" },
+    onAccountCreated: async (a) => {
+      seen.push(a);
+      throw new Error("boom");
+    },
+  });
+  const r = await other.handler(
+    new Request(`${SITE.url}/api/auth/sign-up/email`, {
+      method: "POST",
+      headers: { "content-type": "application/json", origin: SITE.url },
+      body: JSON.stringify({
+        email: "hook@example.ch",
+        password: "correct horse battery",
+        name: "",
+      }),
+    }),
+  );
+  assert.equal(r.status, 200);
+  assert.equal(seen.length, 1);
+  assert.equal(seen[0].providerId, "credential");
+});

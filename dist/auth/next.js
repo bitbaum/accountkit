@@ -20,6 +20,7 @@ export function createAuthRuntime(options) {
             site: options.site,
             mail: options.mail,
             schema: options.schema,
+            onAccountCreated: options.onAccountCreated,
             database: options.getDatabase(),
         });
         return instance;

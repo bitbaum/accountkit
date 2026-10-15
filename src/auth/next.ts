@@ -5,6 +5,7 @@ import {
   authStatusFor,
   createAuthInstance,
   type Auth,
+  type CreateAuthOptions,
   type AuthSite,
   type AuthMailer,
   type AuthStatus,
@@ -19,6 +20,8 @@ export interface AuthRuntimeOptions {
   getDatabase: () => unknown;
   /** Only if the product keeps the account tables under its own definitions. */
   schema?: Record<string, unknown>;
+  /** See CreateAuthOptions.onAccountCreated. */
+  onAccountCreated?: CreateAuthOptions["onAccountCreated"];
 }
 
 type SessionUser = { id: string; role?: unknown };
@@ -41,6 +44,7 @@ export function createAuthRuntime(options: AuthRuntimeOptions) {
       site: options.site,
       mail: options.mail,
       schema: options.schema,
+      onAccountCreated: options.onAccountCreated,
       database: options.getDatabase(),
     });
     return instance;
