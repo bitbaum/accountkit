@@ -142,3 +142,47 @@ test("onAccountCreated is told about every sign-up, and a throw never blocks it"
   assert.equal(seen.length, 1);
   assert.equal(seen[0].providerId, "credential");
 });
+
+test("an OIDC button starts a PKCE sign-in at the configured issuer", async () => {
+  const real = globalThis.fetch;
+  globalThis.fetch = async (u, i) =>
+    String(u).includes("signin.example.ch")
+      ? Response.json({
+          issuer: "https://signin.example.ch",
+          authorization_endpoint: "https://signin.example.ch/authorize",
+          token_endpoint: "https://signin.example.ch/token",
+          jwks_uri: "https://signin.example.ch/jwks",
+        })
+      : real(u, i);
+  try {
+    const oidc = createAuthInstance({
+      site: SITE,
+      database: db,
+      mail,
+      env: {
+        ...process.env,
+        NODE_ENV: "test",
+        SIGNIN_ISSUER: "https://signin.example.ch",
+        SIGNIN_CLIENT_ID: "app",
+        SIGNIN_CLIENT_SECRET: "s",
+      },
+    });
+    const r = await oidc.handler(
+      new Request(`${SITE.url}/api/auth/sign-in/social`, {
+        method: "POST",
+        headers: { "content-type": "application/json", origin: SITE.url },
+        body: JSON.stringify({ provider: "bitbaum-signin", callbackURL: "/x" }),
+      }),
+    );
+    assert.equal(r.status, 200);
+    const url = new URL((await r.json()).url);
+    assert.equal(
+      url.origin + url.pathname,
+      "https://signin.example.ch/authorize",
+    );
+    assert.ok(url.searchParams.get("code_challenge"), "PKCE is on");
+    assert.equal(url.searchParams.get("client_id"), "app");
+  } finally {
+    globalThis.fetch = real;
+  }
+});

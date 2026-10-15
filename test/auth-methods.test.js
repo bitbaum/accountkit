@@ -146,7 +146,6 @@ describe("rate-limit buckets", () => {
     assert.equal(authBucket("/sign-up/email"), "mail");
     assert.equal(authBucket("/sign-in/magic-link"), "mail");
     assert.equal(authBucket("/sign-in/email"), "credential");
-    assert.equal(authBucket("/sign-in/oauth2"), "credential");
     assert.equal(authBucket("/two-factor/verify-totp"), "credential");
     assert.equal(authBucket("/get-session"), "auth");
   });
