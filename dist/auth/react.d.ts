@@ -67,10 +67,7 @@ export interface AuthClientLike {
         }): Result;
         enable(input: {
             password?: string;
-        }): Result<{
-            totpURI: string;
-            backupCodes: string[];
-        }>;
+        }): Result<object>;
         disable(input: {
             password?: string;
         }): Result;

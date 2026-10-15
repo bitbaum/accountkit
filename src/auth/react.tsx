@@ -61,9 +61,7 @@ export interface AuthClientLike {
   twoFactor: {
     verifyTotp(input: { code: string; trustDevice?: boolean }): Result;
     verifyBackupCode(input: { code: string; trustDevice?: boolean }): Result;
-    enable(input: {
-      password?: string;
-    }): Result<{ totpURI: string; backupCodes: string[] }>;
+    enable(input: { password?: string }): Result<object>;
     disable(input: { password?: string }): Result;
   };
   passkey: {
@@ -730,7 +728,8 @@ export function AccountPanel({
     });
     if (e) return fail(e);
     if (!data || !("totpURI" in data)) return fail({});
-    setTotp({ uri: data.totpURI, backupCodes: data.backupCodes });
+    const setup = data as { totpURI: string; backupCodes: string[] };
+    setTotp({ uri: setup.totpURI, backupCodes: setup.backupCodes });
     setBusy(false);
   }
 
