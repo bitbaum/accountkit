@@ -138,6 +138,7 @@ test("onAccountCreated is told about every sign-up, and a throw never blocks it"
     }),
   );
   assert.equal(r.status, 200);
+  await new Promise((done) => setTimeout(done, 200));
   assert.equal(seen.length, 1);
   assert.equal(seen[0].providerId, "credential");
 });

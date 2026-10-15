@@ -25,8 +25,8 @@ export interface CreateAuthOptions {
     mail: AuthMailer;
     env?: NodeJS.ProcessEnv;
     /**
-     * Called after a sign-in method is attached to a person (a first sign-up
-     * included). A product that used to identify people by another id — an
+     * Called as a sign-in method is attached to a person (a first sign-up
+     * included), once the person exists. A product that used to identify people by another id — an
      * OrangeCat actor id, say — re-keys its own rows here. Must be idempotent;
      * a throw is logged and never blocks the sign-in.
      */

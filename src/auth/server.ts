@@ -49,8 +49,8 @@ export interface CreateAuthOptions {
   mail: AuthMailer;
   env?: NodeJS.ProcessEnv;
   /**
-   * Called after a sign-in method is attached to a person (a first sign-up
-   * included). A product that used to identify people by another id — an
+   * Called as a sign-in method is attached to a person (a first sign-up
+   * included), once the person exists. A product that used to identify people by another id — an
    * OrangeCat actor id, say — re-keys its own rows here. Must be idempotent;
    * a throw is logged and never blocks the sign-in.
    */
@@ -197,14 +197,30 @@ export function createAuthInstance(options: CreateAuthOptions): Auth {
         // The product needs to know WHO signed in, not to act at the provider
         // on their behalf, so provider tokens are dropped before they are stored.
         create: {
-          before: async (data) => ({
-            data: {
-              ...data,
-              accessToken: null,
-              refreshToken: null,
-              idToken: null,
-            },
-          }),
+          // Runs just before the sign-in method is stored, when the person's
+          // row already exists. (better-auth's `after` hooks are queued behind
+          // a transaction this adapter never opens, and did not fire.)
+          before: async (data) => {
+            try {
+              await options.onAccountCreated?.({
+                userId: String(data.userId),
+                providerId: String(data.providerId),
+                accountId: String(data.accountId),
+              });
+            } catch (error) {
+              console.error(
+                `[auth] onAccountCreated failed: ${(error as Error).name}`,
+              );
+            }
+            return {
+              data: {
+                ...data,
+                accessToken: null,
+                refreshToken: null,
+                idToken: null,
+              },
+            };
+          },
         },
         update: {
           before: async (data) => ({

@@ -137,14 +137,29 @@ export function createAuthInstance(options) {
                 // The product needs to know WHO signed in, not to act at the provider
                 // on their behalf, so provider tokens are dropped before they are stored.
                 create: {
-                    before: async (data) => ({
-                        data: {
-                            ...data,
-                            accessToken: null,
-                            refreshToken: null,
-                            idToken: null,
-                        },
-                    }),
+                    // Runs just before the sign-in method is stored, when the person's
+                    // row already exists. (better-auth's `after` hooks are queued behind
+                    // a transaction this adapter never opens, and did not fire.)
+                    before: async (data) => {
+                        try {
+                            await options.onAccountCreated?.({
+                                userId: String(data.userId),
+                                providerId: String(data.providerId),
+                                accountId: String(data.accountId),
+                            });
+                        }
+                        catch (error) {
+                            console.error(`[auth] onAccountCreated failed: ${error.name}`);
+                        }
+                        return {
+                            data: {
+                                ...data,
+                                accessToken: null,
+                                refreshToken: null,
+                                idToken: null,
+                            },
+                        };
+                    },
                 },
                 update: {
                     before: async (data) => ({
