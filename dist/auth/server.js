@@ -14,17 +14,25 @@ import { authSchema } from "./schema.js";
  */
 const MIN_SECRET_LENGTH = 32;
 const DEV_SECRET = "development-only-secret-never-used-in-production-0000";
+/**
+ * The session secret: BETTER_AUTH_SECRET, or the AUTH_SECRET a product moving
+ * off next-auth already has on its server (better-auth reads the same pair).
+ * Either way it must be 32+ characters in production.
+ */
+export function secretFrom(env) {
+    return (env.BETTER_AUTH_SECRET?.trim() || env.AUTH_SECRET?.trim()) ?? "";
+}
 export function authStatusFor(databaseConfigured, env = process.env) {
     if (!databaseConfigured)
         return { ready: false, reason: "no_database" };
-    const secret = env.BETTER_AUTH_SECRET?.trim() ?? "";
+    const secret = secretFrom(env);
     if (env.NODE_ENV === "production" && secret.length < MIN_SECRET_LENGTH) {
         return { ready: false, reason: "no_secret" };
     }
     return { ready: true };
 }
 function authSecret(env) {
-    const secret = env.BETTER_AUTH_SECRET?.trim() ?? "";
+    const secret = secretFrom(env);
     if (secret.length >= MIN_SECRET_LENGTH)
         return secret;
     if (env.NODE_ENV === "production") {

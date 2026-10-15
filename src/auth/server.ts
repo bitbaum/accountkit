@@ -64,12 +64,21 @@ export interface CreateAuthOptions {
 export type AuthStatus =
   { ready: true } | { ready: false; reason: "no_database" | "no_secret" };
 
+/**
+ * The session secret: BETTER_AUTH_SECRET, or the AUTH_SECRET a product moving
+ * off next-auth already has on its server (better-auth reads the same pair).
+ * Either way it must be 32+ characters in production.
+ */
+export function secretFrom(env: NodeJS.ProcessEnv): string {
+  return (env.BETTER_AUTH_SECRET?.trim() || env.AUTH_SECRET?.trim()) ?? "";
+}
+
 export function authStatusFor(
   databaseConfigured: boolean,
   env: NodeJS.ProcessEnv = process.env,
 ): AuthStatus {
   if (!databaseConfigured) return { ready: false, reason: "no_database" };
-  const secret = env.BETTER_AUTH_SECRET?.trim() ?? "";
+  const secret = secretFrom(env);
   if (env.NODE_ENV === "production" && secret.length < MIN_SECRET_LENGTH) {
     return { ready: false, reason: "no_secret" };
   }
@@ -77,7 +86,7 @@ export function authStatusFor(
 }
 
 function authSecret(env: NodeJS.ProcessEnv): string {
-  const secret = env.BETTER_AUTH_SECRET?.trim() ?? "";
+  const secret = secretFrom(env);
   if (secret.length >= MIN_SECRET_LENGTH) return secret;
   if (env.NODE_ENV === "production") {
     throw new Error(

@@ -42,6 +42,12 @@ export type AuthStatus = {
     ready: false;
     reason: "no_database" | "no_secret";
 };
+/**
+ * The session secret: BETTER_AUTH_SECRET, or the AUTH_SECRET a product moving
+ * off next-auth already has on its server (better-auth reads the same pair).
+ * Either way it must be 32+ characters in production.
+ */
+export declare function secretFrom(env: NodeJS.ProcessEnv): string;
 export declare function authStatusFor(databaseConfigured: boolean, env?: NodeJS.ProcessEnv): AuthStatus;
 /** An OIDC client as better-auth's generic OAuth provider. */
 export declare function oidcProvider(client: OidcClient): GenericOAuthConfig;

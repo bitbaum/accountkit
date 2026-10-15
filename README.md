@@ -82,11 +82,19 @@ import { authClientPlugins } from "@bitbaum/accountkit/auth/client";
 export const authClient = createAuthClient({ plugins: authClientPlugins() });
 ```
 
+The screens are shared too (`@bitbaum/accountkit/auth/react`): `SignInForm`, `SignUpForm` and `AccountPanel`. They hold the logic and take the product's words (`labels`, English default `DEFAULT_AUTH_LABELS`) and look (`classes`; without them the `acct-auth-*` classes in `styles.css` apply, on `--acct-*` variables):
+
+```tsx
+<SignInForm client={authClient} methods={signInMethods(process.env, mailConfigured)}
+  labels={myLabels} classes={{ button: "btn-primary", input: "field" }}
+  next="/de/matters" signInPath="/de/sign-in" signUpLink={<Link href="/sign-up">…</Link>} />
+```
+
 A product whose rows were keyed on an OrangeCat actor id before it had accounts passes `legacyIdentityProvider: "orangecat"`: a person whose first way in was OrangeCat keeps that id as `user.actorId`, so nothing has to be migrated; everyone else's `actorId` is their user id.
 
 What is the same everywhere, and not configurable per product: 12-character passwords; sessions of 14 days; no IP addresses stored; an address is never an identity (a new method joins an account only when the signed-in person links it); provider tokens are never kept; a sign-up cannot choose its role; one rate limiter keyed on the proxy's hop (limitkit), with a stricter bucket for anything that sends mail. `signInMethods(env, mailConfigured)` says which buttons to show, as booleans.
 
-Needs `BETTER_AUTH_SECRET` (32+ characters) and a database; without them every auth route answers 503 `accounts_unavailable` instead of crashing. Peer dependencies: `better-auth`, `@better-auth/passkey`, `drizzle-orm`, and `next` for `/auth/next`.
+Needs `BETTER_AUTH_SECRET` (32+ characters; a product moving off next-auth may keep its `AUTH_SECRET`) and a database; without them every auth route answers 503 `accounts_unavailable` instead of crashing. Peer dependencies: `better-auth`, `@better-auth/passkey`, `drizzle-orm`, and `next` for `/auth/next`.
 
 ## Verify
 
