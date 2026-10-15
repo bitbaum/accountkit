@@ -1,7 +1,7 @@
 {
   "name": "@bitbaum/accountkit",
-  "version": "0.2.1",
-  "description": "One account for every bitbaum product: the account menu, and Sign in with OrangeCat (provider, session refresh, identity rules, error screen). Styled from @bitbaum/design-tokens.",
+  "version": "0.3.0",
+  "description": "One account for every bitbaum product: the account menu, accounts themselves (better-auth: password, magic link, passkeys, 2FA, OIDC) and Sign in with OrangeCat. Styled from @bitbaum/design-tokens.",
   "license": "MIT",
   "author": "Cato",
   "homepage": "https://github.com/bitbaum/accountkit#readme",
@@ -48,9 +48,33 @@
       "types": "./dist/orangecat.d.ts",
       "default": "./dist/orangecat.js"
     },
-    "./styles.css": "./styles.css"
+    "./styles.css": "./styles.css",
+    "./auth": {
+      "types": "./dist/auth/index.d.ts",
+      "default": "./dist/auth/index.js"
+    },
+    "./auth/schema": {
+      "types": "./dist/auth/schema.d.ts",
+      "default": "./dist/auth/schema.js"
+    },
+    "./auth/server": {
+      "types": "./dist/auth/server.d.ts",
+      "default": "./dist/auth/server.js"
+    },
+    "./auth/next": {
+      "types": "./dist/auth/next.d.ts",
+      "default": "./dist/auth/next.js"
+    },
+    "./auth/client": {
+      "types": "./dist/auth/client.d.ts",
+      "default": "./dist/auth/client.js"
+    }
   },
   "peerDependencies": {
+    "@better-auth/passkey": "^1.7.7",
+    "better-auth": "^1.7.7",
+    "drizzle-orm": "^0.45.4",
+    "next": "16.4.0",
     "react": ">=18"
   },
   "scripts": {
@@ -67,19 +91,44 @@
   },
   "devDependencies": {
     "@auth/core": "0.41.3",
+    "@better-auth/passkey": "^1.7.7",
     "@bitbaum/design-tokens": "^1.1.0",
+    "@electric-sql/pglite": "^0.5.10",
     "@eslint/js": "^10.0.1",
     "@types/node": "^26.4.0",
+    "@types/pg": "^8.23.1",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.3",
+    "better-auth": "^1.7.7",
+    "drizzle-kit": "^0.31.11",
+    "drizzle-orm": "^0.45.4",
     "esbuild": "^0.28.2",
     "eslint": "^10.9.1",
     "globals": "^17.11.0",
+    "next": "16.4.0",
+    "pg": "^8.23.1",
     "playwright": "1.63.0",
     "prettier": "^3.9.6",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.68.0"
+  },
+  "peerDependenciesMeta": {
+    "better-auth": {
+      "optional": true
+    },
+    "@better-auth/passkey": {
+      "optional": true
+    },
+    "drizzle-orm": {
+      "optional": true
+    },
+    "next": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "limitkit": "^0.2.0"
   }
 }

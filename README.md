@@ -56,6 +56,36 @@ Every colour, radius and font is an `--acct-*` variable. The defaults read `@bit
 }
 ```
 
+## Accounts (`@bitbaum/accountkit/auth`)
+
+Every product owns its accounts, and they are the same account system everywhere: email and password, a magic link, passkeys, two-factor codes, the shared bitbaum sign-in and Sign in with OrangeCat (each shown only when configured). Built on [better-auth](https://www.better-auth.com) 1.x, so a product writes none of it.
+
+```ts
+// lib/db/schema.ts — one identical migration in every product
+export * from "@bitbaum/accountkit/auth/schema";
+
+// lib/auth.ts
+import { createAuthRuntime } from "@bitbaum/accountkit/auth/next";
+export const { GET, POST, getSession, requireUser, authStatus, getAuth } = createAuthRuntime({
+  site: { url: "https://app.example.ch", title: "Example", slug: "example" },
+  mail: { configured, send },            // your mail-kit sender; never log the link
+  isDatabaseConfigured: (env) => Boolean(env.DATABASE_URL),
+  getDatabase: () => db,                 // Drizzle, built on first use
+});
+
+// app/api/auth/[...all]/route.ts
+export { GET, POST } from "@/lib/auth";
+
+// lib/auth-client.ts
+import { createAuthClient } from "better-auth/react";
+import { authClientPlugins } from "@bitbaum/accountkit/auth/client";
+export const authClient = createAuthClient({ plugins: authClientPlugins() });
+```
+
+What is the same everywhere, and not configurable per product: 12-character passwords; sessions of 14 days; no IP addresses stored; an address is never an identity (a new method joins an account only when the signed-in person links it); provider tokens are never kept; a sign-up cannot choose its role; one rate limiter keyed on the proxy's hop (limitkit), with a stricter bucket for anything that sends mail. `signInMethods(env, mailConfigured)` says which buttons to show, as booleans.
+
+Needs `BETTER_AUTH_SECRET` (32+ characters) and a database; without them every auth route answers 503 `accounts_unavailable` instead of crashing. Peer dependencies: `better-auth`, `@better-auth/passkey`, `drizzle-orm`, and `next` for `/auth/next`.
+
 ## Verify
 
 ```sh
