@@ -1,6 +1,6 @@
 {
   "name": "@bitbaum/accountkit",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "One account for every bitbaum product: the account menu, accounts themselves (better-auth: password, magic link, passkeys, 2FA, OIDC) and Sign in with OrangeCat. Styled from @bitbaum/design-tokens.",
   "license": "MIT",
   "author": "Cato",
@@ -68,6 +68,10 @@
     "./auth/client": {
       "types": "./dist/auth/client.d.ts",
       "default": "./dist/auth/client.js"
+    },
+    "./auth/react": {
+      "types": "./dist/auth/react.d.ts",
+      "default": "./dist/auth/react.js"
     }
   },
   "peerDependencies": {
