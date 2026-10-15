@@ -94,7 +94,7 @@ A product whose rows were keyed on an OrangeCat actor id before it had accounts 
 
 What is the same everywhere, and not configurable per product: 12-character passwords; sessions of 14 days; no IP addresses stored; an address is never an identity (a new method joins an account only when the signed-in person links it); provider tokens are never kept; a sign-up cannot choose its role; one rate limiter keyed on the proxy's hop (limitkit), with a stricter bucket for anything that sends mail. `signInMethods(env, mailConfigured)` says which buttons to show, as booleans.
 
-Needs `BETTER_AUTH_SECRET` (32+ characters) and a database; without them every auth route answers 503 `accounts_unavailable` instead of crashing. Peer dependencies: `better-auth`, `@better-auth/passkey`, `drizzle-orm`, and `next` for `/auth/next`.
+Needs `BETTER_AUTH_SECRET` (32+ characters; a product moving off next-auth may keep its `AUTH_SECRET`) and a database; without them every auth route answers 503 `accounts_unavailable` instead of crashing. Peer dependencies: `better-auth`, `@better-auth/passkey`, `drizzle-orm`, and `next` for `/auth/next`.
 
 ## Verify
 

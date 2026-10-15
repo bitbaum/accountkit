@@ -150,3 +150,32 @@ describe("rate-limit buckets", () => {
     assert.equal(authBucket("/get-session"), "auth");
   });
 });
+
+import { authStatusFor, secretFrom } from "../dist/auth/server.js";
+describe("the session secret", () => {
+  test("BETTER_AUTH_SECRET first, the next-auth AUTH_SECRET as a fallback", () => {
+    assert.equal(
+      secretFrom({ BETTER_AUTH_SECRET: "a", AUTH_SECRET: "b" }),
+      "a",
+    );
+    assert.equal(secretFrom({ AUTH_SECRET: "b" }), "b");
+    assert.equal(secretFrom({}), "");
+  });
+  test("production refuses a short or missing secret, and says why", () => {
+    assert.deepEqual(
+      authStatusFor(true, { NODE_ENV: "production", AUTH_SECRET: "short" }),
+      { ready: false, reason: "no_secret" },
+    );
+    assert.deepEqual(
+      authStatusFor(true, {
+        NODE_ENV: "production",
+        AUTH_SECRET: "x".repeat(44),
+      }),
+      { ready: true },
+    );
+    assert.deepEqual(authStatusFor(false, { NODE_ENV: "production" }), {
+      ready: false,
+      reason: "no_database",
+    });
+  });
+});
