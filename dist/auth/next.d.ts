@@ -8,11 +8,20 @@ export interface AuthRuntimeOptions {
     getDatabase: () => unknown;
     /** Only if the product keeps the account tables under its own definitions. */
     schema?: Record<string, unknown>;
+    /**
+     * For a product whose rows were keyed on an OIDC subject before it had
+     * accounts (an OrangeCat actor id). A person who FIRST came in through that
+     * provider keeps the subject as their `actorId`, so every existing row stays
+     * theirs with no data migration. Everyone else's `actorId` is their user id.
+     * Linking the provider later never changes an id that already has data.
+     */
+    legacyIdentityProvider?: string;
     /** See CreateAuthOptions.onAccountCreated. */
     onAccountCreated?: CreateAuthOptions["onAccountCreated"];
 }
 type SessionUser = {
     id: string;
+    actorId: string;
     role?: unknown;
 };
 /**
@@ -44,6 +53,9 @@ export declare function createAuthRuntime(options: AuthRuntimeOptions): {
 export interface AuthSession {
     user: {
         id: string;
+        /** The id the product's rows use: the user id, or a legacy subject (see legacyIdentityProvider). */
+        actorId: string;
+        createdAt?: Date | string;
         name: string;
         email: string;
         emailVerified: boolean;
