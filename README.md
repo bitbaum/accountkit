@@ -82,7 +82,7 @@ import { authClientPlugins } from "@bitbaum/accountkit/auth/client";
 export const authClient = createAuthClient({ plugins: authClientPlugins() });
 ```
 
-The screens are shared too (`@bitbaum/accountkit/auth/react`): `SignInForm`, `SignUpForm` and `AccountPanel`. They hold the logic and take the product's words (`labels`, English default `DEFAULT_AUTH_LABELS`) and look (`classes`; without them the `acct-auth-*` classes in `styles.css` apply, on `--acct-*` variables):
+The screens are shared too (`@bitbaum/accountkit/auth/react`): `SignInForm`, `SignUpForm` and `AccountPanel`. They hold the logic and take the product's words (`labels`: `authLabelsFor(locale)` from `@bitbaum/accountkit/auth` has English, German, French, Italian, Romansh and Russian, so a product keeps no copy of its own; override `account.roles` if its roles have other names) and look (`classes`; without them the `acct-auth-*` classes in `styles.css` apply, on `--acct-*` variables):
 
 ```tsx
 <SignInForm client={authClient} methods={signInMethods(process.env, mailConfigured)}
