@@ -8,3 +8,4 @@ export {
   type AuthError,
   type AuthLabels,
 } from "./labels.js";
+export { AUTH_LABEL_LOCALES, authLabelsFor } from "./translations.js";
