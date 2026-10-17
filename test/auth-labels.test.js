@@ -14,7 +14,8 @@ function leaves(value, path = "") {
     leaves(v, path ? `${path}.${k}` : k),
   );
 }
-const placeholders = (s) => [...s.matchAll(/\{(\w+)\}/g)].map((m) => m[1]).sort();
+const placeholders = (s) =>
+  [...s.matchAll(/\{(\w+)\}/g)].map((m) => m[1]).sort();
 const reference = new Map(leaves(DEFAULT_AUTH_LABELS));
 
 for (const locale of AUTH_LABEL_LOCALES) {
@@ -22,7 +23,11 @@ for (const locale of AUTH_LABEL_LOCALES) {
     const got = new Map(leaves(authLabelsFor(locale)));
     for (const [key, english] of reference) {
       assert.ok(got.get(key), `${locale} is missing ${key}`);
-      assert.deepEqual(placeholders(got.get(key)), placeholders(english), `${locale} ${key}`);
+      assert.deepEqual(
+        placeholders(got.get(key)),
+        placeholders(english),
+        `${locale} ${key}`,
+      );
     }
   });
 }

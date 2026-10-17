@@ -21,16 +21,19 @@ const de: AuthLabels = {
   orEmail: "oder mit E-Mail",
   email: "E-Mail",
   password: "Passwort",
-  passwordHint: "Mindestens 12 Zeichen. Ein langer Satz ist leichter zu merken als Sonderzeichen.",
+  passwordHint:
+    "Mindestens 12 Zeichen. Ein langer Satz ist leichter zu merken als Sonderzeichen.",
   displayName: "Anzeigename",
-  displayNameHint: "Freiwillig. Irgendetwas — es muss nicht Ihr echter Name sein.",
+  displayNameHint:
+    "Freiwillig. Irgendetwas — es muss nicht Ihr echter Name sein.",
   checkInbox:
     "Wir haben einen Link an {email} geschickt. Öffnen Sie ihn auf diesem Gerät. Er gilt 10 Minuten.",
   confirmInbox:
     "Wir haben einen Link an {email} geschickt. Öffnen Sie ihn, um die Adresse zu bestätigen und das Konto fertig einzurichten.",
   back: "Zurück",
   totpPrompt: "Geben Sie den 6-stelligen Code aus Ihrer Authenticator-App ein.",
-  backupPrompt: "Geben Sie einen der Backup-Codes ein, die Sie beim Einrichten gespeichert haben.",
+  backupPrompt:
+    "Geben Sie einen der Backup-Codes ein, die Sie beim Einrichten gespeichert haben.",
   totpCode: "Code",
   backupCode: "Backup-Code",
   trustDevice: "Diesem Gerät 30 Tage lang vertrauen",
@@ -41,27 +44,36 @@ const de: AuthLabels = {
   noAccount: "Noch kein Konto?",
   haveAccount: "Schon ein Konto?",
   errors: {
-    rateLimited: "Zu viele Versuche. Warten Sie ein paar Minuten und versuchen Sie es dann nochmals.",
-    unavailable: "Konten sind gerade nicht verfügbar. Versuchen Sie es etwas später nochmals.",
-    generic: "Das hat nicht geklappt. Versuchen Sie es nochmals oder wählen Sie einen anderen Weg.",
+    rateLimited:
+      "Zu viele Versuche. Warten Sie ein paar Minuten und versuchen Sie es dann nochmals.",
+    unavailable:
+      "Konten sind gerade nicht verfügbar. Versuchen Sie es etwas später nochmals.",
+    generic:
+      "Das hat nicht geklappt. Versuchen Sie es nochmals oder wählen Sie einen anderen Weg.",
     emailFirst: "Geben Sie zuerst Ihre E-Mail-Adresse ein.",
     INVALID_EMAIL_OR_PASSWORD:
       "E-Mail und Passwort passen nicht zusammen. Prüfen Sie beides oder melden Sie sich mit einem Link an.",
-    EMAIL_NOT_VERIFIED: "Bestätigen Sie zuerst Ihre E-Mail-Adresse — der Link ist in Ihrem Posteingang.",
-    USER_ALREADY_EXISTS: "Mit dieser Adresse gibt es schon ein Konto. Melden Sie sich stattdessen an.",
+    EMAIL_NOT_VERIFIED:
+      "Bestätigen Sie zuerst Ihre E-Mail-Adresse — der Link ist in Ihrem Posteingang.",
+    USER_ALREADY_EXISTS:
+      "Mit dieser Adresse gibt es schon ein Konto. Melden Sie sich stattdessen an.",
     USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL:
       "Mit dieser Adresse gibt es schon ein Konto. Melden Sie sich stattdessen an.",
     PASSWORD_TOO_SHORT: "Das Passwort braucht mindestens 12 Zeichen.",
     PASSWORD_TOO_LONG: "Das Passwort darf höchstens 128 Zeichen haben.",
     INVALID_EMAIL: "Das sieht nicht nach einer E-Mail-Adresse aus.",
-    INVALID_CODE: "Dieser Code stimmt nicht oder ist abgelaufen. Nehmen Sie den neuesten.",
-    INVALID_TWO_FACTOR_CODE: "Dieser Code stimmt nicht oder ist abgelaufen. Nehmen Sie den neuesten.",
-    SESSION_EXPIRED: "Melden Sie sich zur Sicherheit erneut an, bevor Sie das ändern.",
+    INVALID_CODE:
+      "Dieser Code stimmt nicht oder ist abgelaufen. Nehmen Sie den neuesten.",
+    INVALID_TWO_FACTOR_CODE:
+      "Dieser Code stimmt nicht oder ist abgelaufen. Nehmen Sie den neuesten.",
+    SESSION_EXPIRED:
+      "Melden Sie sich zur Sicherheit erneut an, bevor Sie das ändern.",
     INVALID_PASSWORD: "Dieses Passwort stimmt nicht.",
   },
   account: {
     profile: "Profil",
-    noEmail: "keine — fügen Sie eine Anmeldung mit Passwort hinzu, um E-Mail zu nutzen",
+    noEmail:
+      "keine — fügen Sie eine Anmeldung mit Passwort hinzu, um E-Mail zu nutzen",
     unverified: "noch nicht bestätigt",
     role: "Rolle",
     roles: {
@@ -77,15 +89,19 @@ const de: AuthLabels = {
     methodPassword: "E-Mail und Passwort",
     link: "{method} hinzufügen",
     passkeys: "Passkeys",
-    passkeysLede: "Mit Fingerabdruck, Gesicht oder Geräte-PIN anmelden statt mit Passwort.",
+    passkeysLede:
+      "Mit Fingerabdruck, Gesicht oder Geräte-PIN anmelden statt mit Passwort.",
     passkeyDefaultName: "Passkey",
     remove: "Entfernen",
     addPasskey: "Passkey hinzufügen",
     twoFactor: "Anmeldung in zwei Schritten",
-    twoFactorOn: "Ein. Bei der Anmeldung wird ein Code aus Ihrer Authenticator-App verlangt.",
-    twoFactorOff: "Aus. Schalten Sie sie ein, um bei jeder Anmeldung einen Code zu verlangen.",
+    twoFactorOn:
+      "Ein. Bei der Anmeldung wird ein Code aus Ihrer Authenticator-App verlangt.",
+    twoFactorOff:
+      "Aus. Schalten Sie sie ein, um bei jeder Anmeldung einen Code zu verlangen.",
     currentPassword: "Aktuelles Passwort",
-    currentPasswordHint: "Nötig, wenn Ihr Konto ein Passwort hat. Ohne Passwort zuerst neu anmelden.",
+    currentPasswordHint:
+      "Nötig, wenn Ihr Konto ein Passwort hat. Ohne Passwort zuerst neu anmelden.",
     scan: "Fügen Sie dieses Konto Ihrer Authenticator-App hinzu und geben Sie dann den angezeigten Code ein.",
     openAuthenticator: "In der Authenticator-App öffnen",
     backupCodes:
@@ -112,16 +128,20 @@ const fr: AuthLabels = {
   orEmail: "ou avec un e-mail",
   email: "E-mail",
   password: "Mot de passe",
-  passwordHint: "Au moins 12 caractères. Une longue phrase se retient mieux que des symboles.",
+  passwordHint:
+    "Au moins 12 caractères. Une longue phrase se retient mieux que des symboles.",
   displayName: "Nom affiché",
-  displayNameHint: "Facultatif. Ce que vous voulez — pas forcément votre vrai nom.",
+  displayNameHint:
+    "Facultatif. Ce que vous voulez — pas forcément votre vrai nom.",
   checkInbox:
     "Nous avons envoyé un lien à {email}. Ouvrez-le sur cet appareil pour continuer. Il est valable 10 minutes.",
   confirmInbox:
     "Nous avons envoyé un lien à {email}. Ouvrez-le pour confirmer votre adresse et terminer la création du compte.",
   back: "Retour",
-  totpPrompt: "Saisissez le code à 6 chiffres de votre application d'authentification.",
-  backupPrompt: "Saisissez l'un des codes de secours enregistrés lors de la configuration.",
+  totpPrompt:
+    "Saisissez le code à 6 chiffres de votre application d'authentification.",
+  backupPrompt:
+    "Saisissez l'un des codes de secours enregistrés lors de la configuration.",
   totpCode: "Code",
   backupCode: "Code de secours",
   trustDevice: "Faire confiance à cet appareil pendant 30 jours",
@@ -132,53 +152,73 @@ const fr: AuthLabels = {
   noAccount: "Pas encore de compte ?",
   haveAccount: "Vous avez déjà un compte ?",
   errors: {
-    rateLimited: "Trop de tentatives. Attendez quelques minutes, puis réessayez.",
-    unavailable: "Les comptes ne sont pas disponibles pour le moment. Réessayez un peu plus tard.",
-    generic: "Cela n'a pas fonctionné. Réessayez, ou choisissez une autre façon de vous connecter.",
+    rateLimited:
+      "Trop de tentatives. Attendez quelques minutes, puis réessayez.",
+    unavailable:
+      "Les comptes ne sont pas disponibles pour le moment. Réessayez un peu plus tard.",
+    generic:
+      "Cela n'a pas fonctionné. Réessayez, ou choisissez une autre façon de vous connecter.",
     emailFirst: "Saisissez d'abord votre adresse e-mail.",
     INVALID_EMAIL_OR_PASSWORD:
       "Cet e-mail et ce mot de passe ne correspondent pas. Vérifiez les deux, ou connectez-vous avec un lien.",
-    EMAIL_NOT_VERIFIED: "Confirmez d'abord votre adresse e-mail — le lien est dans votre boîte de réception.",
-    USER_ALREADY_EXISTS: "Un compte existe déjà avec cette adresse. Connectez-vous plutôt.",
-    USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL: "Un compte existe déjà avec cette adresse. Connectez-vous plutôt.",
+    EMAIL_NOT_VERIFIED:
+      "Confirmez d'abord votre adresse e-mail — le lien est dans votre boîte de réception.",
+    USER_ALREADY_EXISTS:
+      "Un compte existe déjà avec cette adresse. Connectez-vous plutôt.",
+    USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL:
+      "Un compte existe déjà avec cette adresse. Connectez-vous plutôt.",
     PASSWORD_TOO_SHORT: "Le mot de passe doit compter au moins 12 caractères.",
     PASSWORD_TOO_LONG: "Le mot de passe peut compter au plus 128 caractères.",
     INVALID_EMAIL: "Cela ne ressemble pas à une adresse e-mail.",
     INVALID_CODE: "Ce code n'est pas bon ou a expiré. Essayez le plus récent.",
-    INVALID_TWO_FACTOR_CODE: "Ce code n'est pas bon ou a expiré. Essayez le plus récent.",
+    INVALID_TWO_FACTOR_CODE:
+      "Ce code n'est pas bon ou a expiré. Essayez le plus récent.",
     SESSION_EXPIRED: "Par sécurité, reconnectez-vous avant de modifier ceci.",
     INVALID_PASSWORD: "Ce mot de passe n'est pas bon.",
   },
   account: {
     profile: "Profil",
-    noEmail: "aucun — ajoutez une connexion par mot de passe pour utiliser l'e-mail",
+    noEmail:
+      "aucun — ajoutez une connexion par mot de passe pour utiliser l'e-mail",
     unverified: "pas encore confirmé",
     role: "Rôle",
-    roles: { customer: "Apprenant·e", helper: "Aide", professional: "Professionnel·le", staff: "Équipe", admin: "Administration" },
+    roles: {
+      customer: "Apprenant·e",
+      helper: "Aide",
+      professional: "Professionnel·le",
+      staff: "Équipe",
+      admin: "Administration",
+    },
     save: "Enregistrer",
     saved: "Enregistré.",
     methods: "Façons de se connecter",
     methodPassword: "E-mail et mot de passe",
     link: "Ajouter {method}",
     passkeys: "Clés d'accès",
-    passkeysLede: "Connectez-vous avec votre empreinte, votre visage ou le code de l'appareil plutôt qu'un mot de passe.",
+    passkeysLede:
+      "Connectez-vous avec votre empreinte, votre visage ou le code de l'appareil plutôt qu'un mot de passe.",
     passkeyDefaultName: "Clé d'accès",
     remove: "Retirer",
     addPasskey: "Ajouter une clé d'accès",
     twoFactor: "Connexion en deux étapes",
-    twoFactorOn: "Activée. La connexion demande un code de votre application d'authentification.",
-    twoFactorOff: "Désactivée. Activez-la pour demander un code à chaque connexion.",
+    twoFactorOn:
+      "Activée. La connexion demande un code de votre application d'authentification.",
+    twoFactorOff:
+      "Désactivée. Activez-la pour demander un code à chaque connexion.",
     currentPassword: "Mot de passe actuel",
-    currentPasswordHint: "Nécessaire si votre compte a un mot de passe. Sans mot de passe, reconnectez-vous d'abord.",
+    currentPasswordHint:
+      "Nécessaire si votre compte a un mot de passe. Sans mot de passe, reconnectez-vous d'abord.",
     scan: "Ajoutez ce compte à votre application d'authentification, puis saisissez le code affiché.",
     openAuthenticator: "Ouvrir dans l'application d'authentification",
-    backupCodes: "Conservez ces codes de secours en lieu sûr. Chacun fonctionne une fois si vous perdez votre téléphone.",
+    backupCodes:
+      "Conservez ces codes de secours en lieu sûr. Chacun fonctionne une fois si vous perdez votre téléphone.",
     turnOn: "Activer",
     turnOff: "Désactiver",
     setUp: "Configurer",
     leave: "Se déconnecter ou partir",
     signOut: "Se déconnecter",
-    deleteConfirm: "Pour supprimer votre compte et tout son contenu, tapez {word}",
+    deleteConfirm:
+      "Pour supprimer votre compte et tout son contenu, tapez {word}",
     deleteWord: "supprimer",
     delete: "Supprimer mon compte",
   },
@@ -195,15 +235,19 @@ const it: AuthLabels = {
   orEmail: "oppure con l'e-mail",
   email: "E-mail",
   password: "Password",
-  passwordHint: "Almeno 12 caratteri. Una frase lunga si ricorda meglio dei simboli.",
+  passwordHint:
+    "Almeno 12 caratteri. Una frase lunga si ricorda meglio dei simboli.",
   displayName: "Nome visualizzato",
-  displayNameHint: "Facoltativo. Quello che vuoi — non deve essere il tuo vero nome.",
-  checkInbox: "Abbiamo inviato un link a {email}. Aprilo su questo dispositivo per continuare. Vale 10 minuti.",
+  displayNameHint:
+    "Facoltativo. Quello che vuoi — non deve essere il tuo vero nome.",
+  checkInbox:
+    "Abbiamo inviato un link a {email}. Aprilo su questo dispositivo per continuare. Vale 10 minuti.",
   confirmInbox:
     "Abbiamo inviato un link a {email}. Aprilo per confermare l'indirizzo e completare la creazione dell'account.",
   back: "Indietro",
   totpPrompt: "Inserisci il codice di 6 cifre della tua app di autenticazione.",
-  backupPrompt: "Inserisci uno dei codici di riserva salvati durante la configurazione.",
+  backupPrompt:
+    "Inserisci uno dei codici di riserva salvati durante la configurazione.",
   totpCode: "Codice",
   backupCode: "Codice di riserva",
   trustDevice: "Considera affidabile questo dispositivo per 30 giorni",
@@ -215,19 +259,28 @@ const it: AuthLabels = {
   haveAccount: "Hai già un account?",
   errors: {
     rateLimited: "Troppi tentativi. Aspetta qualche minuto, poi riprova.",
-    unavailable: "Gli account non sono disponibili al momento. Riprova tra poco.",
-    generic: "Non ha funzionato. Riprova, oppure scegli un altro modo per accedere.",
+    unavailable:
+      "Gli account non sono disponibili al momento. Riprova tra poco.",
+    generic:
+      "Non ha funzionato. Riprova, oppure scegli un altro modo per accedere.",
     emailFirst: "Inserisci prima il tuo indirizzo e-mail.",
-    INVALID_EMAIL_OR_PASSWORD: "E-mail e password non corrispondono. Controlla entrambe, oppure accedi con un link.",
-    EMAIL_NOT_VERIFIED: "Conferma prima il tuo indirizzo e-mail — il link è nella tua casella di posta.",
-    USER_ALREADY_EXISTS: "Esiste già un account con questo indirizzo. Accedi invece.",
-    USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL: "Esiste già un account con questo indirizzo. Accedi invece.",
+    INVALID_EMAIL_OR_PASSWORD:
+      "E-mail e password non corrispondono. Controlla entrambe, oppure accedi con un link.",
+    EMAIL_NOT_VERIFIED:
+      "Conferma prima il tuo indirizzo e-mail — il link è nella tua casella di posta.",
+    USER_ALREADY_EXISTS:
+      "Esiste già un account con questo indirizzo. Accedi invece.",
+    USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL:
+      "Esiste già un account con questo indirizzo. Accedi invece.",
     PASSWORD_TOO_SHORT: "La password deve avere almeno 12 caratteri.",
     PASSWORD_TOO_LONG: "La password può avere al massimo 128 caratteri.",
     INVALID_EMAIL: "Non sembra un indirizzo e-mail.",
-    INVALID_CODE: "Questo codice non è corretto o è scaduto. Prova il più recente.",
-    INVALID_TWO_FACTOR_CODE: "Questo codice non è corretto o è scaduto. Prova il più recente.",
-    SESSION_EXPIRED: "Per sicurezza, accedi di nuovo prima di modificare questo.",
+    INVALID_CODE:
+      "Questo codice non è corretto o è scaduto. Prova il più recente.",
+    INVALID_TWO_FACTOR_CODE:
+      "Questo codice non è corretto o è scaduto. Prova il più recente.",
+    SESSION_EXPIRED:
+      "Per sicurezza, accedi di nuovo prima di modificare questo.",
     INVALID_PASSWORD: "Questa password non è corretta.",
   },
   account: {
@@ -235,31 +288,43 @@ const it: AuthLabels = {
     noEmail: "nessuna — aggiungi un accesso con password per usare l'e-mail",
     unverified: "non ancora confermato",
     role: "Ruolo",
-    roles: { customer: "Chi impara", helper: "Aiuto", professional: "Professionista", staff: "Team", admin: "Amministrazione" },
+    roles: {
+      customer: "Chi impara",
+      helper: "Aiuto",
+      professional: "Professionista",
+      staff: "Team",
+      admin: "Amministrazione",
+    },
     save: "Salva",
     saved: "Salvato.",
     methods: "Modi per accedere",
     methodPassword: "E-mail e password",
     link: "Aggiungi {method}",
     passkeys: "Passkey",
-    passkeysLede: "Accedi con impronta, volto o PIN del dispositivo invece che con una password.",
+    passkeysLede:
+      "Accedi con impronta, volto o PIN del dispositivo invece che con una password.",
     passkeyDefaultName: "Passkey",
     remove: "Rimuovi",
     addPasskey: "Aggiungi una passkey",
     twoFactor: "Accesso in due passaggi",
-    twoFactorOn: "Attivo. L'accesso chiede un codice dalla tua app di autenticazione.",
-    twoFactorOff: "Disattivato. Attivalo per chiedere un codice a ogni accesso.",
+    twoFactorOn:
+      "Attivo. L'accesso chiede un codice dalla tua app di autenticazione.",
+    twoFactorOff:
+      "Disattivato. Attivalo per chiedere un codice a ogni accesso.",
     currentPassword: "Password attuale",
-    currentPasswordHint: "Necessaria se il tuo account ha una password. Senza, accedi prima di nuovo.",
+    currentPasswordHint:
+      "Necessaria se il tuo account ha una password. Senza, accedi prima di nuovo.",
     scan: "Aggiungi questo account alla tua app di autenticazione, poi inserisci il codice che mostra.",
     openAuthenticator: "Apri nell'app di autenticazione",
-    backupCodes: "Conserva questi codici di riserva in un posto sicuro. Ognuno funziona una volta se perdi il telefono.",
+    backupCodes:
+      "Conserva questi codici di riserva in un posto sicuro. Ognuno funziona una volta se perdi il telefono.",
     turnOn: "Attiva",
     turnOff: "Disattiva",
     setUp: "Configura",
     leave: "Esci o lascia",
     signOut: "Esci",
-    deleteConfirm: "Per eliminare il tuo account e tutto il suo contenuto, scrivi {word}",
+    deleteConfirm:
+      "Per eliminare il tuo account e tutto il suo contenuto, scrivi {word}",
     deleteWord: "elimina",
     delete: "Elimina il mio account",
   },
@@ -276,9 +341,11 @@ const rm: AuthLabels = {
   orEmail: "u cun e-mail",
   email: "E-mail",
   password: "Pled-clav",
-  passwordHint: "Almain 12 caracters. Ina frasa lunga è pli simpla da memorisar che simbols.",
+  passwordHint:
+    "Almain 12 caracters. Ina frasa lunga è pli simpla da memorisar che simbols.",
   displayName: "Num mussà",
-  displayNameHint: "Facultativ. Tge che vus vulais — i na sto betg esser voss num vair.",
+  displayNameHint:
+    "Facultativ. Tge che vus vulais — i na sto betg esser voss num vair.",
   checkInbox:
     "Nus avain tramess ina colliaziun a {email}. L'avri sin quest apparat per cuntinuar. Ella vala 10 minutas.",
   confirmInbox:
@@ -296,21 +363,29 @@ const rm: AuthLabels = {
   noAccount: "Anc nagin conto?",
   haveAccount: "Gia in conto?",
   errors: {
-    rateLimited: "Memia blers empruvs. Spetgai in pèr minutas e empruvai alura danovamain.",
-    unavailable: "Ils contos n'èn actualmain betg disponibels. Empruvai pli tard.",
-    generic: "Quai n'ha betg funcziunà. Empruvai danovamain u tscherni in'autra via.",
+    rateLimited:
+      "Memia blers empruvs. Spetgai in pèr minutas e empruvai alura danovamain.",
+    unavailable:
+      "Ils contos n'èn actualmain betg disponibels. Empruvai pli tard.",
+    generic:
+      "Quai n'ha betg funcziunà. Empruvai danovamain u tscherni in'autra via.",
     emailFirst: "Endatai l'emprim vossa adressa d'e-mail.",
     INVALID_EMAIL_OR_PASSWORD:
       "L'e-mail ed il pled-clav na correspundan betg. Controllai omadus u s'annunziai cun ina colliaziun.",
-    EMAIL_NOT_VERIFIED: "Confermai l'emprim vossa adressa d'e-mail — la colliaziun è en voss inbox.",
-    USER_ALREADY_EXISTS: "I dat gia in conto cun questa adressa. S'annunziai empè.",
-    USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL: "I dat gia in conto cun questa adressa. S'annunziai empè.",
+    EMAIL_NOT_VERIFIED:
+      "Confermai l'emprim vossa adressa d'e-mail — la colliaziun è en voss inbox.",
+    USER_ALREADY_EXISTS:
+      "I dat gia in conto cun questa adressa. S'annunziai empè.",
+    USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL:
+      "I dat gia in conto cun questa adressa. S'annunziai empè.",
     PASSWORD_TOO_SHORT: "Il pled-clav dovra almain 12 caracters.",
     PASSWORD_TOO_LONG: "Il pled-clav po avair maximalmain 128 caracters.",
     INVALID_EMAIL: "Quai na para betg dad esser ina adressa d'e-mail.",
     INVALID_CODE: "Quest code n'è betg correct u è scadì. Empruvai il pli nov.",
-    INVALID_TWO_FACTOR_CODE: "Quest code n'è betg correct u è scadì. Empruvai il pli nov.",
-    SESSION_EXPIRED: "Per segirezza, s'annunziai danovamain avant che midar quai.",
+    INVALID_TWO_FACTOR_CODE:
+      "Quest code n'è betg correct u è scadì. Empruvai il pli nov.",
+    SESSION_EXPIRED:
+      "Per segirezza, s'annunziai danovamain avant che midar quai.",
     INVALID_PASSWORD: "Quest pled-clav n'è betg correct.",
   },
   account: {
@@ -318,25 +393,36 @@ const rm: AuthLabels = {
     noEmail: "nagina — agiuntai in'annunzia cun pled-clav per utilisar e-mail",
     unverified: "anc betg confermà",
     role: "Rolla",
-    roles: { customer: "Emprendist", helper: "Agid", professional: "Persuna spezialisada", staff: "Team", admin: "Administraziun" },
+    roles: {
+      customer: "Emprendist",
+      helper: "Agid",
+      professional: "Persuna spezialisada",
+      staff: "Team",
+      admin: "Administraziun",
+    },
     save: "Memorisar",
     saved: "Memorisà.",
     methods: "Vias d'annunzia",
     methodPassword: "E-mail e pled-clav",
     link: "Agiuntar {method}",
     passkeys: "Passkeys",
-    passkeysLede: "S'annunziar cun l'impronta, la fatscha u il PIN da l'apparat empè d'in pled-clav.",
+    passkeysLede:
+      "S'annunziar cun l'impronta, la fatscha u il PIN da l'apparat empè d'in pled-clav.",
     passkeyDefaultName: "Passkey",
     remove: "Allontanar",
     addPasskey: "Agiuntar ina passkey",
     twoFactor: "Annunzia en dus pass",
-    twoFactorOn: "Activà. L'annunzia dumonda in code da voss app d'autentificaziun.",
-    twoFactorOff: "Deactivà. L'activai per dumandar in code tar mintga annunzia.",
+    twoFactorOn:
+      "Activà. L'annunzia dumonda in code da voss app d'autentificaziun.",
+    twoFactorOff:
+      "Deactivà. L'activai per dumandar in code tar mintga annunzia.",
     currentPassword: "Pled-clav actual",
-    currentPasswordHint: "Necessari sche voss conto ha in pled-clav. Senza, s'annunziai l'emprim danovamain.",
+    currentPasswordHint:
+      "Necessari sche voss conto ha in pled-clav. Senza, s'annunziai l'emprim danovamain.",
     scan: "Agiuntai quest conto a voss app d'autentificaziun ed endatai lura il code mussà.",
     openAuthenticator: "Avrir en l'app d'autentificaziun",
-    backupCodes: "Conservai quests codes da reserva en in lieu segir. Mintgin funcziuna ina giada, sche vus perdais voss telefon.",
+    backupCodes:
+      "Conservai quests codes da reserva en in lieu segir. Mintgin funcziuna ina giada, sche vus perdais voss telefon.",
     turnOn: "Activar",
     turnOff: "Deactivar",
     setUp: "Installar",
@@ -359,11 +445,15 @@ const ru: AuthLabels = {
   orEmail: "или по e-mail",
   email: "E-mail",
   password: "Пароль",
-  passwordHint: "Не меньше 12 символов. Длинную фразу запомнить легче, чем символы.",
+  passwordHint:
+    "Не меньше 12 символов. Длинную фразу запомнить легче, чем символы.",
   displayName: "Отображаемое имя",
-  displayNameHint: "Необязательно. Что угодно — не обязательно ваше настоящее имя.",
-  checkInbox: "Мы отправили ссылку на {email}. Откройте её на этом устройстве. Она действует 10 минут.",
-  confirmInbox: "Мы отправили ссылку на {email}. Откройте её, чтобы подтвердить адрес и завершить создание аккаунта.",
+  displayNameHint:
+    "Необязательно. Что угодно — не обязательно ваше настоящее имя.",
+  checkInbox:
+    "Мы отправили ссылку на {email}. Откройте её на этом устройстве. Она действует 10 минут.",
+  confirmInbox:
+    "Мы отправили ссылку на {email}. Откройте её, чтобы подтвердить адрес и завершить создание аккаунта.",
   back: "Назад",
   totpPrompt: "Введите 6-значный код из приложения-аутентификатора.",
   backupPrompt: "Введите один из резервных кодов, сохранённых при настройке.",
@@ -377,19 +467,26 @@ const ru: AuthLabels = {
   noAccount: "Ещё нет аккаунта?",
   haveAccount: "Уже есть аккаунт?",
   errors: {
-    rateLimited: "Слишком много попыток. Подождите несколько минут и попробуйте снова.",
+    rateLimited:
+      "Слишком много попыток. Подождите несколько минут и попробуйте снова.",
     unavailable: "Аккаунты сейчас недоступны. Попробуйте чуть позже.",
-    generic: "Не получилось. Попробуйте ещё раз или выберите другой способ входа.",
+    generic:
+      "Не получилось. Попробуйте ещё раз или выберите другой способ входа.",
     emailFirst: "Сначала введите адрес e-mail.",
-    INVALID_EMAIL_OR_PASSWORD: "E-mail и пароль не совпадают. Проверьте оба или войдите по ссылке.",
-    EMAIL_NOT_VERIFIED: "Сначала подтвердите адрес e-mail — ссылка в вашем почтовом ящике.",
-    USER_ALREADY_EXISTS: "Аккаунт с этим адресом уже существует. Войдите вместо этого.",
-    USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL: "Аккаунт с этим адресом уже существует. Войдите вместо этого.",
+    INVALID_EMAIL_OR_PASSWORD:
+      "E-mail и пароль не совпадают. Проверьте оба или войдите по ссылке.",
+    EMAIL_NOT_VERIFIED:
+      "Сначала подтвердите адрес e-mail — ссылка в вашем почтовом ящике.",
+    USER_ALREADY_EXISTS:
+      "Аккаунт с этим адресом уже существует. Войдите вместо этого.",
+    USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL:
+      "Аккаунт с этим адресом уже существует. Войдите вместо этого.",
     PASSWORD_TOO_SHORT: "Пароль должен содержать не меньше 12 символов.",
     PASSWORD_TOO_LONG: "Пароль может содержать не больше 128 символов.",
     INVALID_EMAIL: "Это не похоже на адрес e-mail.",
     INVALID_CODE: "Код неверный или устарел. Попробуйте самый новый.",
-    INVALID_TWO_FACTOR_CODE: "Код неверный или устарел. Попробуйте самый новый.",
+    INVALID_TWO_FACTOR_CODE:
+      "Код неверный или устарел. Попробуйте самый новый.",
     SESSION_EXPIRED: "Для безопасности войдите снова, прежде чем это менять.",
     INVALID_PASSWORD: "Пароль неверный.",
   },
@@ -398,25 +495,35 @@ const ru: AuthLabels = {
     noEmail: "нет — добавьте вход по паролю, чтобы использовать e-mail",
     unverified: "ещё не подтверждён",
     role: "Роль",
-    roles: { customer: "Учащийся", helper: "Помощник", professional: "Специалист", staff: "Команда", admin: "Администратор" },
+    roles: {
+      customer: "Учащийся",
+      helper: "Помощник",
+      professional: "Специалист",
+      staff: "Команда",
+      admin: "Администратор",
+    },
     save: "Сохранить",
     saved: "Сохранено.",
     methods: "Способы входа",
     methodPassword: "E-mail и пароль",
     link: "Добавить: {method}",
     passkeys: "Ключи доступа",
-    passkeysLede: "Входите по отпечатку, лицу или PIN-коду устройства вместо пароля.",
+    passkeysLede:
+      "Входите по отпечатку, лицу или PIN-коду устройства вместо пароля.",
     passkeyDefaultName: "Ключ доступа",
     remove: "Удалить",
     addPasskey: "Добавить ключ доступа",
     twoFactor: "Вход в два шага",
     twoFactorOn: "Включён. При входе нужен код из приложения-аутентификатора.",
-    twoFactorOff: "Выключен. Включите, чтобы при каждом входе запрашивался код.",
+    twoFactorOff:
+      "Выключен. Включите, чтобы при каждом входе запрашивался код.",
     currentPassword: "Текущий пароль",
-    currentPasswordHint: "Нужен, если у аккаунта есть пароль. Без пароля сначала войдите заново.",
+    currentPasswordHint:
+      "Нужен, если у аккаунта есть пароль. Без пароля сначала войдите заново.",
     scan: "Добавьте этот аккаунт в приложение-аутентификатор и введите показанный код.",
     openAuthenticator: "Открыть в приложении-аутентификаторе",
-    backupCodes: "Храните эти резервные коды в надёжном месте. Каждый сработает один раз, если вы потеряете телефон.",
+    backupCodes:
+      "Храните эти резервные коды в надёжном месте. Каждый сработает один раз, если вы потеряете телефон.",
     turnOn: "Включить",
     turnOff: "Выключить",
     setUp: "Настроить",
