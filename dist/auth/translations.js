@@ -7,7 +7,8 @@ import { DEFAULT_AUTH_LABELS } from "./labels.js";
  *
  * German is written the Swiss way (ss, never ß). Romansh (Rumantsch Grischun)
  * still wants a native reader's pass. A product whose roles have other names
- * overrides `account.roles` and nothing else.
+ * overrides `account.roles` and nothing else (Heidi calls its customers
+ * learners). The role names here are the package's generic ones.
  */
 const de = {
     signIn: "Anmelden",
@@ -60,8 +61,8 @@ const de = {
         unverified: "noch nicht bestätigt",
         role: "Rolle",
         roles: {
-            customer: "Lernende",
-            helper: "Helfende",
+            customer: "Kundin oder Kunde",
+            helper: "Helferin oder Helfer",
             professional: "Fachperson",
             staff: "Team",
             admin: "Administration",
@@ -145,7 +146,7 @@ const fr = {
         unverified: "pas encore confirmé",
         role: "Rôle",
         roles: {
-            customer: "Apprenant·e",
+            customer: "Client·e",
             helper: "Aide",
             professional: "Professionnel·le",
             staff: "Équipe",
@@ -230,7 +231,7 @@ const it = {
         unverified: "non ancora confermato",
         role: "Ruolo",
         roles: {
-            customer: "Chi impara",
+            customer: "Cliente",
             helper: "Aiuto",
             professional: "Professionista",
             staff: "Team",
@@ -315,7 +316,7 @@ const rm = {
         unverified: "anc betg confermà",
         role: "Rolla",
         roles: {
-            customer: "Emprendist",
+            customer: "Cliant",
             helper: "Agid",
             professional: "Persuna spezialisada",
             staff: "Team",
@@ -400,7 +401,7 @@ const ru = {
         unverified: "ещё не подтверждён",
         role: "Роль",
         roles: {
-            customer: "Учащийся",
+            customer: "Клиент",
             helper: "Помощник",
             professional: "Специалист",
             staff: "Команда",
