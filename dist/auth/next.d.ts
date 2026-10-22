@@ -39,6 +39,7 @@ export declare function createAuthRuntime(options: AuthRuntimeOptions): {
     getAuth: () => Auth;
     authStatus: (env?: NodeJS.ProcessEnv) => AuthStatus;
     getSession: () => Promise<AuthSession | null>;
+    sessionFor: (requestHeaders: Headers) => Promise<AuthSession | null>;
     requireUser: (request: Request) => Promise<{
         user: SessionUser;
         response?: never;

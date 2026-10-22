@@ -54,14 +54,38 @@ export function createAuthRuntime(options) {
         actorIds.set(user.id, id);
         return id;
     }
+    /**
+     * The session behind these request headers, with the `actorId` the
+     * product's rows use — or null. The one reader both `getSession` and
+     * `requireUser` go through, so the two cannot disagree about who somebody
+     * is.
+     *
+     * `actorId` is computed HERE and not left to the caller: `getSession` used
+     * to return better-auth's raw session, whose user has no `actorId`, while
+     * `requireUser` attached one. A product reading `session.user.actorId` in
+     * a server component got `undefined` for every signed-in person and drew
+     * the signed-out page, while its API routes, going through `requireUser`,
+     * worked — which is how the fault stayed invisible.
+     */
+    async function sessionFor(requestHeaders) {
+        if (!authStatus().ready)
+            return null;
+        const session = (await getAuth().api.getSession({
+            headers: requestHeaders,
+        }));
+        if (!session)
+            return null;
+        return {
+            ...session,
+            user: { ...session.user, actorId: await actorIdOf(session.user) },
+        };
+    }
     /** Who is signed in, for a server component. Null also when accounts are unavailable. */
     async function getSession() {
         if (!authStatus().ready)
             return null;
         try {
-            return (await getAuth().api.getSession({
-                headers: await headers(),
-            }));
+            return await sessionFor(await headers());
         }
         catch (error) {
             console.error(`[auth] session read failed: ${error.name}`);
@@ -75,17 +99,13 @@ export function createAuthRuntime(options) {
                 response: Response.json({ error: "accounts_unavailable" }, { status: 503, headers: noStore }),
             };
         }
-        const session = await getAuth()
-            .api.getSession({ headers: request.headers })
-            .catch(() => null);
+        const session = await sessionFor(request.headers).catch(() => null);
         if (!session) {
             return {
                 response: Response.json({ error: "sign_in_required" }, { status: 401, headers: noStore }),
             };
         }
-        return {
-            user: { ...session.user, actorId: await actorIdOf(session.user) },
-        };
+        return { user: session.user };
     }
     async function guard(request) {
         const status = authStatus();
@@ -98,6 +118,7 @@ export function createAuthRuntime(options) {
         getAuth,
         authStatus,
         getSession,
+        sessionFor,
         requireUser,
         GET: async (request) => (await guard(request)) ?? toNextJsHandler(getAuth()).GET(request),
         POST: async (request) => (await guard(request)) ?? toNextJsHandler(getAuth()).POST(request),

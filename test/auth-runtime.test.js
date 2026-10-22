@@ -94,3 +94,14 @@ test("linking OrangeCat later never moves an id that already has data", async ()
   });
   assert.equal((await who(cookie)).user.actorId, user.id);
 });
+
+test("a server component's session carries the same actorId as an API route's", async () => {
+  // The two readers used to disagree: `getSession` returned better-auth's raw
+  // session (no `actorId`) while `requireUser` attached one, so every server
+  // component read `undefined` and drew the signed-out page.
+  const { cookie, user } = await signUp();
+  const session = await runtime.sessionFor(new Headers({ cookie }));
+  assert.equal(session.user.actorId, user.id);
+  assert.equal(session.user.actorId, (await who(cookie)).user.actorId);
+  assert.equal(await runtime.sessionFor(new Headers()), null);
+});
