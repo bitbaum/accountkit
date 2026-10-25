@@ -9,7 +9,7 @@ It knows nothing about how you sign in. NextAuth, Supabase, better-auth: you pas
 ## Install
 
 ```sh
-pnpm add github:bitbaum/accountkit#v0.6.1
+pnpm add github:bitbaum/accountkit#v0.6.2
 ```
 
 `dist/` is committed, so the `github:` install needs no build step and no `allowBuilds` entry.
@@ -189,3 +189,10 @@ import { SignInError } from "@bitbaum/accountkit";
 **Try again restarts sign-in** (a server action calling `signIn("orangecat", …)`, or a GET route that does). It never goes home, and it never prints the provider's error code. No hooks: renders in a server component.
 
 MIT.
+
+### Request-dependent sessions
+
+`getSession()` is a server-component request API. It reads Next headers before
+checking deployment readiness and lets framework rendering signals propagate.
+A build without account secrets must not cache a signed-out page or redirect for
+all future sessions. Calls outside a request are errors, not signed-out users.

@@ -119,9 +119,13 @@ export function createAuthRuntime(options: AuthRuntimeOptions) {
 
   /** Who is signed in, for a server component. Null also when accounts are unavailable. */
   async function getSession(): Promise<AuthSession | null> {
+    // Always cross the request boundary, even when a build has no database or
+    // secret. Otherwise Next can pre-render an anonymous redirect permanently.
+    // Keep this outside the catch: framework dynamic-render signals must escape.
+    const requestHeaders = await headers();
     if (!authStatus().ready) return null;
     try {
-      return await sessionFor(await headers());
+      return await sessionFor(requestHeaders);
     } catch (error) {
       console.error(`[auth] session read failed: ${(error as Error).name}`);
       return null;
