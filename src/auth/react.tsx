@@ -8,6 +8,7 @@ import {
   type ReactNode,
 } from "react";
 import type { SignInMethods } from "./methods.js";
+import { PasswordRecoveryForm } from "./recovery.js";
 import {
   DEFAULT_AUTH_LABELS,
   authErrorText,
@@ -27,6 +28,8 @@ type Result<T = unknown> = Promise<{ data?: T | null; error?: AuthError }>;
 
 /** What these screens call on the product's better-auth client. */
 export interface AuthClientLike {
+  requestPasswordReset?(input: { email: string; redirectTo: string }): Result;
+  resetPassword?(input: { newPassword: string; token: string }): Result;
   signIn: {
     email(input: {
       email: string;
@@ -231,6 +234,26 @@ export function SignInForm({
     initialError ? labels.errors.generic : null,
   );
   const [unverified, setUnverified] = useState(false);
+  const [recovery, setRecovery] = useState<{
+    token?: string;
+    invalid?: boolean;
+  } | null>(null);
+  useEffect(() => {
+    const query = new URLSearchParams(window.location.search);
+    const token = query.get("token");
+    if (token || query.get("error") === "INVALID_TOKEN") {
+      setRecovery({ token: token || undefined, invalid: !token });
+      // Keep bearer reset credentials out of the address bar, referrers and history.
+      const url = new URL(window.location.href);
+      url.searchParams.delete("token");
+      url.searchParams.delete("error");
+      window.history.replaceState(
+        null,
+        "",
+        url.pathname + url.search + url.hash,
+      );
+    }
+  }, []);
 
   const fail = (e: AuthError) => {
     setError(authErrorText(labels, e));
@@ -305,6 +328,28 @@ export function SignInForm({
     setUnverified(false);
     setStep("linkSent");
     setBusy(false);
+  }
+
+  if (recovery) {
+    return (
+      <PasswordRecoveryForm
+        client={client}
+        methods={methods}
+        labels={labels}
+        classes={classes}
+        signInPath={signInPath}
+        next={next}
+        initialEmail={email}
+        token={recovery.token}
+        invalidToken={recovery.invalid}
+        onBack={() => {
+          setRecovery(null);
+          setError(null);
+          setPassword("");
+          setStep("start");
+        }}
+      />
+    );
   }
 
   if (step === "linkSent") {
@@ -442,6 +487,18 @@ export function SignInForm({
             {labels.withLink}
           </button>
         )}
+        {methods.passwordReset &&
+          client.requestPasswordReset &&
+          client.resetPassword && (
+            <button
+              type="button"
+              className={c.buttonQuiet}
+              disabled={busy}
+              onClick={() => setRecovery({})}
+            >
+              {(labels.recovery ?? DEFAULT_AUTH_LABELS.recovery)!.forgot}
+            </button>
+          )}
       </form>
       <p className={c.hint}>
         {labels.noAccount} {signUpLink}
@@ -449,6 +506,8 @@ export function SignInForm({
     </div>
   );
 }
+
+export { PasswordRecoveryForm } from "./recovery.js";
 
 /**
  * A new account in one step. No real name is asked for — a display name is

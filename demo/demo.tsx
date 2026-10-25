@@ -1,6 +1,41 @@
 // The visual check: three menus as an app would mount them.
 import { createRoot } from "react-dom/client";
 import { AccountMenu, SignInError } from "../src/index.js";
+import { SignInForm, type AuthClientLike } from "../src/auth/react.js";
+
+const recoveryClient = {
+  requestPasswordReset: async (input: {
+    email: string;
+    redirectTo: string;
+  }) => {
+    document.body.dataset.recoveryRequest = JSON.stringify(input);
+    return {};
+  },
+  resetPassword: async (input: { token: string; newPassword: string }) => {
+    document.body.dataset.recoveryReset = JSON.stringify(input);
+    return {};
+  },
+} as AuthClientLike;
+
+mount(
+  "auth-recovery",
+  <SignInForm
+    client={recoveryClient}
+    methods={{
+      password: true,
+      passkey: false,
+      twoFactor: false,
+      magicLink: false,
+      verifyEmail: true,
+      signin: false,
+      orangecat: false,
+      passwordReset: true,
+    }}
+    signInPath="/demo/index.html"
+    next="/account"
+    signUpLink={<a href="#signup">Create an account</a>}
+  />,
+);
 
 const groups = [
   {

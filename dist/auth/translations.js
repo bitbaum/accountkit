@@ -11,6 +11,17 @@ import { DEFAULT_AUTH_LABELS } from "./labels.js";
  * learners). The role names here are the package's generic ones.
  */
 const de = {
+    recovery: {
+        forgot: "Passwort vergessen?",
+        send: "Link zum Zurücksetzen schicken",
+        sent: "Falls ein Konto mit dieser Adresse wiederhergestellt werden kann, kommt bald ein Link. Prüfen Sie auch den Spamordner.",
+        reset: "Passwort zurücksetzen",
+        newPassword: "Neues Passwort",
+        confirmPassword: "Neues Passwort wiederholen",
+        mismatch: "Die Passwörter stimmen nicht überein. Geben Sie in beiden Feldern dasselbe Passwort ein.",
+        invalidToken: "Dieser Link ist ungültig oder abgelaufen. Fordern Sie einen neuen an.",
+        success: "Ihr Passwort wurde geändert. Melden Sie sich mit dem neuen Passwort an.",
+    },
     signIn: "Anmelden",
     createAccount: "Konto erstellen",
     withSignin: "Weiter mit Google, Apple, GitHub, X oder Facebook",
@@ -96,6 +107,17 @@ const de = {
     },
 };
 const fr = {
+    recovery: {
+        forgot: "Mot de passe oublié ?",
+        send: "Envoyer un lien de réinitialisation",
+        sent: "Si un compte peut être récupéré à cette adresse, un lien arrivera bientôt. Vérifiez aussi les courriers indésirables.",
+        reset: "Réinitialiser le mot de passe",
+        newPassword: "Nouveau mot de passe",
+        confirmPassword: "Répéter le nouveau mot de passe",
+        mismatch: "Les mots de passe ne correspondent pas. Saisissez le même dans les deux champs.",
+        invalidToken: "Ce lien est invalide ou a expiré. Demandez un nouveau lien.",
+        success: "Votre mot de passe a été modifié. Connectez-vous avec le nouveau mot de passe.",
+    },
     signIn: "Se connecter",
     createAccount: "Créer un compte",
     withSignin: "Continuer avec Google, Apple, GitHub, X ou Facebook",
@@ -181,6 +203,17 @@ const fr = {
     },
 };
 const it = {
+    recovery: {
+        forgot: "Password dimenticata?",
+        send: "Invia un link per reimpostarla",
+        sent: "Se un account può essere recuperato a questo indirizzo, riceverai presto un link. Controlla anche la posta indesiderata.",
+        reset: "Reimposta password",
+        newPassword: "Nuova password",
+        confirmPassword: "Ripeti la nuova password",
+        mismatch: "Le password non coincidono. Inserisci la stessa password in entrambi i campi.",
+        invalidToken: "Questo link non è valido o è scaduto. Richiedine uno nuovo.",
+        success: "La password è stata cambiata. Accedi con la nuova password.",
+    },
     signIn: "Accedi",
     createAccount: "Crea un account",
     withSignin: "Continua con Google, Apple, GitHub, X o Facebook",
@@ -266,6 +299,17 @@ const it = {
     },
 };
 const rm = {
+    recovery: {
+        forgot: "Emblidà il pled-clav?",
+        send: "Trametter in link per redefinir",
+        sent: "Sche in conto po vegnir restabilì cun questa adressa, arriva prest in link. Controllai era il dossier da spam.",
+        reset: "Redefinir il pled-clav",
+        newPassword: "Nov pled-clav",
+        confirmPassword: "Repeter il nov pled-clav",
+        mismatch: "Ils pleds-clav na correspundan betg. Endatai il medem en omadus champs.",
+        invalidToken: "Quest link n’è betg valaivel u è scadì. Dumandai in nov link.",
+        success: "Voss pled-clav è vegnì midà. S’annunziai cun il nov pled-clav.",
+    },
     signIn: "S'annunziar",
     createAccount: "Crear in conto",
     withSignin: "Cuntinuar cun Google, Apple, GitHub, X u Facebook",
@@ -351,6 +395,17 @@ const rm = {
     },
 };
 const ru = {
+    recovery: {
+        forgot: "Забыли пароль?",
+        send: "Отправить ссылку для сброса",
+        sent: "Если учётную запись можно восстановить по этому адресу, ссылка скоро придёт. Проверьте также папку «Спам».",
+        reset: "Сбросить пароль",
+        newPassword: "Новый пароль",
+        confirmPassword: "Повторите новый пароль",
+        mismatch: "Пароли не совпадают. Введите одинаковый пароль в обоих полях.",
+        invalidToken: "Эта ссылка недействительна или срок её действия истёк. Запросите новую.",
+        success: "Пароль изменён. Войдите с новым паролем.",
+    },
     signIn: "Войти",
     createAccount: "Создать аккаунт",
     withSignin: "Продолжить с Google, Apple, GitHub, X или Facebook",
