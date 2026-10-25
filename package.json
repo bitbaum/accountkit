@@ -1,6 +1,6 @@
 {
   "name": "@bitbaum/accountkit",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "One account for every bitbaum product: the account menu, accounts themselves (better-auth: password, magic link, passkeys, 2FA, OIDC) and Sign in with OrangeCat. Styled from @bitbaum/design-tokens.",
   "license": "MIT",
   "author": "Cato",
@@ -72,6 +72,10 @@
     "./auth/react": {
       "types": "./dist/auth/react.d.ts",
       "default": "./dist/auth/react.js"
+    },
+    "./auth/mail": {
+      "types": "./dist/auth/mail.d.ts",
+      "default": "./dist/auth/mail.js"
     }
   },
   "peerDependencies": {
@@ -79,7 +83,8 @@
     "better-auth": "^1.7.7",
     "drizzle-orm": "^0.45.4",
     "next": "^16.4.0",
-    "react": ">=18"
+    "react": ">=18",
+    "@bitbaum/mail-kit": "^0.2.0"
   },
   "scripts": {
     "build": "rm -rf dist && tsc -p tsconfig.json",
@@ -97,6 +102,7 @@
     "@auth/core": "0.41.3",
     "@better-auth/passkey": "^1.7.7",
     "@bitbaum/design-tokens": "^1.1.0",
+    "@bitbaum/mail-kit": "0.2.0",
     "@electric-sql/pglite": "^0.5.10",
     "@eslint/js": "^10.0.1",
     "@types/node": "^26.4.0",
@@ -129,6 +135,9 @@
       "optional": true
     },
     "next": {
+      "optional": true
+    },
+    "@bitbaum/mail-kit": {
       "optional": true
     }
   },

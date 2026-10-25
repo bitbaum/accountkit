@@ -9,7 +9,7 @@ It knows nothing about how you sign in. NextAuth, Supabase, better-auth: you pas
 ## Install
 
 ```sh
-pnpm add github:bitbaum/accountkit#v0.6.0
+pnpm add github:bitbaum/accountkit#v0.6.1
 ```
 
 `dist/` is committed, so the `github:` install needs no build step and no `allowBuilds` entry.
@@ -23,6 +23,19 @@ That page must remain reachable when signed out and must render `SignInForm`
 when the reset callback carries `token` or `error=INVALID_TOKEN`. The form removes
 the token from browser history after reading it. Products with a separate reset
 route can render `PasswordRecoveryForm` from `@bitbaum/accountkit/auth/react`.
+
+The standard mail adapter is `createAuthMailer` from `@bitbaum/accountkit/auth/mail`:
+
+```ts
+import { createAuthMailer } from "@bitbaum/accountkit/auth/mail";
+const mail = createAuthMailer({ site: { title: "Example", url: "https://example.ch" } });
+```
+
+Install its optional peer `@bitbaum/mail-kit`. The adapter reads deployment
+configuration lazily, uses the fleet sender and the product's reply address,
+and supports subject overrides. It rejects malformed or foreign-origin links
+and never logs a token, address or credential. Configuration still needs a real
+Resend key and working sender; this adapter does not claim delivery readiness.
 
 The sender must actually deliver account mail: `createAuthRuntime({ mail })`
 calls `mail.send("reset", to, url)`. A deployment with `mail.configured=false`
