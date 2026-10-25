@@ -2,10 +2,11 @@ import { passkey } from "@better-auth/passkey";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
-import { genericOAuth, magicLink, twoFactor } from "better-auth/plugins";
+import { genericOAuth, magicLink } from "better-auth/plugins";
 import { oidcClients, placeholderEmail, signInMethods, } from "./methods.js";
 import { DEFAULT_ROLE } from "./roles.js";
 import { authSchema } from "./schema.js";
+import { factorForAllMethods } from "./factor.js";
 /**
  * Accounts for a bitbaum product: better-auth 1.x on Drizzle + pg, configured
  * the same way everywhere (fleet STACK.md, "Identity"). A product passes in
@@ -202,7 +203,7 @@ export function createAuthInstance(options) {
         plugins: [
             // allowPasswordless: someone who signs in only by passkey, link or OIDC can
             // still add a second factor (with a fresh session instead of a password).
-            twoFactor({ issuer: site.title, allowPasswordless: true }),
+            factorForAllMethods(site),
             passkey({
                 rpID: origin.hostname,
                 rpName: site.title,

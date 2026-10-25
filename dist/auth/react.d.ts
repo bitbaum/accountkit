@@ -36,6 +36,7 @@ export interface AuthClientLike {
             email: string;
             name?: string;
             callbackURL?: string;
+            errorCallbackURL?: string;
         }): Result;
         passkey(): Promise<{
             error?: AuthError;
@@ -146,9 +147,11 @@ export { PasswordRecoveryForm } from "./recovery.js";
  * optional and may be anything. A passkey is added from the account page once
  * the account exists.
  */
-export declare function SignUpForm({ client, methods, labels, classes, next, signUpPath, signInLink, }: Common & {
+export declare function SignUpForm({ client, methods, labels, classes, next, signUpPath, signInPath, signInLink, }: Common & {
     next: string;
     signUpPath: string;
+    /** Where an existing account completes a second factor after passwordless signup. */
+    signInPath?: string;
     /** The link to the sign-in page, rendered by the product's router. */
     signInLink: ReactNode;
 }): import("react").JSX.Element;

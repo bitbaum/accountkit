@@ -45,6 +45,7 @@ export interface AuthClientLike {
       email: string;
       name?: string;
       callbackURL?: string;
+      errorCallbackURL?: string;
     }): Result;
     passkey(): Promise<{ error?: AuthError } | undefined | null>;
   };
@@ -241,7 +242,11 @@ export function SignInForm({
   useEffect(() => {
     const query = new URLSearchParams(window.location.search);
     const token = query.get("token");
-    if (token || query.get("error") === "INVALID_TOKEN") {
+    const linkError =
+      query.get("method") === "magic-link" && query.has("error");
+    if (linkError) setError(labels.errors.SESSION_EXPIRED);
+    if (!token && query.get("twoFactor") === "1") setStep("twoFactor");
+    if (token || (!linkError && query.get("error") === "INVALID_TOKEN")) {
       setRecovery({ token: token || undefined, invalid: !token });
       // Keep bearer reset credentials out of the address bar, referrers and history.
       const url = new URL(window.location.href);
@@ -253,7 +258,7 @@ export function SignInForm({
         url.pathname + url.search + url.hash,
       );
     }
-  }, []);
+  }, [labels]);
 
   const fail = (e: AuthError) => {
     setError(authErrorText(labels, e));
@@ -304,6 +309,7 @@ export function SignInForm({
     const { error: e } = await client.signIn.magicLink({
       email,
       callbackURL: next,
+      errorCallbackURL: `${signInPath}?method=magic-link&next=${encodeURIComponent(next)}`,
     });
     if (e) return fail(e);
     setStep("linkSent");
@@ -315,6 +321,18 @@ export function SignInForm({
     setError(null);
     const result = await client.signIn.passkey();
     if (result?.error) return fail(result.error);
+    if (
+      result &&
+      "data" in result &&
+      result.data &&
+      typeof result.data === "object" &&
+      "twoFactorRedirect" in result.data &&
+      result.data.twoFactorRedirect
+    ) {
+      setStep("twoFactor");
+      setBusy(false);
+      return;
+    }
     done();
   }
 
@@ -420,7 +438,7 @@ export function SignInForm({
         labels={labels}
         classes={classes}
         callbackURL={next}
-        errorCallbackURL={`${signInPath}?error=oidc`}
+        errorCallbackURL={`${signInPath}?error=oidc&next=${encodeURIComponent(next)}`}
         onError={fail}
       />
       {methods.passkey && (
@@ -521,10 +539,15 @@ export function SignUpForm({
   classes,
   next,
   signUpPath,
+  signInPath = signUpPath.endsWith("/sign-up")
+    ? signUpPath.replace(/sign-up$/, "sign-in")
+    : "/sign-in",
   signInLink,
 }: Common & {
   next: string;
   signUpPath: string;
+  /** Where an existing account completes a second factor after passwordless signup. */
+  signInPath?: string;
   /** The link to the sign-in page, rendered by the product's router. */
   signInLink: ReactNode;
 }) {
@@ -568,6 +591,7 @@ export function SignUpForm({
       email,
       name: name.trim(),
       callbackURL: next,
+      errorCallbackURL: `${signInPath}?method=magic-link&next=${encodeURIComponent(next)}`,
     });
     if (e) return fail(e);
     setSent("link");
@@ -592,7 +616,7 @@ export function SignUpForm({
         labels={labels}
         classes={classes}
         callbackURL={next}
-        errorCallbackURL={`${signUpPath}?error=oidc`}
+        errorCallbackURL={`${signInPath}?error=oidc&next=${encodeURIComponent(next)}`}
         onError={fail}
       />
       <Divider label={labels.orEmail} className={c.divider} />

@@ -196,3 +196,9 @@ MIT.
 checking deployment readiness and lets framework rendering signals propagate.
 A build without account secrets must not cache a signed-out page or redirect for
 all future sessions. Calls outside a request are errors, not signed-out users.
+
+### Second-factor policy
+
+An enabled second factor applies to password, email-link, passkey and OIDC sign-in. The server reuses BetterAuth's native signed challenge, trusted-device validation, attempt limits and expiry. A primary credential alone does not leave an authenticated session while the challenge is pending.
+
+Shared forms complete both JSON `twoFactorRedirect` responses and app-local `?twoFactor=1` redirects. Custom clients must handle those states and supply their local sign-in screen as `errorCallbackURL` for email/OIDC callbacks. `SignUpForm` accepts an optional `signInPath` for nonstandard route names; standard `/sign-up` routes infer the sibling `/sign-in`. Challenge URLs contain no bearer credential.
