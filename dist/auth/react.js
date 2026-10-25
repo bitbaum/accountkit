@@ -75,7 +75,12 @@ export function SignInForm({ client, methods, labels = DEFAULT_AUTH_LABELS, clas
     useEffect(() => {
         const query = new URLSearchParams(window.location.search);
         const token = query.get("token");
-        if (token || query.get("error") === "INVALID_TOKEN") {
+        const linkError = query.get("method") === "magic-link" && query.has("error");
+        if (linkError)
+            setError(labels.errors.SESSION_EXPIRED);
+        if (!token && query.get("twoFactor") === "1")
+            setStep("twoFactor");
+        if (token || (!linkError && query.get("error") === "INVALID_TOKEN")) {
             setRecovery({ token: token || undefined, invalid: !token });
             // Keep bearer reset credentials out of the address bar, referrers and history.
             const url = new URL(window.location.href);
@@ -83,7 +88,7 @@ export function SignInForm({ client, methods, labels = DEFAULT_AUTH_LABELS, clas
             url.searchParams.delete("error");
             window.history.replaceState(null, "", url.pathname + url.search + url.hash);
         }
-    }, []);
+    }, [labels]);
     const fail = (e) => {
         setError(authErrorText(labels, e));
         setUnverified(e?.code === "EMAIL_NOT_VERIFIED");
@@ -131,6 +136,7 @@ export function SignInForm({ client, methods, labels = DEFAULT_AUTH_LABELS, clas
         const { error: e } = await client.signIn.magicLink({
             email,
             callbackURL: next,
+            errorCallbackURL: `${signInPath}?method=magic-link&next=${encodeURIComponent(next)}`,
         });
         if (e)
             return fail(e);
@@ -143,6 +149,16 @@ export function SignInForm({ client, methods, labels = DEFAULT_AUTH_LABELS, clas
         const result = await client.signIn.passkey();
         if (result?.error)
             return fail(result.error);
+        if (result &&
+            "data" in result &&
+            result.data &&
+            typeof result.data === "object" &&
+            "twoFactorRedirect" in result.data &&
+            result.data.twoFactorRedirect) {
+            setStep("twoFactor");
+            setBusy(false);
+            return;
+        }
         done();
     }
     async function resendVerification() {
@@ -171,7 +187,7 @@ export function SignInForm({ client, methods, labels = DEFAULT_AUTH_LABELS, clas
     if (step === "twoFactor") {
         return (_jsxs("form", { onSubmit: withSecondFactor, className: c.stack, children: [_jsx("p", { className: c.hint, children: useBackup ? labels.backupPrompt : labels.totpPrompt }), _jsxs("div", { className: c.field, children: [_jsx("label", { htmlFor: "acct-code", className: c.label, children: useBackup ? labels.backupCode : labels.totpCode }), _jsx("input", { id: "acct-code", className: c.input, inputMode: useBackup ? "text" : "numeric", autoComplete: "one-time-code", value: code, onChange: (e) => setCode(e.target.value), required: true })] }), _jsxs("label", { className: c.check, children: [_jsx("input", { type: "checkbox", checked: trustDevice, onChange: (e) => setTrustDevice(e.target.checked) }), labels.trustDevice] }), _jsx(ErrorLine, { message: error, className: c.error }), _jsx("button", { type: "submit", className: c.button, disabled: busy, children: labels.verify }), _jsx("button", { type: "button", className: c.buttonQuiet, onClick: () => setUseBackup(!useBackup), children: useBackup ? labels.useTotp : labels.useBackup })] }));
     }
-    return (_jsxs("div", { className: c.stack, children: [_jsx(OidcButtons, { client: client, methods: methods, labels: labels, classes: classes, callbackURL: next, errorCallbackURL: `${signInPath}?error=oidc`, onError: fail }), methods.passkey && (_jsx("button", { type: "button", className: c.buttonQuiet, onClick: withPasskey, disabled: busy, children: labels.withPasskey })), _jsx(Divider, { label: labels.orEmail, className: c.divider }), _jsxs("form", { onSubmit: withPassword, className: c.stack, children: [_jsxs("div", { className: c.field, children: [_jsx("label", { htmlFor: "acct-email", className: c.label, children: labels.email }), _jsx("input", { id: "acct-email", type: "email", className: c.input, autoComplete: "username webauthn", value: email, onChange: (e) => setEmail(e.target.value), required: true })] }), _jsxs("div", { className: c.field, children: [_jsx("label", { htmlFor: "acct-password", className: c.label, children: labels.password }), _jsx("input", { id: "acct-password", type: "password", className: c.input, autoComplete: "current-password", value: password, onChange: (e) => setPassword(e.target.value), required: true })] }), _jsx(ErrorLine, { message: error, className: c.error }), unverified && methods.verifyEmail && (_jsx("button", { type: "button", className: c.buttonQuiet, onClick: resendVerification, disabled: busy, children: labels.resendVerification })), _jsx("button", { type: "submit", className: c.button, disabled: busy, children: labels.signIn }), methods.magicLink && (_jsx("button", { type: "button", className: c.buttonQuiet, onClick: withLink, disabled: busy, children: labels.withLink })), methods.passwordReset &&
+    return (_jsxs("div", { className: c.stack, children: [_jsx(OidcButtons, { client: client, methods: methods, labels: labels, classes: classes, callbackURL: next, errorCallbackURL: `${signInPath}?error=oidc&next=${encodeURIComponent(next)}`, onError: fail }), methods.passkey && (_jsx("button", { type: "button", className: c.buttonQuiet, onClick: withPasskey, disabled: busy, children: labels.withPasskey })), _jsx(Divider, { label: labels.orEmail, className: c.divider }), _jsxs("form", { onSubmit: withPassword, className: c.stack, children: [_jsxs("div", { className: c.field, children: [_jsx("label", { htmlFor: "acct-email", className: c.label, children: labels.email }), _jsx("input", { id: "acct-email", type: "email", className: c.input, autoComplete: "username webauthn", value: email, onChange: (e) => setEmail(e.target.value), required: true })] }), _jsxs("div", { className: c.field, children: [_jsx("label", { htmlFor: "acct-password", className: c.label, children: labels.password }), _jsx("input", { id: "acct-password", type: "password", className: c.input, autoComplete: "current-password", value: password, onChange: (e) => setPassword(e.target.value), required: true })] }), _jsx(ErrorLine, { message: error, className: c.error }), unverified && methods.verifyEmail && (_jsx("button", { type: "button", className: c.buttonQuiet, onClick: resendVerification, disabled: busy, children: labels.resendVerification })), _jsx("button", { type: "submit", className: c.button, disabled: busy, children: labels.signIn }), methods.magicLink && (_jsx("button", { type: "button", className: c.buttonQuiet, onClick: withLink, disabled: busy, children: labels.withLink })), methods.passwordReset &&
                         client.requestPasswordReset &&
                         client.resetPassword && (_jsx("button", { type: "button", className: c.buttonQuiet, disabled: busy, onClick: () => setRecovery({}), children: (labels.recovery ?? DEFAULT_AUTH_LABELS.recovery).forgot }))] }), _jsxs("p", { className: c.hint, children: [labels.noAccount, " ", signUpLink] })] }));
 }
@@ -181,7 +197,9 @@ export { PasswordRecoveryForm } from "./recovery.js";
  * optional and may be anything. A passkey is added from the account page once
  * the account exists.
  */
-export function SignUpForm({ client, methods, labels = DEFAULT_AUTH_LABELS, classes, next, signUpPath, signInLink, }) {
+export function SignUpForm({ client, methods, labels = DEFAULT_AUTH_LABELS, classes, next, signUpPath, signInPath = signUpPath.endsWith("/sign-up")
+    ? signUpPath.replace(/sign-up$/, "sign-in")
+    : "/sign-in", signInLink, }) {
     const c = merge(classes);
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
@@ -221,6 +239,7 @@ export function SignUpForm({ client, methods, labels = DEFAULT_AUTH_LABELS, clas
             email,
             name: name.trim(),
             callbackURL: next,
+            errorCallbackURL: `${signInPath}?method=magic-link&next=${encodeURIComponent(next)}`,
         });
         if (e)
             return fail(e);
@@ -232,7 +251,7 @@ export function SignUpForm({ client, methods, labels = DEFAULT_AUTH_LABELS, clas
                 email,
             }) }));
     }
-    return (_jsxs("div", { className: c.stack, children: [_jsx(OidcButtons, { client: client, methods: methods, labels: labels, classes: classes, callbackURL: next, errorCallbackURL: `${signUpPath}?error=oidc`, onError: fail }), _jsx(Divider, { label: labels.orEmail, className: c.divider }), _jsxs("form", { onSubmit: submit, className: c.stack, children: [_jsxs("div", { className: c.field, children: [_jsx("label", { htmlFor: "acct-name", className: c.label, children: labels.displayName }), _jsx("input", { id: "acct-name", className: c.input, autoComplete: "nickname", maxLength: 80, value: name, onChange: (e) => setName(e.target.value), "aria-describedby": "acct-name-hint" }), _jsx("p", { id: "acct-name-hint", className: c.hint, children: labels.displayNameHint })] }), _jsxs("div", { className: c.field, children: [_jsx("label", { htmlFor: "acct-email", className: c.label, children: labels.email }), _jsx("input", { id: "acct-email", type: "email", className: c.input, autoComplete: "email", value: email, onChange: (e) => setEmail(e.target.value), required: true })] }), _jsxs("div", { className: c.field, children: [_jsx("label", { htmlFor: "acct-password", className: c.label, children: labels.password }), _jsx("input", { id: "acct-password", type: "password", className: c.input, autoComplete: "new-password", minLength: 12, maxLength: 128, value: password, onChange: (e) => setPassword(e.target.value), "aria-describedby": "acct-password-hint", required: true }), _jsx("p", { id: "acct-password-hint", className: c.hint, children: labels.passwordHint })] }), _jsx(ErrorLine, { message: error, className: c.error }), _jsx("button", { type: "submit", className: c.button, disabled: busy, children: labels.createAccount }), methods.magicLink && (_jsx("button", { type: "button", className: c.buttonQuiet, onClick: withLink, disabled: busy, children: labels.signUpWithLink }))] }), _jsxs("p", { className: c.hint, children: [labels.haveAccount, " ", signInLink] })] }));
+    return (_jsxs("div", { className: c.stack, children: [_jsx(OidcButtons, { client: client, methods: methods, labels: labels, classes: classes, callbackURL: next, errorCallbackURL: `${signInPath}?error=oidc&next=${encodeURIComponent(next)}`, onError: fail }), _jsx(Divider, { label: labels.orEmail, className: c.divider }), _jsxs("form", { onSubmit: submit, className: c.stack, children: [_jsxs("div", { className: c.field, children: [_jsx("label", { htmlFor: "acct-name", className: c.label, children: labels.displayName }), _jsx("input", { id: "acct-name", className: c.input, autoComplete: "nickname", maxLength: 80, value: name, onChange: (e) => setName(e.target.value), "aria-describedby": "acct-name-hint" }), _jsx("p", { id: "acct-name-hint", className: c.hint, children: labels.displayNameHint })] }), _jsxs("div", { className: c.field, children: [_jsx("label", { htmlFor: "acct-email", className: c.label, children: labels.email }), _jsx("input", { id: "acct-email", type: "email", className: c.input, autoComplete: "email", value: email, onChange: (e) => setEmail(e.target.value), required: true })] }), _jsxs("div", { className: c.field, children: [_jsx("label", { htmlFor: "acct-password", className: c.label, children: labels.password }), _jsx("input", { id: "acct-password", type: "password", className: c.input, autoComplete: "new-password", minLength: 12, maxLength: 128, value: password, onChange: (e) => setPassword(e.target.value), "aria-describedby": "acct-password-hint", required: true }), _jsx("p", { id: "acct-password-hint", className: c.hint, children: labels.passwordHint })] }), _jsx(ErrorLine, { message: error, className: c.error }), _jsx("button", { type: "submit", className: c.button, disabled: busy, children: labels.createAccount }), methods.magicLink && (_jsx("button", { type: "button", className: c.buttonQuiet, onClick: withLink, disabled: busy, children: labels.signUpWithLink }))] }), _jsxs("p", { className: c.hint, children: [labels.haveAccount, " ", signInLink] })] }));
 }
 function Section({ title, id, classes, children, }) {
     return (_jsxs("section", { className: classes.section, "aria-labelledby": id, children: [_jsx("h2", { id: id, className: classes.sectionTitle, children: title }), children] }));

@@ -1,6 +1,6 @@
 {
   "name": "@bitbaum/accountkit",
-  "version": "0.6.2",
+  "version": "0.6.3",
   "description": "One account for every bitbaum product: the account menu, accounts themselves (better-auth: password, magic link, passkeys, 2FA, OIDC) and Sign in with OrangeCat. Styled from @bitbaum/design-tokens.",
   "license": "MIT",
   "author": "Cato",
@@ -79,8 +79,8 @@
     }
   },
   "peerDependencies": {
-    "@better-auth/passkey": "^1.7.7",
-    "better-auth": "^1.7.7",
+    "@better-auth/passkey": "^1.7.10",
+    "better-auth": "^1.7.10",
     "drizzle-orm": "^0.45.4",
     "next": "^16.4.0",
     "react": ">=18",
@@ -100,7 +100,7 @@
   },
   "devDependencies": {
     "@auth/core": "0.41.3",
-    "@better-auth/passkey": "^1.7.7",
+    "@better-auth/passkey": "^1.7.10",
     "@bitbaum/design-tokens": "github:bitbaum/design-tokens#5c31f48743dabf9294bf9380a15862b4efbc68a0",
     "@bitbaum/mail-kit": "0.2.0",
     "@electric-sql/pglite": "^0.5.10",
@@ -109,7 +109,7 @@
     "@types/pg": "^8.23.1",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.3",
-    "better-auth": "^1.7.7",
+    "better-auth": "^1.7.10",
     "drizzle-kit": "^0.31.11",
     "drizzle-orm": "^0.45.4",
     "esbuild": "^0.28.2",
