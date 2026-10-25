@@ -168,6 +168,28 @@ test("an email link cannot skip an enabled second factor; native password and no
       ).status,
       200,
     );
+    await post("/sign-out");
+    await post("/sign-in/magic-link", {
+      email: credentials.email,
+      callbackURL: "/account",
+    });
+    const context = await auth.$context;
+    const originalDelete = context.internalAdapter.deleteSession;
+    context.internalAdapter.deleteSession = async () => {
+      throw new Error("synthetic session-store outage");
+    };
+    try {
+      const failed = await call(sent.at(-1).url);
+      assert.ok(failed.status >= 400, "session-store outage rejects sign-in");
+    } finally {
+      context.internalAdapter.deleteSession = originalDelete;
+    }
+    assert.ok(
+      (await session()) === null,
+      "a failed factor transition must not expose a usable primary session",
+    );
+    await post("/sign-in/email", credentials);
+    await post("/two-factor/verify-totp", { code: otpForURI(setup.totpURI) });
     assert.equal(
       (await post("/two-factor/disable", { password: credentials.password }))
         .status,
