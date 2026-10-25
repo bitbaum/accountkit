@@ -40,6 +40,8 @@ export declare function signinBroker(env: Env): OidcClient | null;
 export declare function orangecatOidc(env: Env): OidcClient | null;
 export declare function oidcClients(env: Env): OidcClient[];
 export interface SignInMethods {
+    /** Recovery needs a real sender; absent on older capability objects. */
+    passwordReset?: boolean;
     password: boolean;
     passkey: boolean;
     twoFactor: boolean;

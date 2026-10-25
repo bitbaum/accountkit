@@ -3,7 +3,35 @@
  * own language. Placeholders are `{email}`, `{method}` and `{word}`; a product
  * on next-intl passes `t.raw(...)`, which keeps them as written.
  */
+export interface RecoveryLabels {
+  forgot: string;
+  send: string;
+  sent: string;
+  reset: string;
+  newPassword: string;
+  confirmPassword: string;
+  mismatch: string;
+  invalidToken: string;
+  success: string;
+}
+
+export const DEFAULT_RECOVERY_LABELS: RecoveryLabels = {
+  forgot: "Forgot your password?",
+  send: "Email me a reset link",
+  sent: "If an account can be recovered at that address, a reset link will arrive shortly. Check your inbox and spam folder.",
+  reset: "Reset password",
+  newPassword: "New password",
+  confirmPassword: "Repeat new password",
+  mismatch:
+    "The passwords do not match. Enter the same password in both fields.",
+  invalidToken:
+    "This reset link is invalid or has expired. Request a new link.",
+  success: "Your password has been changed. Sign in with your new password.",
+};
+
 export interface AuthLabels {
+  /** Optional for compatibility with existing product label overrides. */
+  recovery?: RecoveryLabels;
   signIn: string;
   createAccount: string;
   withSignin: string;
@@ -84,6 +112,7 @@ export interface AuthLabels {
 }
 
 export const DEFAULT_AUTH_LABELS: AuthLabels = {
+  recovery: DEFAULT_RECOVERY_LABELS,
   signIn: "Sign in",
   createAccount: "Create an account",
   withSignin: "Continue with Google, Apple, GitHub, X or Facebook",

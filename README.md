@@ -9,10 +9,31 @@ It knows nothing about how you sign in. NextAuth, Supabase, better-auth: you pas
 ## Install
 
 ```sh
-pnpm add github:bitbaum/accountkit#v0.2.1
+pnpm add github:bitbaum/accountkit#v0.6.0
 ```
 
 `dist/` is committed, so the `github:` install needs no build step and no `allowBuilds` entry.
+
+## Password recovery
+
+`SignInForm` includes password recovery when `signInMethods(env, mail.configured)`
+reports `passwordReset`. It uses the product's Better Auth client and sends the
+reset link back to its existing `signInPath`, preserving the local `next` path.
+That page must remain reachable when signed out and must render `SignInForm`
+when the reset callback carries `token` or `error=INVALID_TOKEN`. The form removes
+the token from browser history after reading it. Products with a separate reset
+route can render `PasswordRecoveryForm` from `@bitbaum/accountkit/auth/react`.
+
+The sender must actually deliver account mail: `createAuthRuntime({ mail })`
+calls `mail.send("reset", to, url)`. A deployment with `mail.configured=false`
+does not offer recovery and disables its server request handler. A no-op sender
+does not implement recovery. `authLabelsFor(locale)` includes recovery words;
+older product label overrides remain compatible through the English fallback.
+
+The package checks the complete token/callback/reset journey against Postgres,
+including account-existence parity, expiry, one-time use, session revocation and
+external-redirect rejection. Its browser suite checks the forms at 320px, 390px
+and desktop width. Consumers must also verify their own page wiring and delivery.
 
 ```ts
 import "@bitbaum/accountkit/styles.css";

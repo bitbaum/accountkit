@@ -103,6 +103,8 @@ export function oidcClients(env: Env): OidcClient[] {
 }
 
 export interface SignInMethods {
+  /** Recovery needs a real sender; absent on older capability objects. */
+  passwordReset?: boolean;
   password: boolean;
   passkey: boolean;
   twoFactor: boolean;
@@ -120,6 +122,7 @@ export function signInMethods(
 ): SignInMethods {
   const development = env.NODE_ENV === "development";
   return {
+    passwordReset: mailConfigured,
     password: true,
     passkey: true,
     twoFactor: true,

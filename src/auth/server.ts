@@ -252,8 +252,9 @@ export function createAuthInstance(options: CreateAuthOptions): Auth {
       // one would strand every new account.
       requireEmailVerification: methods.verifyEmail,
       revokeSessionsOnPasswordReset: true,
-      sendResetPassword: async ({ user, url }) =>
-        mail.send("reset", user.email, url),
+      sendResetPassword: mail.configured
+        ? async ({ user, url }) => mail.send("reset", user.email, url)
+        : undefined,
     },
     emailVerification: {
       sendOnSignUp: methods.verifyEmail,

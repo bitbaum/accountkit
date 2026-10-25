@@ -235,12 +235,7 @@ export function authorizationParams(input: {
  * `from` arrives in a URL anyone can write, so `//evil.example` and
  * `/\evil.example` (which browsers read as protocol-relative) are refused.
  */
-export function returnPath(from: unknown, fallback = "/"): string {
-  if (typeof from !== "string" || !from.startsWith("/")) return fallback;
-  if (from.startsWith("//") || from.startsWith("/\\")) return fallback;
-  if ([...from].some((c) => c.charCodeAt(0) < 0x20)) return fallback;
-  return from;
-}
+export { returnPath } from "./paths.js";
 
 // ── The session: ends when OrangeCat says so ────────────────────────────────
 

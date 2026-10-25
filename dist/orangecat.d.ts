@@ -127,7 +127,7 @@ export declare function authorizationParams(input: {
  * `from` arrives in a URL anyone can write, so `//evil.example` and
  * `/\evil.example` (which browsers read as protocol-relative) are refused.
  */
-export declare function returnPath(from: unknown, fallback?: string): string;
+export { returnPath } from "./paths.js";
 export interface OcSessionClaims extends Record<string, unknown> {
     /** OrangeCat actor id (id_token.sub). Absent = not signed in. */
     actorId?: string;
@@ -330,5 +330,4 @@ export declare const ORANGECAT_LINK_TTL_SECONDS: number;
 export declare function mintLinkToken(userId: string, secret: string, nowMs?: number): string;
 /** The user id the token was minted for, or null if forged, altered or expired. */
 export declare function readLinkToken(token: string | null | undefined, secret: string, nowMs?: number): string | null;
-export {};
 //# sourceMappingURL=orangecat.d.ts.map

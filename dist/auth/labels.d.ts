@@ -3,7 +3,21 @@
  * own language. Placeholders are `{email}`, `{method}` and `{word}`; a product
  * on next-intl passes `t.raw(...)`, which keeps them as written.
  */
+export interface RecoveryLabels {
+    forgot: string;
+    send: string;
+    sent: string;
+    reset: string;
+    newPassword: string;
+    confirmPassword: string;
+    mismatch: string;
+    invalidToken: string;
+    success: string;
+}
+export declare const DEFAULT_RECOVERY_LABELS: RecoveryLabels;
 export interface AuthLabels {
+    /** Optional for compatibility with existing product label overrides. */
+    recovery?: RecoveryLabels;
     signIn: string;
     createAccount: string;
     withSignin: string;

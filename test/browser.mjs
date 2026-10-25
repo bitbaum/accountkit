@@ -220,6 +220,84 @@ try {
     );
     await p.close();
   }
+  for (const width of [320, 390, 1280]) {
+    const recovery = await browser.newPage({
+      viewport: { width, height: 844 },
+    });
+    const errors = [];
+    recovery.on("pageerror", (error) => errors.push(error.message));
+    await recovery.goto(base);
+    const screen = recovery.locator("#auth-recovery");
+    await screen.getByRole("button", { name: "Forgot your password?" }).click();
+    await screen.getByLabel("Email", { exact: true }).fill("ada@example.ch");
+    await screen.getByRole("button", { name: "Email me a reset link" }).click();
+    await screen.getByRole("status").waitFor();
+    check(
+      (await screen.getByRole("status").textContent()).includes(
+        "If an account",
+      ),
+      `[${width}] recovery response does not enumerate accounts`,
+    );
+    const sent = await recovery.evaluate(() =>
+      JSON.parse(document.body.dataset.recoveryRequest),
+    );
+    check(
+      new URL(sent.redirectTo).searchParams.get("next") === "/account",
+      `[${width}] recovery preserves the return path`,
+    );
+    await recovery.goto(base + "?token=demo-reset-token&next=%2Faccount");
+    await screen
+      .getByLabel("New password", { exact: true })
+      .fill("a new long password");
+    await recovery.screenshot({
+      path: `/tmp/accountkit-reset-${width}.png`,
+      fullPage: true,
+    });
+    check(
+      !new URL(recovery.url()).searchParams.has("token"),
+      `[${width}] token removed from browser history`,
+    );
+    await screen.getByLabel("Repeat new password").fill("a different password");
+    await screen
+      .getByRole("button", { name: "Reset password", exact: true })
+      .click();
+    check(
+      (await screen.getByRole("alert").textContent()).includes("do not match"),
+      `[${width}] mismatched passwords can be corrected`,
+    );
+    await screen.getByLabel("Repeat new password").fill("a new long password");
+    await screen
+      .getByRole("button", { name: "Reset password", exact: true })
+      .click();
+    await screen.getByRole("status").waitFor();
+    check(
+      (await screen.getByRole("status").textContent()).includes(
+        "has been changed",
+      ),
+      `[${width}] reset succeeds`,
+    );
+    const reset = await recovery.evaluate(() =>
+      JSON.parse(document.body.dataset.recoveryReset),
+    );
+    check(
+      reset.token === "demo-reset-token",
+      `[${width}] retained token reaches reset endpoint`,
+    );
+    await screen.getByRole("button", { name: "Sign in", exact: true }).click();
+    await screen.getByLabel("Password", { exact: true }).waitFor();
+    check(
+      await recovery.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+      `[${width}] recovery does not overflow`,
+    );
+    check(errors.length === 0, `[${width}] no runtime errors`);
+    await recovery.screenshot({
+      path: `/tmp/accountkit-recovery-${width}.png`,
+      fullPage: true,
+    });
+    await recovery.close();
+  }
 } finally {
   await browser.close();
   server.close();

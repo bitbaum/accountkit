@@ -54,6 +54,7 @@ export function oidcClients(env) {
 export function signInMethods(env, mailConfigured) {
     const development = env.NODE_ENV === "development";
     return {
+        passwordReset: mailConfigured,
         password: true,
         passkey: true,
         twoFactor: true,

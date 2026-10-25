@@ -13,6 +13,14 @@ type Result<T = unknown> = Promise<{
 }>;
 /** What these screens call on the product's better-auth client. */
 export interface AuthClientLike {
+    requestPasswordReset?(input: {
+        email: string;
+        redirectTo: string;
+    }): Result;
+    resetPassword?(input: {
+        newPassword: string;
+        token: string;
+    }): Result;
     signIn: {
         email(input: {
             email: string;
@@ -132,6 +140,7 @@ export declare function SignInForm({ client, methods, labels, classes, next, sig
     signUpLink: ReactNode;
     initialError?: boolean;
 }): import("react").JSX.Element;
+export { PasswordRecoveryForm } from "./recovery.js";
 /**
  * A new account in one step. No real name is asked for — a display name is
  * optional and may be anything. A passkey is added from the account page once
