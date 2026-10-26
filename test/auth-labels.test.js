@@ -45,3 +45,13 @@ test("regions and unknown languages resolve sensibly", () => {
   assert.equal(authLabelsFor("xx"), DEFAULT_AUTH_LABELS);
   assert.equal(authLabelsFor(undefined), DEFAULT_AUTH_LABELS);
 });
+
+test("Spanish locales retain translated recovery and account labels", () => {
+  const es = authLabelsFor("es");
+  assert.ok(AUTH_LABEL_LOCALES.includes("es"));
+  assert.equal(authLabelsFor("es-ES"), es);
+  assert.equal(authLabelsFor("es_MX"), es);
+  assert.equal(es.signIn, "Iniciar sesión");
+  assert.equal(es.recovery.reset, "Restablecer contraseña");
+  assert.equal(es.account.signOut, "Cerrar sesión");
+});
