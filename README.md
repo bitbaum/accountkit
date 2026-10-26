@@ -9,7 +9,7 @@ It knows nothing about how you sign in. NextAuth, Supabase, better-auth: you pas
 ## Install
 
 ```sh
-pnpm add github:bitbaum/accountkit#v0.6.2
+pnpm add @bitbaum/accountkit
 ```
 
 `dist/` is committed, so the `github:` install needs no build step and no `allowBuilds` entry.
