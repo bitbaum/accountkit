@@ -91,7 +91,7 @@ test("the product's own words and classes are used", () => {
   assert.ok(html.includes('minLength="8"'));
 });
 
-test("signing up confirms the password without asking for a name", () => {
+test("signing up asks for an email and one password, nothing else", () => {
   const signUp = (methods) =>
     renderToString(
       h(SignUpForm, {
@@ -103,11 +103,7 @@ test("signing up confirms the password without asking for a name", () => {
       }),
     );
   const bare = signUp(none);
-  assert.equal(
-    (bare.match(/<input/g) ?? []).length,
-    3,
-    "email + password + password confirmation",
-  );
+  assert.equal((bare.match(/<input/g) ?? []).length, 2, "email + one password");
   assert.ok(!bare.includes(DEFAULT_AUTH_LABELS.displayName));
   assert.ok(
     !bare.includes(DEFAULT_AUTH_LABELS.orEmail),
