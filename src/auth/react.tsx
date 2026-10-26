@@ -11,7 +11,6 @@ import type { SignInMethods } from "./methods.js";
 import { PasswordRecoveryForm } from "./recovery.js";
 import {
   DEFAULT_AUTH_LABELS,
-  DEFAULT_RECOVERY_LABELS,
   authErrorText,
   fill,
   type AuthError,
@@ -96,6 +95,10 @@ export interface AuthClasses {
   stack: string;
   field: string;
   check: string;
+  /** The box around a password input that holds the show/hide eye. */
+  inputWrap: string;
+  /** The eye inside the password field. */
+  reveal: string;
 }
 
 /** Class names styled by @bitbaum/accountkit/styles.css on --acct-* variables. */
@@ -114,7 +117,30 @@ export const DEFAULT_AUTH_CLASSES: AuthClasses = {
   stack: "acct-auth-stack",
   field: "acct-auth-field",
   check: "acct-auth-check",
+  inputWrap: "acct-auth-input-wrap",
+  reveal: "acct-auth-reveal",
 };
+
+/** An eye, struck through while the password shows. Decorative: the button carries the words. */
+function EyeIcon({ open }: { open: boolean }) {
+  return (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z" />
+      <circle cx="12" cy="12" r="3" />
+      {open && <path d="M3 3l18 18" />}
+    </svg>
+  );
+}
 
 interface Common {
   client: AuthClientLike;
@@ -560,9 +586,7 @@ export function SignUpForm({
   const c = merge(classes);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmation, setConfirmation] = useState("");
   const [passwordVisible, setPasswordVisible] = useState(false);
-  const recovery = labels.recovery ?? DEFAULT_RECOVERY_LABELS;
   const visibility =
     labels.passwordVisibility ?? DEFAULT_AUTH_LABELS.passwordVisibility!;
   const [busy, setBusy] = useState(false);
@@ -577,10 +601,6 @@ export function SignUpForm({
   async function submit(event: FormEvent) {
     event.preventDefault();
     setError(null);
-    if (password !== confirmation) {
-      setError(recovery.mismatch);
-      return;
-    }
     setBusy(true);
     const { error: e } = await client.signUp.email({
       // No name is asked for: an account starts nameless and the product
@@ -656,45 +676,37 @@ export function SignUpForm({
           <label htmlFor="acct-password" className={c.label}>
             {labels.password}
           </label>
-          <input
-            id="acct-password"
-            type={passwordVisible ? "text" : "password"}
-            className={c.input}
-            autoComplete="new-password"
-            minLength={MIN_PASSWORD_LENGTH}
-            maxLength={128}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            aria-describedby="acct-password-hint"
-            required
-          />
+          {/* One password field. Seeing what you typed is what a second
+              "repeat password" field was for, at half the typing (owner,
+              2026-10-26: "don't bother people"). */}
+          <div className={c.inputWrap}>
+            <input
+              id="acct-password"
+              type={passwordVisible ? "text" : "password"}
+              className={c.input}
+              autoComplete="new-password"
+              minLength={MIN_PASSWORD_LENGTH}
+              maxLength={128}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              aria-describedby="acct-password-hint"
+              required
+            />
+            <button
+              type="button"
+              className={c.reveal}
+              aria-controls="acct-password"
+              aria-pressed={passwordVisible}
+              aria-label={passwordVisible ? visibility.hide : visibility.show}
+              onClick={() => setPasswordVisible((visible) => !visible)}
+            >
+              <EyeIcon open={passwordVisible} />
+            </button>
+          </div>
           <p id="acct-password-hint" className={c.hint}>
             {labels.passwordHint}
           </p>
         </div>
-        <div className={c.field}>
-          <label htmlFor="acct-confirm-password" className={c.label}>
-            {recovery.confirmPassword}
-          </label>
-          <input
-            id="acct-confirm-password"
-            type={passwordVisible ? "text" : "password"}
-            className={c.input}
-            autoComplete="new-password"
-            value={confirmation}
-            onChange={(event) => setConfirmation(event.target.value)}
-            required
-          />
-        </div>
-        <button
-          type="button"
-          className={c.buttonQuiet}
-          aria-controls="acct-password acct-confirm-password"
-          aria-pressed={passwordVisible}
-          onClick={() => setPasswordVisible((visible) => !visible)}
-        >
-          {passwordVisible ? visibility.hide : visibility.show}
-        </button>
         <ErrorLine message={error} className={c.error} />
         <button type="submit" className={c.button} disabled={busy}>
           {labels.createAccount}

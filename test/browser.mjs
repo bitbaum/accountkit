@@ -306,10 +306,26 @@ try {
     await form
       .getByLabel("Password", { exact: true })
       .fill("a long test password");
-    await form.getByLabel("Repeat new password").fill("a different password");
-    await form
-      .getByRole("button", { name: "Show password", exact: true })
-      .click();
+    check(
+      (await form.getByLabel("Repeat new password").count()) === 0,
+      `[${width}] one password field, no repeat`,
+    );
+    const eye = form.getByRole("button", {
+      name: "Show password",
+      exact: true,
+    });
+    const eyeBox = await eye.boundingBox();
+    const fieldBox = await form
+      .getByLabel("Password", { exact: true })
+      .boundingBox();
+    check(
+      eyeBox.height >= 44 &&
+        eyeBox.width >= 44 &&
+        eyeBox.x >= fieldBox.x &&
+        eyeBox.x + eyeBox.width <= fieldBox.x + fieldBox.width + 1,
+      `[${width}] the eye sits inside the field and is a full target`,
+    );
+    await eye.click();
     check(
       (await form
         .getByLabel("Password", { exact: true })
@@ -328,22 +344,13 @@ try {
     await form
       .getByRole("button", { name: "Create an account", exact: true })
       .click();
-    await form.getByRole("alert").waitFor();
-    check(
-      !(await page.evaluate(() => document.body.dataset.signupRequest)),
-      `[${width}] typo never reaches registration`,
-    );
-    await form.getByLabel("Repeat new password").fill("a long test password");
-    await form
-      .getByRole("button", { name: "Create an account", exact: true })
-      .click();
     await form.getByRole("status").waitFor();
     const request = await page.evaluate(() =>
       JSON.parse(document.body.dataset.signupRequest),
     );
     check(
       request.name === "" && request.password === "a long test password",
-      `[${width}] matching passwords register without a real name`,
+      `[${width}] an email and a password register, without a real name`,
     );
     check(
       await page.evaluate(

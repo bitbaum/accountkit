@@ -112,6 +112,10 @@ export interface AuthClasses {
     stack: string;
     field: string;
     check: string;
+    /** The box around a password input that holds the show/hide eye. */
+    inputWrap: string;
+    /** The eye inside the password field. */
+    reveal: string;
 }
 /** Class names styled by @bitbaum/accountkit/styles.css on --acct-* variables. */
 export declare const DEFAULT_AUTH_CLASSES: AuthClasses;

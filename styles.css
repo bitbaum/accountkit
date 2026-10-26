@@ -294,6 +294,31 @@
   border: 1px solid var(--acct-line-2);
   border-radius: var(--acct-radius-sm);
 }
+/* A password field with its eye inside: the field keeps its full width and
+   the text stops short of the button. */
+.acct-auth-input-wrap {
+  position: relative;
+}
+.acct-auth-input-wrap .acct-auth-input {
+  padding-right: calc(var(--acct-target) + 0.25rem);
+}
+.acct-auth-reveal {
+  position: absolute;
+  inset-block: 0;
+  right: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--acct-target);
+  min-height: var(--acct-target);
+  padding: 0;
+  border: 0;
+  border-radius: var(--acct-radius-sm);
+  background: none;
+  color: var(--acct-fg-2, var(--acct-fg));
+  cursor: pointer;
+}
+.acct-auth-reveal:focus-visible,
 .acct-auth-input:focus-visible,
 .acct-auth-button:focus-visible,
 .acct-auth-button-quiet:focus-visible {
