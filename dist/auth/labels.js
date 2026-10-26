@@ -20,6 +20,7 @@ export const DEFAULT_RECOVERY_LABELS = {
     success: "Your password has been changed. Sign in with your new password.",
 };
 export const DEFAULT_AUTH_LABELS = {
+    passwordVisibility: { show: "Show password", hide: "Hide password" },
     recovery: DEFAULT_RECOVERY_LABELS,
     signIn: "Sign in",
     createAccount: "Create an account",

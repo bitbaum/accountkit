@@ -11,6 +11,10 @@ import { DEFAULT_AUTH_LABELS } from "./labels.js";
  * learners). The role names here are the package's generic ones.
  */
 const de = {
+    passwordVisibility: {
+        show: "Passwort anzeigen",
+        hide: "Passwort ausblenden",
+    },
     recovery: {
         forgot: "Passwort vergessen?",
         send: "Link zum Zurücksetzen schicken",
@@ -107,6 +111,10 @@ const de = {
     },
 };
 const fr = {
+    passwordVisibility: {
+        show: "Afficher le mot de passe",
+        hide: "Masquer le mot de passe",
+    },
     recovery: {
         forgot: "Mot de passe oublié ?",
         send: "Envoyer un lien de réinitialisation",
@@ -203,6 +211,7 @@ const fr = {
     },
 };
 const it = {
+    passwordVisibility: { show: "Mostra password", hide: "Nascondi password" },
     recovery: {
         forgot: "Password dimenticata?",
         send: "Invia un link per reimpostarla",
@@ -299,6 +308,10 @@ const it = {
     },
 };
 const rm = {
+    passwordVisibility: {
+        show: "Mussar il pled-clav",
+        hide: "Zuppentar il pled-clav",
+    },
     recovery: {
         forgot: "Emblidà il pled-clav?",
         send: "Trametter in link per redefinir",
@@ -395,6 +408,7 @@ const rm = {
     },
 };
 const ru = {
+    passwordVisibility: { show: "Показать пароль", hide: "Скрыть пароль" },
     recovery: {
         forgot: "Забыли пароль?",
         send: "Отправить ссылку для сброса",
@@ -492,6 +506,10 @@ const ru = {
 };
 // Spanish account vocabulary previously maintained by Diplodoctor.
 const es = {
+    passwordVisibility: {
+        show: "Mostrar contraseña",
+        hide: "Ocultar contraseña",
+    },
     signIn: "Iniciar sesión",
     createAccount: "Crear una cuenta",
     withSignin: "Continuar con Google, Apple, GitHub, X o Facebook",

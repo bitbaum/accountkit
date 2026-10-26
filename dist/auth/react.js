@@ -2,7 +2,7 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useCallback, useEffect, useState, } from "react";
 import { PasswordRecoveryForm } from "./recovery.js";
-import { DEFAULT_AUTH_LABELS, authErrorText, fill, MIN_PASSWORD_LENGTH, } from "./labels.js";
+import { DEFAULT_AUTH_LABELS, DEFAULT_RECOVERY_LABELS, authErrorText, fill, MIN_PASSWORD_LENGTH, } from "./labels.js";
 /** Class names styled by @bitbaum/accountkit/styles.css on --acct-* variables. */
 export const DEFAULT_AUTH_CLASSES = {
     button: "acct-auth-button",
@@ -204,6 +204,10 @@ export function SignUpForm({ client, methods, labels = DEFAULT_AUTH_LABELS, clas
     const c = merge(classes);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [confirmation, setConfirmation] = useState("");
+    const [passwordVisible, setPasswordVisible] = useState(false);
+    const recovery = labels.recovery ?? DEFAULT_RECOVERY_LABELS;
+    const visibility = labels.passwordVisibility ?? DEFAULT_AUTH_LABELS.passwordVisibility;
     const [busy, setBusy] = useState(false);
     const [error, setError] = useState(null);
     const [sent, setSent] = useState(null);
@@ -213,8 +217,12 @@ export function SignUpForm({ client, methods, labels = DEFAULT_AUTH_LABELS, clas
     };
     async function submit(event) {
         event.preventDefault();
-        setBusy(true);
         setError(null);
+        if (password !== confirmation) {
+            setError(recovery.mismatch);
+            return;
+        }
+        setBusy(true);
         const { error: e } = await client.signUp.email({
             // No name is asked for: an account starts nameless and the product
             // shows the address until the person chooses one.
@@ -252,7 +260,7 @@ export function SignUpForm({ client, methods, labels = DEFAULT_AUTH_LABELS, clas
                 email,
             }) }));
     }
-    return (_jsxs("div", { className: c.stack, children: [_jsx(OidcButtons, { client: client, methods: methods, labels: labels, classes: classes, callbackURL: next, errorCallbackURL: `${signInPath}?error=oidc&next=${encodeURIComponent(next)}`, onError: fail }), hasOidc(methods) && (_jsx(Divider, { label: labels.orEmail, className: c.divider })), _jsxs("form", { onSubmit: submit, className: c.stack, children: [_jsxs("div", { className: c.field, children: [_jsx("label", { htmlFor: "acct-email", className: c.label, children: labels.email }), _jsx("input", { id: "acct-email", type: "email", className: c.input, autoComplete: "email", value: email, onChange: (e) => setEmail(e.target.value), required: true })] }), _jsxs("div", { className: c.field, children: [_jsx("label", { htmlFor: "acct-password", className: c.label, children: labels.password }), _jsx("input", { id: "acct-password", type: "password", className: c.input, autoComplete: "new-password", minLength: MIN_PASSWORD_LENGTH, maxLength: 128, value: password, onChange: (e) => setPassword(e.target.value), "aria-describedby": "acct-password-hint", required: true }), _jsx("p", { id: "acct-password-hint", className: c.hint, children: labels.passwordHint })] }), _jsx(ErrorLine, { message: error, className: c.error }), _jsx("button", { type: "submit", className: c.button, disabled: busy, children: labels.createAccount }), methods.magicLink && (_jsx("button", { type: "button", className: c.buttonQuiet, onClick: withLink, disabled: busy, children: labels.signUpWithLink }))] }), _jsxs("p", { className: c.hint, children: [labels.haveAccount, " ", signInLink] })] }));
+    return (_jsxs("div", { className: c.stack, children: [_jsx(OidcButtons, { client: client, methods: methods, labels: labels, classes: classes, callbackURL: next, errorCallbackURL: `${signInPath}?error=oidc&next=${encodeURIComponent(next)}`, onError: fail }), hasOidc(methods) && (_jsx(Divider, { label: labels.orEmail, className: c.divider })), _jsxs("form", { onSubmit: submit, className: c.stack, children: [_jsxs("div", { className: c.field, children: [_jsx("label", { htmlFor: "acct-email", className: c.label, children: labels.email }), _jsx("input", { id: "acct-email", type: "email", className: c.input, autoComplete: "email", value: email, onChange: (e) => setEmail(e.target.value), required: true })] }), _jsxs("div", { className: c.field, children: [_jsx("label", { htmlFor: "acct-password", className: c.label, children: labels.password }), _jsx("input", { id: "acct-password", type: passwordVisible ? "text" : "password", className: c.input, autoComplete: "new-password", minLength: MIN_PASSWORD_LENGTH, maxLength: 128, value: password, onChange: (e) => setPassword(e.target.value), "aria-describedby": "acct-password-hint", required: true }), _jsx("p", { id: "acct-password-hint", className: c.hint, children: labels.passwordHint })] }), _jsxs("div", { className: c.field, children: [_jsx("label", { htmlFor: "acct-confirm-password", className: c.label, children: recovery.confirmPassword }), _jsx("input", { id: "acct-confirm-password", type: passwordVisible ? "text" : "password", className: c.input, autoComplete: "new-password", value: confirmation, onChange: (event) => setConfirmation(event.target.value), required: true })] }), _jsx("button", { type: "button", className: c.buttonQuiet, "aria-controls": "acct-password acct-confirm-password", "aria-pressed": passwordVisible, onClick: () => setPasswordVisible((visible) => !visible), children: passwordVisible ? visibility.hide : visibility.show }), _jsx(ErrorLine, { message: error, className: c.error }), _jsx("button", { type: "submit", className: c.button, disabled: busy, children: labels.createAccount }), methods.magicLink && (_jsx("button", { type: "button", className: c.buttonQuiet, onClick: withLink, disabled: busy, children: labels.signUpWithLink }))] }), _jsxs("p", { className: c.hint, children: [labels.haveAccount, " ", signInLink] })] }));
 }
 function Section({ title, id, classes, children, }) {
     return (_jsxs("section", { className: classes.section, "aria-labelledby": id, children: [_jsx("h2", { id: id, className: classes.sectionTitle, children: title }), children] }));

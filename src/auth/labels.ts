@@ -37,6 +37,8 @@ export const DEFAULT_RECOVERY_LABELS: RecoveryLabels = {
 
 export interface AuthLabels {
   /** Optional for compatibility with existing product label overrides. */
+  passwordVisibility?: { show: string; hide: string };
+  /** Optional for compatibility with existing product label overrides. */
   recovery?: RecoveryLabels;
   signIn: string;
   createAccount: string;
@@ -120,6 +122,7 @@ export interface AuthLabels {
 }
 
 export const DEFAULT_AUTH_LABELS: AuthLabels = {
+  passwordVisibility: { show: "Show password", hide: "Hide password" },
   recovery: DEFAULT_RECOVERY_LABELS,
   signIn: "Sign in",
   createAccount: "Create an account",

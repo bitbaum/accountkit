@@ -298,6 +298,61 @@ try {
     });
     await recovery.close();
   }
+  for (const width of [320, 390, 1280]) {
+    const page = await browser.newPage({ viewport: { width, height: 844 } });
+    await page.goto(base + "?signup=1");
+    const form = page.locator("#auth-signup");
+    await form.getByLabel("Email", { exact: true }).fill("signup@example.test");
+    await form
+      .getByLabel("Password", { exact: true })
+      .fill("a long test password");
+    await form.getByLabel("Repeat new password").fill("a different password");
+    await form
+      .getByRole("button", { name: "Show password", exact: true })
+      .click();
+    check(
+      (await form
+        .getByLabel("Password", { exact: true })
+        .getAttribute("type")) === "text",
+      `[${width}] password can be inspected`,
+    );
+    await form
+      .getByRole("button", { name: "Hide password", exact: true })
+      .click();
+    check(
+      (await form
+        .getByLabel("Password", { exact: true })
+        .getAttribute("type")) === "password",
+      `[${width}] password can be hidden again`,
+    );
+    await form
+      .getByRole("button", { name: "Create an account", exact: true })
+      .click();
+    await form.getByRole("alert").waitFor();
+    check(
+      !(await page.evaluate(() => document.body.dataset.signupRequest)),
+      `[${width}] typo never reaches registration`,
+    );
+    await form.getByLabel("Repeat new password").fill("a long test password");
+    await form
+      .getByRole("button", { name: "Create an account", exact: true })
+      .click();
+    await form.getByRole("status").waitFor();
+    const request = await page.evaluate(() =>
+      JSON.parse(document.body.dataset.signupRequest),
+    );
+    check(
+      request.name === "" && request.password === "a long test password",
+      `[${width}] matching passwords register without a real name`,
+    );
+    check(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+      `[${width}] registration has no horizontal overflow`,
+    );
+    await page.close();
+  }
 } finally {
   await browser.close();
   server.close();
