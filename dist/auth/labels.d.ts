@@ -3,6 +3,11 @@
  * own language. Placeholders are `{email}`, `{method}` and `{word}`; a product
  * on next-intl passes `t.raw(...)`, which keeps them as written.
  */
+/**
+ * The one password rule: a length. No character classes, no symbols — a
+ * longer password is the person's choice, not a gate (NIST SP 800-63B).
+ */
+export declare const MIN_PASSWORD_LENGTH = 8;
 export interface RecoveryLabels {
     forgot: string;
     send: string;
@@ -29,7 +34,9 @@ export interface AuthLabels {
     email: string;
     password: string;
     passwordHint: string;
+    /** @deprecated Sign-up no longer asks for a name; the account page still uses displayName. */
     displayName: string;
+    /** @deprecated Unused since sign-up stopped asking for a name. */
     displayNameHint: string;
     checkInbox: string;
     confirmInbox: string;

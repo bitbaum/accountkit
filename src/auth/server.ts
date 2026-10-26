@@ -10,6 +10,7 @@ import {
   signInMethods,
   type OidcClient,
 } from "./methods.js";
+import { MIN_PASSWORD_LENGTH } from "./labels.js";
 import { DEFAULT_ROLE } from "./roles.js";
 import { authSchema } from "./schema.js";
 import { factorForAllMethods } from "./factor.js";
@@ -246,7 +247,7 @@ export function createAuthInstance(options: CreateAuthOptions): Auth {
     },
     emailAndPassword: {
       enabled: true,
-      minPasswordLength: 12,
+      minPasswordLength: MIN_PASSWORD_LENGTH,
       maxPasswordLength: 128,
       autoSignIn: !methods.verifyEmail,
       // Without mail a verification link could never arrive, and requiring
