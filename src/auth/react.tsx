@@ -11,6 +11,7 @@ import type { SignInMethods } from "./methods.js";
 import { PasswordRecoveryForm } from "./recovery.js";
 import {
   DEFAULT_AUTH_LABELS,
+  DEFAULT_RECOVERY_LABELS,
   authErrorText,
   fill,
   type AuthError,
@@ -559,6 +560,11 @@ export function SignUpForm({
   const c = merge(classes);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmation, setConfirmation] = useState("");
+  const [passwordVisible, setPasswordVisible] = useState(false);
+  const recovery = labels.recovery ?? DEFAULT_RECOVERY_LABELS;
+  const visibility =
+    labels.passwordVisibility ?? DEFAULT_AUTH_LABELS.passwordVisibility!;
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sent, setSent] = useState<"verify" | "link" | null>(null);
@@ -570,8 +576,12 @@ export function SignUpForm({
 
   async function submit(event: FormEvent) {
     event.preventDefault();
-    setBusy(true);
     setError(null);
+    if (password !== confirmation) {
+      setError(recovery.mismatch);
+      return;
+    }
+    setBusy(true);
     const { error: e } = await client.signUp.email({
       // No name is asked for: an account starts nameless and the product
       // shows the address until the person chooses one.
@@ -648,7 +658,7 @@ export function SignUpForm({
           </label>
           <input
             id="acct-password"
-            type="password"
+            type={passwordVisible ? "text" : "password"}
             className={c.input}
             autoComplete="new-password"
             minLength={MIN_PASSWORD_LENGTH}
@@ -662,6 +672,29 @@ export function SignUpForm({
             {labels.passwordHint}
           </p>
         </div>
+        <div className={c.field}>
+          <label htmlFor="acct-confirm-password" className={c.label}>
+            {recovery.confirmPassword}
+          </label>
+          <input
+            id="acct-confirm-password"
+            type={passwordVisible ? "text" : "password"}
+            className={c.input}
+            autoComplete="new-password"
+            value={confirmation}
+            onChange={(event) => setConfirmation(event.target.value)}
+            required
+          />
+        </div>
+        <button
+          type="button"
+          className={c.buttonQuiet}
+          aria-controls="acct-password acct-confirm-password"
+          aria-pressed={passwordVisible}
+          onClick={() => setPasswordVisible((visible) => !visible)}
+        >
+          {passwordVisible ? visibility.hide : visibility.show}
+        </button>
         <ErrorLine message={error} className={c.error} />
         <button type="submit" className={c.button} disabled={busy}>
           {labels.createAccount}

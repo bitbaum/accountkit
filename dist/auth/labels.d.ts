@@ -22,6 +22,11 @@ export interface RecoveryLabels {
 export declare const DEFAULT_RECOVERY_LABELS: RecoveryLabels;
 export interface AuthLabels {
     /** Optional for compatibility with existing product label overrides. */
+    passwordVisibility?: {
+        show: string;
+        hide: string;
+    };
+    /** Optional for compatibility with existing product label overrides. */
     recovery?: RecoveryLabels;
     signIn: string;
     createAccount: string;

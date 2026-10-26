@@ -1,7 +1,13 @@
 // The visual check: three menus as an app would mount them.
 import { createRoot } from "react-dom/client";
 import { AccountMenu, SignInError } from "../src/index.js";
-import { SignInForm, type AuthClientLike } from "../src/auth/react.js";
+import {
+  SignInForm,
+  SignUpForm,
+  type AuthClientLike,
+} from "../src/auth/react.js";
+
+const signupMode = new URLSearchParams(window.location.search).has("signup");
 
 const recoveryClient = {
   requestPasswordReset: async (input: {
@@ -48,6 +54,11 @@ const groups = [
 ];
 
 function mount(id: string, node: React.ReactNode) {
+  if (
+    (id === "auth-recovery" && signupMode) ||
+    (id === "auth-signup" && !signupMode)
+  )
+    return;
   const el = document.getElementById(id);
   if (el) createRoot(el).render(node);
 }
@@ -92,4 +103,33 @@ mount(
 mount(
   "signin-error",
   <SignInError error="OAuthCallbackError" retry="#restart" home="#home" />,
+);
+
+mount(
+  "auth-signup",
+  <SignUpForm
+    client={
+      {
+        signUp: {
+          email: async (input: unknown) => {
+            document.body.dataset.signupRequest = JSON.stringify(input);
+            return {};
+          },
+        },
+      } as AuthClientLike
+    }
+    methods={{
+      password: true,
+      passkey: false,
+      twoFactor: false,
+      magicLink: false,
+      verifyEmail: true,
+      signin: false,
+      orangecat: false,
+      passwordReset: true,
+    }}
+    next="/account"
+    signUpPath="/sign-up"
+    signInLink={<a href="#signin">Sign in</a>}
+  />,
 );
