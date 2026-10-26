@@ -1,3 +1,13 @@
+/**
+ * Every word the account screens show, so each product can say them in its
+ * own language. Placeholders are `{email}`, `{method}` and `{word}`; a product
+ * on next-intl passes `t.raw(...)`, which keeps them as written.
+ */
+/**
+ * The one password rule: a length. No character classes, no symbols — a
+ * longer password is the person's choice, not a gate (NIST SP 800-63B).
+ */
+export const MIN_PASSWORD_LENGTH = 8;
 export const DEFAULT_RECOVERY_LABELS = {
     forgot: "Forgot your password?",
     send: "Email me a reset link",
@@ -17,11 +27,11 @@ export const DEFAULT_AUTH_LABELS = {
     withOrangecat: "Continue with OrangeCat",
     withPasskey: "Sign in with a passkey",
     withLink: "Email me a sign-in link instead",
-    signUpWithLink: "Sign up with a link by email instead",
+    signUpWithLink: "Email me a link instead",
     orEmail: "or with email",
     email: "Email",
     password: "Password",
-    passwordHint: "At least 12 characters. A long phrase is easier to remember than symbols.",
+    passwordHint: "At least 8 characters.",
     displayName: "Display name",
     displayNameHint: "Optional. Anything you like — it does not have to be your real name.",
     checkInbox: "We sent a link to {email}. Open it on this device to continue. It works for 10 minutes.",
@@ -47,7 +57,7 @@ export const DEFAULT_AUTH_LABELS = {
         EMAIL_NOT_VERIFIED: "Confirm your email address first — the link is in your inbox.",
         USER_ALREADY_EXISTS: "There is already an account with this address. Sign in instead.",
         USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL: "There is already an account with this address. Sign in instead.",
-        PASSWORD_TOO_SHORT: "The password needs at least 12 characters.",
+        PASSWORD_TOO_SHORT: "The password needs at least 8 characters.",
         PASSWORD_TOO_LONG: "The password can have at most 128 characters.",
         INVALID_EMAIL: "That does not look like an email address.",
         INVALID_CODE: "That code is not right, or it has expired. Try the newest one.",

@@ -15,6 +15,7 @@ import {
   fill,
   type AuthError,
   type AuthLabels,
+  MIN_PASSWORD_LENGTH,
 } from "./labels.js";
 
 /**
@@ -140,6 +141,8 @@ function ErrorLine({
     </p>
   );
 }
+
+const hasOidc = (methods: SignInMethods) => methods.signin || methods.orangecat;
 
 function Divider({ label, className }: { label: string; className: string }) {
   return (
@@ -451,7 +454,9 @@ export function SignInForm({
           {labels.withPasskey}
         </button>
       )}
-      <Divider label={labels.orEmail} className={c.divider} />
+      {(hasOidc(methods) || methods.passkey) && (
+        <Divider label={labels.orEmail} className={c.divider} />
+      )}
       <form onSubmit={withPassword} className={c.stack}>
         <div className={c.field}>
           <label htmlFor="acct-email" className={c.label}>
@@ -552,7 +557,6 @@ export function SignUpForm({
   signInLink: ReactNode;
 }) {
   const c = merge(classes);
-  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
@@ -569,7 +573,9 @@ export function SignUpForm({
     setBusy(true);
     setError(null);
     const { error: e } = await client.signUp.email({
-      name: name.trim(),
+      // No name is asked for: an account starts nameless and the product
+      // shows the address until the person chooses one.
+      name: "",
       email,
       password,
       callbackURL: next,
@@ -589,7 +595,6 @@ export function SignUpForm({
     setError(null);
     const { error: e } = await client.signIn.magicLink({
       email,
-      name: name.trim(),
       callbackURL: next,
       errorCallbackURL: `${signInPath}?method=magic-link&next=${encodeURIComponent(next)}`,
     });
@@ -619,25 +624,10 @@ export function SignUpForm({
         errorCallbackURL={`${signInPath}?error=oidc&next=${encodeURIComponent(next)}`}
         onError={fail}
       />
-      <Divider label={labels.orEmail} className={c.divider} />
+      {hasOidc(methods) && (
+        <Divider label={labels.orEmail} className={c.divider} />
+      )}
       <form onSubmit={submit} className={c.stack}>
-        <div className={c.field}>
-          <label htmlFor="acct-name" className={c.label}>
-            {labels.displayName}
-          </label>
-          <input
-            id="acct-name"
-            className={c.input}
-            autoComplete="nickname"
-            maxLength={80}
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            aria-describedby="acct-name-hint"
-          />
-          <p id="acct-name-hint" className={c.hint}>
-            {labels.displayNameHint}
-          </p>
-        </div>
         <div className={c.field}>
           <label htmlFor="acct-email" className={c.label}>
             {labels.email}
@@ -661,7 +651,7 @@ export function SignUpForm({
             type="password"
             className={c.input}
             autoComplete="new-password"
-            minLength={12}
+            minLength={MIN_PASSWORD_LENGTH}
             maxLength={128}
             value={password}
             onChange={(e) => setPassword(e.target.value)}

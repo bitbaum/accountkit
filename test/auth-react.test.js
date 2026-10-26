@@ -88,7 +88,35 @@ test("the product's own words and classes are used", () => {
   );
   assert.ok(html.includes("Konto erstellen"));
   assert.ok(html.includes('class="my-btn"'));
-  assert.ok(html.includes('minLength="12"'));
+  assert.ok(html.includes('minLength="8"'));
+});
+
+test("signing up asks for an email and a password, and nothing else", () => {
+  const signUp = (methods) =>
+    renderToString(
+      h(SignUpForm, {
+        client,
+        methods,
+        next: "/a",
+        signUpPath: "/u",
+        signInLink: "x",
+      }),
+    );
+  const bare = signUp(none);
+  assert.equal(
+    (bare.match(/<input/g) ?? []).length,
+    2,
+    "email + password only",
+  );
+  assert.ok(!bare.includes(DEFAULT_AUTH_LABELS.displayName));
+  assert.ok(
+    !bare.includes(DEFAULT_AUTH_LABELS.orEmail),
+    "no divider with nothing above it",
+  );
+  assert.ok(
+    signUp(all).includes(DEFAULT_AUTH_LABELS.orEmail),
+    "a divider under the providers",
+  );
 });
 
 test("the account page names the methods a person has", () => {
