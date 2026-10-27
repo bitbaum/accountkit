@@ -115,13 +115,13 @@
     "esbuild": "^0.28.2",
     "eslint": "^10.9.1",
     "globals": "^17.11.0",
-    "next": "16.4.0",
+    "next": "16.4.3",
     "pg": "^8.23.1",
-    "playwright": "1.63.0",
+    "playwright": "1.64.1",
     "prettier": "^3.9.6",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
-    "typescript": "^6.0.3",
+    "typescript": "^7.0.2",
     "typescript-eslint": "^8.68.0"
   },
   "peerDependenciesMeta": {
