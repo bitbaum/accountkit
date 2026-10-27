@@ -27,10 +27,20 @@ import {
 
 type Result<T = unknown> = Promise<{ data?: T | null; error?: AuthError }>;
 
-/** What these screens call on the product's better-auth client. */
-export interface AuthClientLike {
+/**
+ * The only two calls the recovery form makes. A product on Better Auth passes
+ * its client; a product on Auth.js (or anything else) passes a small adapter
+ * with these two functions, so it need not implement the rest of the client.
+ * A call may resolve `{ error }` or reject (a network failure): the form
+ * leaves its busy state and shows the unavailable message in both cases.
+ */
+export interface PasswordRecoveryClient {
   requestPasswordReset?(input: { email: string; redirectTo: string }): Result;
   resetPassword?(input: { newPassword: string; token: string }): Result;
+}
+
+/** What these screens call on the product's better-auth client. */
+export interface AuthClientLike extends PasswordRecoveryClient {
   signIn: {
     email(input: {
       email: string;

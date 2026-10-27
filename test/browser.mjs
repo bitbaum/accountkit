@@ -220,6 +220,64 @@ try {
     );
     await p.close();
   }
+  {
+    // An Auth.js product passes only the two recovery calls. A failed network
+    // call must leave the form usable, not stuck, and the retry must work.
+    const page = await browser.newPage({
+      viewport: { width: 390, height: 844 },
+    });
+    const errors = [];
+    page.on("pageerror", (error) => errors.push(error.message));
+    await page.goto(base + "?adapter");
+    const screen = page.locator("#auth-recovery-adapter");
+    await screen.getByLabel("Email", { exact: true }).fill("ada@example.ch");
+    const send = screen.getByRole("button", { name: "Email me a reset link" });
+    await send.click();
+    await screen.getByRole("alert").waitFor();
+    check(
+      await send.isEnabled(),
+      "[adapter] a network failure on the request leaves the form usable",
+    );
+    check(
+      (await screen.getByLabel("Email", { exact: true }).inputValue()) ===
+        "ada@example.ch",
+      "[adapter] the typed address is kept after a network failure",
+    );
+    await send.click();
+    await screen.getByRole("status").waitFor();
+    check(
+      (await screen.getByRole("status").textContent()).includes(
+        "If an account",
+      ),
+      "[adapter] the retry reaches the adapter and succeeds",
+    );
+    await page.goto(base + "?adapter&token=adapter-token");
+    const fresh = page.locator("#auth-recovery-adapter");
+    await fresh
+      .getByLabel("New password", { exact: true })
+      .fill("a new long password");
+    await fresh.getByLabel("Repeat new password").fill("a new long password");
+    const reset = fresh.getByRole("button", {
+      name: "Reset password",
+      exact: true,
+    });
+    await reset.click();
+    await fresh.getByRole("alert").waitFor();
+    check(
+      await reset.isEnabled(),
+      "[adapter] a network failure on the reset leaves the form usable",
+    );
+    await reset.click();
+    await fresh.getByRole("status").waitFor();
+    check(
+      (await fresh.getByRole("status").textContent()).includes(
+        "has been changed",
+      ),
+      "[adapter] the reset retry succeeds",
+    );
+    check(errors.length === 0, "[adapter] no runtime errors");
+    await page.close();
+  }
   for (const width of [320, 390, 1280]) {
     const recovery = await browser.newPage({
       viewport: { width, height: 844 },
