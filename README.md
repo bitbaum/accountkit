@@ -27,6 +27,23 @@ when the reset callback carries `token` or `error=INVALID_TOKEN`. The form remov
 the token from browser history after reading it. Products with a separate reset
 route can render `PasswordRecoveryForm` from `@bitbaum/accountkit/auth/react`.
 
+`PasswordRecoveryForm` takes a `PasswordRecoveryClient`: only `requestPasswordReset`
+and `resetPassword`. A Better Auth client satisfies it as is. A product on
+Auth.js (or any other session system) passes a small adapter object with those
+two functions, each resolving `{ error }` on failure, and keeps its own users,
+passwords, roles and sessions. A call that rejects, such as a dropped
+connection, leaves the form usable with the unavailable message and the typed
+address kept, so the person can retry.
+
+```ts
+import type { PasswordRecoveryClient } from "@bitbaum/accountkit/auth/react";
+const client: PasswordRecoveryClient = {
+  requestPasswordReset: ({ email }) => post("/api/auth/forgot-password", { email }),
+  resetPassword: ({ token, newPassword }) =>
+    post("/api/auth/reset-password", { token, password: newPassword }),
+};
+```
+
 The standard mail adapter is `createAuthMailer` from `@bitbaum/accountkit/auth/mail`:
 
 ```ts

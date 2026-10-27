@@ -4,6 +4,13 @@ This maintained file was started on 2026-10-27. The entries below were
 reconstructed from the linked published releases; they are retrospective
 records, not claims that this file existed at release time.
 
+## 0.8.1 — 2026-10-28
+
+- `PasswordRecoveryForm` accepts a `PasswordRecoveryClient` (only
+  `requestPasswordReset` and `resetPassword`), so products on Auth.js can use
+  the shared recovery form through a small adapter. Better Auth clients are
+  unchanged. A rejected call (network failure) leaves the form usable.
+
 ## 0.8.0 — 2026-10-26
 
 - Registration uses one password field with an integrated visibility control.

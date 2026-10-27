@@ -11,7 +11,7 @@ import {
 import {
   DEFAULT_AUTH_CLASSES,
   type AuthClasses,
-  type AuthClientLike,
+  type PasswordRecoveryClient,
 } from "./react.js";
 import type { SignInMethods } from "./methods.js";
 
@@ -28,7 +28,7 @@ export function PasswordRecoveryForm({
   labels = DEFAULT_AUTH_LABELS,
   classes,
 }: {
-  client: AuthClientLike;
+  client: PasswordRecoveryClient;
   methods: SignInMethods;
   signInPath: string;
   next: string;

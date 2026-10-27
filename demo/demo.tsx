@@ -2,12 +2,53 @@
 import { createRoot } from "react-dom/client";
 import { AccountMenu, SignInError } from "../src/index.js";
 import {
+  PasswordRecoveryForm,
   SignInForm,
   SignUpForm,
   type AuthClientLike,
+  type PasswordRecoveryClient,
 } from "../src/auth/react.js";
 
-const signupMode = new URLSearchParams(window.location.search).has("signup");
+const query = new URLSearchParams(window.location.search);
+const signupMode = query.has("signup");
+const adapterMode = query.has("adapter");
+
+// An Auth.js product has no Better Auth client: it passes the two recovery
+// calls only. The first call of each kind fails like a dropped connection.
+const calls = { request: 0, reset: 0 };
+const adapterClient: PasswordRecoveryClient = {
+  requestPasswordReset: async (input) => {
+    document.body.dataset.adapterRequest = JSON.stringify(input);
+    if (calls.request++ === 0) throw new TypeError("Failed to fetch");
+    return {};
+  },
+  resetPassword: async (input) => {
+    document.body.dataset.adapterReset = JSON.stringify(input);
+    if (calls.reset++ === 0) throw new TypeError("Failed to fetch");
+    return {};
+  },
+};
+
+mount(
+  "auth-recovery-adapter",
+  <PasswordRecoveryForm
+    client={adapterClient}
+    methods={{
+      password: true,
+      passkey: false,
+      twoFactor: false,
+      magicLink: false,
+      verifyEmail: true,
+      signin: false,
+      orangecat: false,
+      passwordReset: true,
+    }}
+    signInPath="/demo/index.html"
+    next="/account"
+    token={query.get("token") ?? undefined}
+    onBack={() => undefined}
+  />,
+);
 
 const recoveryClient = {
   requestPasswordReset: async (input: {
@@ -55,8 +96,9 @@ const groups = [
 
 function mount(id: string, node: React.ReactNode) {
   if (
-    (id === "auth-recovery" && signupMode) ||
-    (id === "auth-signup" && !signupMode)
+    (id === "auth-recovery-adapter" && !adapterMode) ||
+    (id === "auth-recovery" && (signupMode || adapterMode)) ||
+    (id === "auth-signup" && (!signupMode || adapterMode))
   )
     return;
   const el = document.getElementById(id);
