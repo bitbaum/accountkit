@@ -8,9 +8,12 @@ It knows nothing about how you sign in. NextAuth, Supabase, better-auth: you pas
 
 ## Install
 
-```sh
-pnpm add @bitbaum/accountkit
-```
+Use the current verified installation command on the
+[AccountKit package page](https://bitbaum.orangecat.ch/packages/accountkit/).
+Fleet's [package registry](https://github.com/bitbaum/fleet/blob/main/registers/packages.json)
+is the source for the verified artifact and install transport; npm may lag a
+verified Git release. [Release history](CHANGELOG.md) distinguishes the
+registration designs shipped in different versions.
 
 `dist/` is committed, so the `github:` install needs no build step and no `allowBuilds` entry.
 
