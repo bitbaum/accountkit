@@ -146,7 +146,7 @@ The screens are shared too (`@bitbaum/accountkit/auth/react`): `SignInForm`, `Si
 
 A product whose rows were keyed on an OrangeCat actor id before it had accounts passes `legacyIdentityProvider: "orangecat"`: a person whose first way in was OrangeCat keeps that id as `user.actorId`, so nothing has to be migrated; everyone else's `actorId` is their user id.
 
-What is the same everywhere, and not configurable per product: passwords of at least 8 characters and no other rule; a sign-up asks for an email and a password, nothing else; sessions of 14 days; no IP addresses stored; an address is never an identity (a new method joins an account only when the signed-in person links it); provider tokens are never kept; a sign-up cannot choose its role; one rate limiter keyed on the proxy's hop (limitkit), with a stricter bucket for anything that sends mail. `signInMethods(env, mailConfigured)` says which buttons to show, as booleans.
+What is the same everywhere, and not configurable per product: one password rule, `MIN_PASSWORD_LENGTH` = 1 and `MAX_PASSWORD_LENGTH` = 128 (exported from `@bitbaum/accountkit/auth`), the same in sign-up, reset and the server, with no strength meter, no hint text and no other requirement; a sign-up asks for an email and a password, nothing else; sessions of 14 days; no IP addresses stored; an address is never an identity (a new method joins an account only when the signed-in person links it); provider tokens are never kept; a sign-up cannot choose its role; one rate limiter keyed on the proxy's hop (limitkit), with a stricter bucket for anything that sends mail. `signInMethods(env, mailConfigured)` says which buttons to show, as booleans.
 
 Needs `BETTER_AUTH_SECRET` (32+ characters; a product moving off next-auth may keep its `AUTH_SECRET`) and a database; without them every auth route answers 503 `accounts_unavailable` instead of crashing. Peer dependencies: `better-auth`, `@better-auth/passkey`, `drizzle-orm`, and `next` for `/auth/next`.
 
@@ -225,8 +225,10 @@ Shared forms complete both JSON `twoFactorRedirect` responses and app-local `?tw
 
 ## Password entry
 
-The shared registration form asks for password confirmation, preserves paste
-and password-manager autofill, and offers a localized show/hide control for
-both fields. A mismatch stays on the form and never calls registration. It
-still asks for no real name. Passwordless methods keep their existing flow.
+The shared registration form has one password field with a localized show/hide
+control, preserves paste and password-manager autofill, and asks for no real
+name. The password reset form asks for the new password twice, and a mismatch
+stays on the form and never calls the server. Both forms and the server read
+the one rule from `src/auth/password.ts`; there is no other password
+requirement and no hint text. Passwordless methods keep their existing flow.
 Products consume this behavior through the package rather than duplicating it.

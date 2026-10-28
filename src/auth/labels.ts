@@ -3,12 +3,6 @@
  * own language. Placeholders are `{email}`, `{method}` and `{word}`; a product
  * on next-intl passes `t.raw(...)`, which keeps them as written.
  */
-/**
- * The one password rule: a length. No character classes, no symbols — a
- * longer password is the person's choice, not a gate (NIST SP 800-63B).
- */
-export const MIN_PASSWORD_LENGTH = 8;
-
 export interface RecoveryLabels {
   forgot: string;
   send: string;
@@ -50,7 +44,6 @@ export interface AuthLabels {
   orEmail: string;
   email: string;
   password: string;
-  passwordHint: string;
   /** @deprecated Sign-up no longer asks for a name; the account page still uses displayName. */
   displayName: string;
   /** @deprecated Unused since sign-up stopped asking for a name. */
@@ -134,7 +127,6 @@ export const DEFAULT_AUTH_LABELS: AuthLabels = {
   orEmail: "or with email",
   email: "Email",
   password: "Password",
-  passwordHint: "At least 8 characters.",
   displayName: "Display name",
   displayNameHint:
     "Optional. Anything you like — it does not have to be your real name.",
@@ -169,7 +161,7 @@ export const DEFAULT_AUTH_LABELS: AuthLabels = {
       "There is already an account with this address. Sign in instead.",
     USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL:
       "There is already an account with this address. Sign in instead.",
-    PASSWORD_TOO_SHORT: "The password needs at least 8 characters.",
+    PASSWORD_TOO_SHORT: "Enter a password.",
     PASSWORD_TOO_LONG: "The password can have at most 128 characters.",
     INVALID_EMAIL: "That does not look like an email address.",
     INVALID_CODE:

@@ -8,6 +8,7 @@ import {
   authErrorText,
   type AuthLabels,
 } from "./labels.js";
+import { MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH } from "./password.js";
 import {
   DEFAULT_AUTH_CLASSES,
   type AuthClasses,
@@ -138,17 +139,13 @@ export function PasswordRecoveryForm({
                   id={`${id}-password`}
                   type="password"
                   autoComplete="new-password"
-                  minLength={12}
-                  maxLength={128}
+                  minLength={MIN_PASSWORD_LENGTH}
+                  maxLength={MAX_PASSWORD_LENGTH}
                   required
                   value={password}
                   disabled={busy}
-                  aria-describedby={`${id}-hint`}
                   onChange={(event) => setPassword(event.target.value)}
                 />
-                <p id={`${id}-hint`} className={c.hint}>
-                  {labels.passwordHint}
-                </p>
               </div>
               <div className={c.field}>
                 <label className={c.label} htmlFor={`${id}-confirm`}>
@@ -159,8 +156,8 @@ export function PasswordRecoveryForm({
                   id={`${id}-confirm`}
                   type="password"
                   autoComplete="new-password"
-                  minLength={12}
-                  maxLength={128}
+                  minLength={MIN_PASSWORD_LENGTH}
+                  maxLength={MAX_PASSWORD_LENGTH}
                   required
                   value={confirm}
                   disabled={busy}

@@ -88,7 +88,8 @@ test("the product's own words and classes are used", () => {
   );
   assert.ok(html.includes("Konto erstellen"));
   assert.ok(html.includes('class="my-btn"'));
-  assert.ok(html.includes('minLength="8"'));
+  assert.ok(html.includes('minLength="1"'));
+  assert.ok(!html.includes("acct-password-hint"));
 });
 
 test("signing up asks for an email and one password, nothing else", () => {

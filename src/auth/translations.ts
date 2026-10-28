@@ -40,7 +40,6 @@ const de: AuthLabels = {
   orEmail: "oder mit E-Mail",
   email: "E-Mail",
   password: "Passwort",
-  passwordHint: "Mindestens 8 Zeichen.",
   displayName: "Anzeigename",
   displayNameHint:
     "Freiwillig. Irgendetwas — es muss nicht Ihr echter Name sein.",
@@ -77,7 +76,7 @@ const de: AuthLabels = {
       "Mit dieser Adresse gibt es schon ein Konto. Melden Sie sich stattdessen an.",
     USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL:
       "Mit dieser Adresse gibt es schon ein Konto. Melden Sie sich stattdessen an.",
-    PASSWORD_TOO_SHORT: "Das Passwort braucht mindestens 8 Zeichen.",
+    PASSWORD_TOO_SHORT: "Bitte gib ein Passwort ein.",
     PASSWORD_TOO_LONG: "Das Passwort darf höchstens 128 Zeichen haben.",
     INVALID_EMAIL: "Das sieht nicht nach einer E-Mail-Adresse aus.",
     INVALID_CODE:
@@ -163,7 +162,6 @@ const fr: AuthLabels = {
   orEmail: "ou avec un e-mail",
   email: "E-mail",
   password: "Mot de passe",
-  passwordHint: "Au moins 8 caractères.",
   displayName: "Nom affiché",
   displayNameHint:
     "Facultatif. Ce que vous voulez — pas forcément votre vrai nom.",
@@ -201,7 +199,7 @@ const fr: AuthLabels = {
       "Un compte existe déjà avec cette adresse. Connectez-vous plutôt.",
     USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL:
       "Un compte existe déjà avec cette adresse. Connectez-vous plutôt.",
-    PASSWORD_TOO_SHORT: "Le mot de passe doit compter au moins 8 caractères.",
+    PASSWORD_TOO_SHORT: "Saisissez un mot de passe.",
     PASSWORD_TOO_LONG: "Le mot de passe peut compter au plus 128 caractères.",
     INVALID_EMAIL: "Cela ne ressemble pas à une adresse e-mail.",
     INVALID_CODE: "Ce code n'est pas bon ou a expiré. Essayez le plus récent.",
@@ -282,7 +280,6 @@ const it: AuthLabels = {
   orEmail: "oppure con l'e-mail",
   email: "E-mail",
   password: "Password",
-  passwordHint: "Almeno 8 caratteri.",
   displayName: "Nome visualizzato",
   displayNameHint:
     "Facoltativo. Quello che vuoi — non deve essere il tuo vero nome.",
@@ -318,7 +315,7 @@ const it: AuthLabels = {
       "Esiste già un account con questo indirizzo. Accedi invece.",
     USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL:
       "Esiste già un account con questo indirizzo. Accedi invece.",
-    PASSWORD_TOO_SHORT: "La password deve avere almeno 8 caratteri.",
+    PASSWORD_TOO_SHORT: "Inserisci una password.",
     PASSWORD_TOO_LONG: "La password può avere al massimo 128 caratteri.",
     INVALID_EMAIL: "Non sembra un indirizzo e-mail.",
     INVALID_CODE:
@@ -404,7 +401,6 @@ const rm: AuthLabels = {
   orEmail: "u cun e-mail",
   email: "E-mail",
   password: "Pled-clav",
-  passwordHint: "Almain 8 caracters.",
   displayName: "Num mussà",
   displayNameHint:
     "Facultativ. Tge che vus vulais — i na sto betg esser voss num vair.",
@@ -440,7 +436,7 @@ const rm: AuthLabels = {
       "I dat gia in conto cun questa adressa. S'annunziai empè.",
     USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL:
       "I dat gia in conto cun questa adressa. S'annunziai empè.",
-    PASSWORD_TOO_SHORT: "Il pled-clav dovra almain 8 caracters.",
+    PASSWORD_TOO_SHORT: "Endatescha in pled-clav.",
     PASSWORD_TOO_LONG: "Il pled-clav po avair maximalmain 128 caracters.",
     INVALID_EMAIL: "Quai na para betg dad esser ina adressa d'e-mail.",
     INVALID_CODE: "Quest code n'è betg correct u è scadì. Empruvai il pli nov.",
@@ -520,7 +516,6 @@ const ru: AuthLabels = {
   orEmail: "или по e-mail",
   email: "E-mail",
   password: "Пароль",
-  passwordHint: "Не меньше 8 символов.",
   displayName: "Отображаемое имя",
   displayNameHint:
     "Необязательно. Что угодно — не обязательно ваше настоящее имя.",
@@ -555,7 +550,7 @@ const ru: AuthLabels = {
       "Аккаунт с этим адресом уже существует. Войдите вместо этого.",
     USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL:
       "Аккаунт с этим адресом уже существует. Войдите вместо этого.",
-    PASSWORD_TOO_SHORT: "Пароль должен содержать не меньше 8 символов.",
+    PASSWORD_TOO_SHORT: "Введите пароль.",
     PASSWORD_TOO_LONG: "Пароль может содержать не больше 128 символов.",
     INVALID_EMAIL: "Это не похоже на адрес e-mail.",
     INVALID_CODE: "Код неверный или устарел. Попробуйте самый новый.",
@@ -625,8 +620,6 @@ const es: AuthLabels = {
   orEmail: "o con correo electrónico",
   email: "Correo electrónico",
   password: "Contraseña",
-  passwordHint:
-    "Al menos 8 caracteres. Una frase larga es más fácil de recordar que los símbolos.",
   displayName: "Nombre visible",
   displayNameHint: "Opcional. Lo que quiera: no tiene que ser su nombre real.",
   checkInbox:
@@ -663,7 +656,7 @@ const es: AuthLabels = {
       "Ya existe una cuenta con esta dirección. Inicie sesión.",
     USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL:
       "Ya existe una cuenta con esta dirección. Inicie sesión.",
-    PASSWORD_TOO_SHORT: "La contraseña necesita al menos 8 caracteres.",
+    PASSWORD_TOO_SHORT: "Introduce una contraseña.",
     PASSWORD_TOO_LONG: "La contraseña puede tener como máximo 128 caracteres.",
     INVALID_EMAIL: "Eso no parece una dirección de correo.",
     INVALID_CODE:
