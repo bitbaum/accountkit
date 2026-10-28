@@ -299,7 +299,8 @@
 .acct-auth-input-wrap {
   position: relative;
 }
-.acct-auth-input-wrap .acct-auth-input {
+/* Any input in the box, so a product that styles the input itself still clears the eye. */
+.acct-auth-input-wrap > input {
   padding-right: calc(var(--acct-target) + 0.25rem);
 }
 .acct-auth-reveal {
