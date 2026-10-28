@@ -55,3 +55,17 @@ test("Spanish locales retain translated recovery and account labels", () => {
   assert.equal(es.recovery.reset, "Restablecer contraseña");
   assert.equal(es.account.signOut, "Cerrar sesión");
 });
+
+test("the password rule is one pure function a product can call anywhere", async () => {
+  const { MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH, passwordProblem } =
+    await import("@bitbaum/accountkit/auth/password");
+  assert.equal(MIN_PASSWORD_LENGTH, 1);
+  assert.equal(passwordProblem(""), "empty");
+  assert.equal(passwordProblem(undefined), "empty");
+  assert.equal(passwordProblem("a"), null);
+  assert.equal(passwordProblem("x".repeat(MAX_PASSWORD_LENGTH)), null);
+  assert.equal(
+    passwordProblem("x".repeat(MAX_PASSWORD_LENGTH + 1)),
+    "too_long",
+  );
+});

@@ -10,6 +10,8 @@ records, not claims that this file existed at release time.
   (`MIN_PASSWORD_LENGTH`, `MAX_PASSWORD_LENGTH`). Sign-up, reset and the server
   agree; the reset form no longer demands 12 characters and sign-up no longer
   demands 8. Existing passwords keep working.
+- New browser-safe entry `@bitbaum/accountkit/auth/password` with `passwordProblem()`,
+  so products still on their own account code use the same rule.
 - Removed the `passwordHint` label (and its text in every language) and the
   hint paragraph under the password fields. Products that pass their own
   labels can drop that key.
