@@ -101,19 +101,16 @@ test("signing in needs the right password; the right one works", async () => {
   assert.ok((await sessionOf(cookieOf(ok))).user);
 });
 
-test("eight characters are enough; seven are refused", async () => {
-  const short = await post("/sign-up/email", {
-    email: "short@example.ch",
-    password: "seven77",
-    name: "",
-  });
-  assert.equal(short.status, 400);
-  const enough = await post("/sign-up/email", {
-    email: "eight@example.ch",
-    password: "eight888",
-    name: "",
-  });
-  assert.equal(enough.status, 200);
+test("the one password rule: any non-empty password up to 128 characters", async () => {
+  for (const [email, password, status] of [
+    ["empty@example.ch", "", 400],
+    ["toolong@example.ch", "x".repeat(129), 400],
+    ["one@example.ch", "a", 200],
+    ["limit@example.ch", "x".repeat(128), 200],
+  ]) {
+    const r = await post("/sign-up/email", { email, password, name: "" });
+    assert.equal(r.status, status, email);
+  }
 });
 
 test("with no mail configured, no mail is ever sent", () => {

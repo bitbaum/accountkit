@@ -15,8 +15,8 @@ import {
   fill,
   type AuthError,
   type AuthLabels,
-  MIN_PASSWORD_LENGTH,
 } from "./labels.js";
+import { MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH } from "./password.js";
 
 /**
  * The account screens every product shows: sign in, create an account, and
@@ -696,10 +696,9 @@ export function SignUpForm({
               className={c.input}
               autoComplete="new-password"
               minLength={MIN_PASSWORD_LENGTH}
-              maxLength={128}
+              maxLength={MAX_PASSWORD_LENGTH}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              aria-describedby="acct-password-hint"
               required
             />
             <button
@@ -713,9 +712,6 @@ export function SignUpForm({
               <EyeIcon open={passwordVisible} />
             </button>
           </div>
-          <p id="acct-password-hint" className={c.hint}>
-            {labels.passwordHint}
-          </p>
         </div>
         <ErrorLine message={error} className={c.error} />
         <button type="submit" className={c.button} disabled={busy}>
