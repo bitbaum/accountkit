@@ -48,6 +48,8 @@ export function PasswordField({
   labels,
   disabled = false,
   autoComplete = "new-password",
+  name,
+  placeholder,
 }: {
   id: string;
   value: string;
@@ -58,6 +60,8 @@ export function PasswordField({
   labels?: Pick<AuthLabels, "passwordVisibility">;
   disabled?: boolean;
   autoComplete?: "new-password" | "current-password";
+  name?: string;
+  placeholder?: string;
 }) {
   const c = { ...DEFAULT_FIELD_CLASSES, ...classes };
   const [visible, setVisible] = useState(false);
@@ -67,6 +71,8 @@ export function PasswordField({
     <div className={c.inputWrap}>
       <input
         id={id}
+        name={name}
+        placeholder={placeholder}
         type={visible ? "text" : "password"}
         className={c.input}
         autoComplete={autoComplete}

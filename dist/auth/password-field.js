@@ -18,10 +18,10 @@ function EyeIcon({ open }) {
  * rule from ./password.ts, and nothing else. Sign-up and the reset form both
  * render it, so the two cannot drift apart.
  */
-export function PasswordField({ id, value, onChange, classes, labels, disabled = false, autoComplete = "new-password", }) {
+export function PasswordField({ id, value, onChange, classes, labels, disabled = false, autoComplete = "new-password", name, placeholder, }) {
     const c = { ...DEFAULT_FIELD_CLASSES, ...classes };
     const [visible, setVisible] = useState(false);
     const words = labels?.passwordVisibility ?? DEFAULT_AUTH_LABELS.passwordVisibility;
-    return (_jsxs("div", { className: c.inputWrap, children: [_jsx("input", { id: id, type: visible ? "text" : "password", className: c.input, autoComplete: autoComplete, minLength: MIN_PASSWORD_LENGTH, maxLength: MAX_PASSWORD_LENGTH, value: value, disabled: disabled, onChange: (event) => onChange(event.target.value), required: true }), _jsx("button", { type: "button", className: c.reveal, "aria-controls": id, "aria-pressed": visible, "aria-label": visible ? words.hide : words.show, onClick: () => setVisible((v) => !v), children: _jsx(EyeIcon, { open: visible }) })] }));
+    return (_jsxs("div", { className: c.inputWrap, children: [_jsx("input", { id: id, name: name, placeholder: placeholder, type: visible ? "text" : "password", className: c.input, autoComplete: autoComplete, minLength: MIN_PASSWORD_LENGTH, maxLength: MAX_PASSWORD_LENGTH, value: value, disabled: disabled, onChange: (event) => onChange(event.target.value), required: true }), _jsx("button", { type: "button", className: c.reveal, "aria-controls": id, "aria-pressed": visible, "aria-label": visible ? words.hide : words.show, onClick: () => setVisible((v) => !v), children: _jsx(EyeIcon, { open: visible }) })] }));
 }
 //# sourceMappingURL=password-field.js.map

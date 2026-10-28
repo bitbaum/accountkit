@@ -6,7 +6,7 @@ type FieldClasses = Pick<AuthClasses, "input" | "inputWrap" | "reveal">;
  * rule from ./password.ts, and nothing else. Sign-up and the reset form both
  * render it, so the two cannot drift apart.
  */
-export declare function PasswordField({ id, value, onChange, classes, labels, disabled, autoComplete, }: {
+export declare function PasswordField({ id, value, onChange, classes, labels, disabled, autoComplete, name, placeholder, }: {
     id: string;
     value: string;
     onChange: (password: string) => void;
@@ -16,6 +16,8 @@ export declare function PasswordField({ id, value, onChange, classes, labels, di
     labels?: Pick<AuthLabels, "passwordVisibility">;
     disabled?: boolean;
     autoComplete?: "new-password" | "current-password";
+    name?: string;
+    placeholder?: string;
 }): import("react").JSX.Element;
 export {};
 //# sourceMappingURL=password-field.d.ts.map
