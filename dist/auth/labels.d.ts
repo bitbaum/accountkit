@@ -9,8 +9,6 @@ export interface RecoveryLabels {
     sent: string;
     reset: string;
     newPassword: string;
-    confirmPassword: string;
-    mismatch: string;
     invalidToken: string;
     success: string;
 }

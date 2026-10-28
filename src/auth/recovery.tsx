@@ -8,7 +8,7 @@ import {
   authErrorText,
   type AuthLabels,
 } from "./labels.js";
-import { MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH } from "./password.js";
+import { PasswordField } from "./password-field.js";
 import {
   DEFAULT_AUTH_CLASSES,
   type AuthClasses,
@@ -47,7 +47,6 @@ export function PasswordRecoveryForm({
   const [token, setToken] = useState(initialToken);
   const [email, setEmail] = useState(initialEmail);
   const [password, setPassword] = useState("");
-  const [confirm, setConfirm] = useState("");
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState<"sent" | "reset" | null>(null);
   const [error, setError] = useState<string | null>(
@@ -60,10 +59,6 @@ export function PasswordRecoveryForm({
 
   async function submit(event: FormEvent) {
     event.preventDefault();
-    if (token && password !== confirm) {
-      setError(words.mismatch);
-      return;
-    }
     setError(null);
     setBusy(true);
     try {
@@ -89,7 +84,6 @@ export function PasswordRecoveryForm({
         }
         setToken(undefined);
         setPassword("");
-        setConfirm("");
         setStatus("reset");
       } else {
         if (!canRequest || !client.requestPasswordReset) {
@@ -129,42 +123,19 @@ export function PasswordRecoveryForm({
       ) : (
         <form className={c.stack} onSubmit={submit} aria-busy={busy}>
           {token ? (
-            <>
-              <div className={c.field}>
-                <label className={c.label} htmlFor={`${id}-password`}>
-                  {words.newPassword}
-                </label>
-                <input
-                  className={c.input}
-                  id={`${id}-password`}
-                  type="password"
-                  autoComplete="new-password"
-                  minLength={MIN_PASSWORD_LENGTH}
-                  maxLength={MAX_PASSWORD_LENGTH}
-                  required
-                  value={password}
-                  disabled={busy}
-                  onChange={(event) => setPassword(event.target.value)}
-                />
-              </div>
-              <div className={c.field}>
-                <label className={c.label} htmlFor={`${id}-confirm`}>
-                  {words.confirmPassword}
-                </label>
-                <input
-                  className={c.input}
-                  id={`${id}-confirm`}
-                  type="password"
-                  autoComplete="new-password"
-                  minLength={MIN_PASSWORD_LENGTH}
-                  maxLength={MAX_PASSWORD_LENGTH}
-                  required
-                  value={confirm}
-                  disabled={busy}
-                  onChange={(event) => setConfirm(event.target.value)}
-                />
-              </div>
-            </>
+            <div className={c.field}>
+              <label className={c.label} htmlFor={`${id}-password`}>
+                {words.newPassword}
+              </label>
+              <PasswordField
+                id={`${id}-password`}
+                value={password}
+                onChange={setPassword}
+                classes={c}
+                labels={labels}
+                disabled={busy}
+              />
+            </div>
           ) : canRequest ? (
             <div className={c.field}>
               <label className={c.label} htmlFor={`${id}-email`}>

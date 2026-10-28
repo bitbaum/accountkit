@@ -3,7 +3,7 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useCallback, useEffect, useState, } from "react";
 import { PasswordRecoveryForm } from "./recovery.js";
 import { DEFAULT_AUTH_LABELS, authErrorText, fill, } from "./labels.js";
-import { MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH } from "./password.js";
+import { PasswordField } from "./password-field.js";
 /** Class names styled by @bitbaum/accountkit/styles.css on --acct-* variables. */
 export const DEFAULT_AUTH_CLASSES = {
     button: "acct-auth-button",
@@ -23,10 +23,6 @@ export const DEFAULT_AUTH_CLASSES = {
     inputWrap: "acct-auth-input-wrap",
     reveal: "acct-auth-reveal",
 };
-/** An eye, struck through while the password shows. Decorative: the button carries the words. */
-function EyeIcon({ open }) {
-    return (_jsxs("svg", { width: "20", height: "20", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "1.75", strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": "true", children: [_jsx("path", { d: "M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z" }), _jsx("circle", { cx: "12", cy: "12", r: "3" }), open && _jsx("path", { d: "M3 3l18 18" })] }));
-}
 const merge = (c) => ({
     ...DEFAULT_AUTH_CLASSES,
     ...c,
@@ -211,8 +207,6 @@ export function SignUpForm({ client, methods, labels = DEFAULT_AUTH_LABELS, clas
     const c = merge(classes);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [passwordVisible, setPasswordVisible] = useState(false);
-    const visibility = labels.passwordVisibility ?? DEFAULT_AUTH_LABELS.passwordVisibility;
     const [busy, setBusy] = useState(false);
     const [error, setError] = useState(null);
     const [sent, setSent] = useState(null);
@@ -261,7 +255,7 @@ export function SignUpForm({ client, methods, labels = DEFAULT_AUTH_LABELS, clas
                 email,
             }) }));
     }
-    return (_jsxs("div", { className: c.stack, children: [_jsx(OidcButtons, { client: client, methods: methods, labels: labels, classes: classes, callbackURL: next, errorCallbackURL: `${signInPath}?error=oidc&next=${encodeURIComponent(next)}`, onError: fail }), hasOidc(methods) && (_jsx(Divider, { label: labels.orEmail, className: c.divider })), _jsxs("form", { onSubmit: submit, className: c.stack, children: [_jsxs("div", { className: c.field, children: [_jsx("label", { htmlFor: "acct-email", className: c.label, children: labels.email }), _jsx("input", { id: "acct-email", type: "email", className: c.input, autoComplete: "email", value: email, onChange: (e) => setEmail(e.target.value), required: true })] }), _jsxs("div", { className: c.field, children: [_jsx("label", { htmlFor: "acct-password", className: c.label, children: labels.password }), _jsxs("div", { className: c.inputWrap, children: [_jsx("input", { id: "acct-password", type: passwordVisible ? "text" : "password", className: c.input, autoComplete: "new-password", minLength: MIN_PASSWORD_LENGTH, maxLength: MAX_PASSWORD_LENGTH, value: password, onChange: (e) => setPassword(e.target.value), required: true }), _jsx("button", { type: "button", className: c.reveal, "aria-controls": "acct-password", "aria-pressed": passwordVisible, "aria-label": passwordVisible ? visibility.hide : visibility.show, onClick: () => setPasswordVisible((visible) => !visible), children: _jsx(EyeIcon, { open: passwordVisible }) })] })] }), _jsx(ErrorLine, { message: error, className: c.error }), _jsx("button", { type: "submit", className: c.button, disabled: busy, children: labels.createAccount }), methods.magicLink && (_jsx("button", { type: "button", className: c.buttonQuiet, onClick: withLink, disabled: busy, children: labels.signUpWithLink }))] }), _jsxs("p", { className: c.hint, children: [labels.haveAccount, " ", signInLink] })] }));
+    return (_jsxs("div", { className: c.stack, children: [_jsx(OidcButtons, { client: client, methods: methods, labels: labels, classes: classes, callbackURL: next, errorCallbackURL: `${signInPath}?error=oidc&next=${encodeURIComponent(next)}`, onError: fail }), hasOidc(methods) && (_jsx(Divider, { label: labels.orEmail, className: c.divider })), _jsxs("form", { onSubmit: submit, className: c.stack, children: [_jsxs("div", { className: c.field, children: [_jsx("label", { htmlFor: "acct-email", className: c.label, children: labels.email }), _jsx("input", { id: "acct-email", type: "email", className: c.input, autoComplete: "email", value: email, onChange: (e) => setEmail(e.target.value), required: true })] }), _jsxs("div", { className: c.field, children: [_jsx("label", { htmlFor: "acct-password", className: c.label, children: labels.password }), _jsx(PasswordField, { id: "acct-password", value: password, onChange: setPassword, classes: c, labels: labels })] }), _jsx(ErrorLine, { message: error, className: c.error }), _jsx("button", { type: "submit", className: c.button, disabled: busy, children: labels.createAccount }), methods.magicLink && (_jsx("button", { type: "button", className: c.buttonQuiet, onClick: withLink, disabled: busy, children: labels.signUpWithLink }))] }), _jsxs("p", { className: c.hint, children: [labels.haveAccount, " ", signInLink] })] }));
 }
 function Section({ title, id, classes, children, }) {
     return (_jsxs("section", { className: classes.section, "aria-labelledby": id, children: [_jsx("h2", { id: id, className: classes.sectionTitle, children: title }), children] }));

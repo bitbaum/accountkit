@@ -9,8 +9,6 @@ export interface RecoveryLabels {
   sent: string;
   reset: string;
   newPassword: string;
-  confirmPassword: string;
-  mismatch: string;
   invalidToken: string;
   success: string;
 }
@@ -21,9 +19,6 @@ export const DEFAULT_RECOVERY_LABELS: RecoveryLabels = {
   sent: "If an account can be recovered at that address, a reset link will arrive shortly. Check your inbox and spam folder.",
   reset: "Reset password",
   newPassword: "New password",
-  confirmPassword: "Repeat new password",
-  mismatch:
-    "The passwords do not match. Enter the same password in both fields.",
   invalidToken:
     "This reset link is invalid or has expired. Request a new link.",
   success: "Your password has been changed. Sign in with your new password.",

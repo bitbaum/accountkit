@@ -22,9 +22,6 @@ const de: AuthLabels = {
     sent: "Falls ein Konto mit dieser Adresse wiederhergestellt werden kann, kommt bald ein Link. Prüfen Sie auch den Spamordner.",
     reset: "Passwort zurücksetzen",
     newPassword: "Neues Passwort",
-    confirmPassword: "Neues Passwort wiederholen",
-    mismatch:
-      "Die Passwörter stimmen nicht überein. Geben Sie in beiden Feldern dasselbe Passwort ein.",
     invalidToken:
       "Dieser Link ist ungültig oder abgelaufen. Fordern Sie einen neuen an.",
     success:
@@ -145,9 +142,6 @@ const fr: AuthLabels = {
     sent: "Si un compte peut être récupéré à cette adresse, un lien arrivera bientôt. Vérifiez aussi les courriers indésirables.",
     reset: "Réinitialiser le mot de passe",
     newPassword: "Nouveau mot de passe",
-    confirmPassword: "Répéter le nouveau mot de passe",
-    mismatch:
-      "Les mots de passe ne correspondent pas. Saisissez le même dans les deux champs.",
     invalidToken: "Ce lien est invalide ou a expiré. Demandez un nouveau lien.",
     success:
       "Votre mot de passe a été modifié. Connectez-vous avec le nouveau mot de passe.",
@@ -264,9 +258,6 @@ const it: AuthLabels = {
     sent: "Se un account può essere recuperato a questo indirizzo, riceverai presto un link. Controlla anche la posta indesiderata.",
     reset: "Reimposta password",
     newPassword: "Nuova password",
-    confirmPassword: "Ripeti la nuova password",
-    mismatch:
-      "Le password non coincidono. Inserisci la stessa password in entrambi i campi.",
     invalidToken: "Questo link non è valido o è scaduto. Richiedine uno nuovo.",
     success: "La password è stata cambiata. Accedi con la nuova password.",
   },
@@ -384,9 +375,6 @@ const rm: AuthLabels = {
     sent: "Sche in conto po vegnir restabilì cun questa adressa, arriva prest in link. Controllai era il dossier da spam.",
     reset: "Redefinir il pled-clav",
     newPassword: "Nov pled-clav",
-    confirmPassword: "Repeter il nov pled-clav",
-    mismatch:
-      "Ils pleds-clav na correspundan betg. Endatai il medem en omadus champs.",
     invalidToken:
       "Quest link n’è betg valaivel u è scadì. Dumandai in nov link.",
     success: "Voss pled-clav è vegnì midà. S’annunziai cun il nov pled-clav.",
@@ -500,8 +488,6 @@ const ru: AuthLabels = {
     sent: "Если учётную запись можно восстановить по этому адресу, ссылка скоро придёт. Проверьте также папку «Спам».",
     reset: "Сбросить пароль",
     newPassword: "Новый пароль",
-    confirmPassword: "Повторите новый пароль",
-    mismatch: "Пароли не совпадают. Введите одинаковый пароль в обоих полях.",
     invalidToken:
       "Эта ссылка недействительна или срок её действия истёк. Запросите новую.",
     success: "Пароль изменён. Войдите с новым паролем.",
@@ -673,9 +659,6 @@ const es: AuthLabels = {
     sent: "Si esta dirección permite recuperar una cuenta, recibirá un enlace en breve. Revise su bandeja de entrada y la carpeta de correo no deseado.",
     reset: "Restablecer contraseña",
     newPassword: "Nueva contraseña",
-    confirmPassword: "Repetir la nueva contraseña",
-    mismatch:
-      "Las contraseñas no coinciden. Escriba la misma contraseña en ambos campos.",
     invalidToken: "Este enlace no es válido o ha caducado. Solicite uno nuevo.",
     success:
       "Su contraseña se ha cambiado. Inicie sesión con la nueva contraseña.",

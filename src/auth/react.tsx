@@ -16,7 +16,7 @@ import {
   type AuthError,
   type AuthLabels,
 } from "./labels.js";
-import { MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH } from "./password.js";
+import { PasswordField } from "./password-field.js";
 
 /**
  * The account screens every product shows: sign in, create an account, and
@@ -130,27 +130,6 @@ export const DEFAULT_AUTH_CLASSES: AuthClasses = {
   inputWrap: "acct-auth-input-wrap",
   reveal: "acct-auth-reveal",
 };
-
-/** An eye, struck through while the password shows. Decorative: the button carries the words. */
-function EyeIcon({ open }: { open: boolean }) {
-  return (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.75"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z" />
-      <circle cx="12" cy="12" r="3" />
-      {open && <path d="M3 3l18 18" />}
-    </svg>
-  );
-}
 
 interface Common {
   client: AuthClientLike;
@@ -596,9 +575,6 @@ export function SignUpForm({
   const c = merge(classes);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [passwordVisible, setPasswordVisible] = useState(false);
-  const visibility =
-    labels.passwordVisibility ?? DEFAULT_AUTH_LABELS.passwordVisibility!;
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sent, setSent] = useState<"verify" | "link" | null>(null);
@@ -688,30 +664,15 @@ export function SignUpForm({
           </label>
           {/* One password field. Seeing what you typed is what a second
               "repeat password" field was for, at half the typing (owner,
-              2026-10-26: "don't bother people"). */}
-          <div className={c.inputWrap}>
-            <input
-              id="acct-password"
-              type={passwordVisible ? "text" : "password"}
-              className={c.input}
-              autoComplete="new-password"
-              minLength={MIN_PASSWORD_LENGTH}
-              maxLength={MAX_PASSWORD_LENGTH}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-            <button
-              type="button"
-              className={c.reveal}
-              aria-controls="acct-password"
-              aria-pressed={passwordVisible}
-              aria-label={passwordVisible ? visibility.hide : visibility.show}
-              onClick={() => setPasswordVisible((visible) => !visible)}
-            >
-              <EyeIcon open={passwordVisible} />
-            </button>
-          </div>
+              2026-10-26: "don't bother people"). The reset form renders the
+              same field. */}
+          <PasswordField
+            id="acct-password"
+            value={password}
+            onChange={setPassword}
+            classes={c}
+            labels={labels}
+          />
         </div>
         <ErrorLine message={error} className={c.error} />
         <button type="submit" className={c.button} disabled={busy}>
