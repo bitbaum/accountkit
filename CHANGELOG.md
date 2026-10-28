@@ -4,7 +4,7 @@ This maintained file was started on 2026-10-27. The entries below were
 reconstructed from the linked published releases; they are retrospective
 records, not claims that this file existed at release time.
 
-## 0.9.0 — unreleased
+## 0.9.0 — 2026-10-28
 
 - One password rule everywhere: any non-empty password up to 128 characters
   (`MIN_PASSWORD_LENGTH`, `MAX_PASSWORD_LENGTH`). Sign-up, reset and the server
