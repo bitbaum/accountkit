@@ -5,6 +5,15 @@ import { DEFAULT_AUTH_LABELS, type AuthLabels } from "./labels.js";
 import { MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH } from "./password.js";
 import type { AuthClasses } from "./react.js";
 
+type FieldClasses = Pick<AuthClasses, "input" | "inputWrap" | "reveal">;
+
+/** Styled by @bitbaum/accountkit/styles.css; a product with its own CSS passes `classes`. */
+const DEFAULT_FIELD_CLASSES: FieldClasses = {
+  input: "acct-auth-input",
+  inputWrap: "acct-auth-input-wrap",
+  reveal: "acct-auth-reveal",
+};
+
 /** An eye, struck through while the password shows. Decorative: the button carries the words. */
 function EyeIcon({ open }: { open: boolean }) {
   return (
@@ -38,24 +47,29 @@ export function PasswordField({
   classes,
   labels,
   disabled = false,
+  autoComplete = "new-password",
 }: {
   id: string;
   value: string;
   onChange: (password: string) => void;
-  classes: Pick<AuthClasses, "input" | "inputWrap" | "reveal">;
-  labels: AuthLabels;
+  /** Class names for the input, its box and the eye; defaults to the package's own. */
+  classes?: Partial<FieldClasses>;
+  /** Only `passwordVisibility` is read; defaults to English. */
+  labels?: Pick<AuthLabels, "passwordVisibility">;
   disabled?: boolean;
+  autoComplete?: "new-password" | "current-password";
 }) {
+  const c = { ...DEFAULT_FIELD_CLASSES, ...classes };
   const [visible, setVisible] = useState(false);
   const words =
-    labels.passwordVisibility ?? DEFAULT_AUTH_LABELS.passwordVisibility!;
+    labels?.passwordVisibility ?? DEFAULT_AUTH_LABELS.passwordVisibility!;
   return (
-    <div className={classes.inputWrap}>
+    <div className={c.inputWrap}>
       <input
         id={id}
         type={visible ? "text" : "password"}
-        className={classes.input}
-        autoComplete="new-password"
+        className={c.input}
+        autoComplete={autoComplete}
         minLength={MIN_PASSWORD_LENGTH}
         maxLength={MAX_PASSWORD_LENGTH}
         value={value}
@@ -65,7 +79,7 @@ export function PasswordField({
       />
       <button
         type="button"
-        className={classes.reveal}
+        className={c.reveal}
         aria-controls={id}
         aria-pressed={visible}
         aria-label={visible ? words.hide : words.show}

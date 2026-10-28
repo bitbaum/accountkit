@@ -14,6 +14,9 @@ records, not claims that this file existed at release time.
   "repeat new password" field is gone, along with the `recovery.confirmPassword`
   and `recovery.mismatch` labels; products that pass their own recovery labels
   can drop those two keys.
+- New entry `@bitbaum/accountkit/auth/password-field` exporting `PasswordField`,
+  so a product with its own reset or sign-up page renders the same field
+  (pass `classes` to style it with the product's CSS).
 
 ## 0.9.0 — 2026-10-28
 

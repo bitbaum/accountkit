@@ -12,3 +12,25 @@ test("a CommonJS backend can require the one password rule, identical to the ESM
   for (const value of ["", "a", "a".repeat(128), "a".repeat(129), 5, undefined])
     assert.equal(cjs.passwordProblem(value), esm.passwordProblem(value));
 });
+
+test("PasswordField is its own entry: one input with a show button, styled by the caller's classes", async () => {
+  const { createElement: h } = await import("react");
+  const { renderToStaticMarkup } = await import("react-dom/server");
+  const { PasswordField } =
+    await import("@bitbaum/accountkit/auth/password-field");
+  const html = renderToStaticMarkup(
+    h(PasswordField, {
+      id: "pw",
+      value: "",
+      onChange() {},
+      classes: { input: "mine" },
+    }),
+  );
+  assert.match(
+    html,
+    /<input[^>]*id="pw"[^>]*type="password"|type="password"[^>]*id="pw"/,
+  );
+  assert.match(html, /class="mine"/);
+  assert.match(html, /aria-label="Show password"/);
+  assert.match(html, /maxLength="128"/);
+});

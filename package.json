@@ -83,6 +83,10 @@
       "types": "./dist/auth/react.d.ts",
       "default": "./dist/auth/react.js"
     },
+    "./auth/password-field": {
+      "types": "./dist/auth/password-field.d.ts",
+      "default": "./dist/auth/password-field.js"
+    },
     "./auth/mail": {
       "types": "./dist/auth/mail.d.ts",
       "default": "./dist/auth/mail.js"
