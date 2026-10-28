@@ -256,7 +256,6 @@ try {
     await fresh
       .getByLabel("New password", { exact: true })
       .fill("a new long password");
-    await fresh.getByLabel("Repeat new password").fill("a new long password");
     const reset = fresh.getByRole("button", {
       name: "Reset password",
       exact: true,
@@ -315,15 +314,19 @@ try {
       !new URL(recovery.url()).searchParams.has("token"),
       `[${width}] token removed from browser history`,
     );
-    await screen.getByLabel("Repeat new password").fill("a different password");
+    const resetField = screen.getByLabel("New password", { exact: true });
+    check(
+      (await resetField.getAttribute("type")) === "password" &&
+        (await screen.getByLabel("Repeat new password").count()) === 0,
+      `[${width}] reset has one new-password field, no repeat`,
+    );
     await screen
-      .getByRole("button", { name: "Reset password", exact: true })
+      .getByRole("button", { name: "Show password", exact: true })
       .click();
     check(
-      (await screen.getByRole("alert").textContent()).includes("do not match"),
-      `[${width}] mismatched passwords can be corrected`,
+      (await resetField.getAttribute("type")) === "text",
+      `[${width}] the eye shows the new password`,
     );
-    await screen.getByLabel("Repeat new password").fill("a new long password");
     await screen
       .getByRole("button", { name: "Reset password", exact: true })
       .click();

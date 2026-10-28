@@ -227,8 +227,8 @@ Shared forms complete both JSON `twoFactorRedirect` responses and app-local `?tw
 
 The shared registration form has one password field with a localized show/hide
 control, preserves paste and password-manager autofill, and asks for no real
-name. The password reset form asks for the new password twice, and a mismatch
-stays on the form and never calls the server. Both forms and the server read
+name. The password reset form uses the same field (one input, the same show/hide
+control), so sign-up and reset cannot drift. Both forms and the server read
 the one rule from `src/auth/password.ts`; there is no other password
 requirement and no hint text. Passwordless methods keep their existing flow.
 Products consume this behavior through the package rather than duplicating it.

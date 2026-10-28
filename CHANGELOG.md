@@ -4,6 +4,17 @@ This maintained file was started on 2026-10-27. The entries below were
 reconstructed from the linked published releases; they are retrospective
 records, not claims that this file existed at release time.
 
+## 0.9.1 — 2026-10-28
+
+- `@bitbaum/accountkit/auth/password` now also ships a CommonJS build
+  (`require` condition, with `.d.cts` types), so a CommonJS backend can use the
+  one password rule. The ESM entry is unchanged.
+- The reset form asks for the new password once, in the same field with the
+  same show/hide control as sign-up (`PasswordField`, shared by both). The
+  "repeat new password" field is gone, along with the `recovery.confirmPassword`
+  and `recovery.mismatch` labels; products that pass their own recovery labels
+  can drop those two keys.
+
 ## 0.9.0 — 2026-10-28
 
 - One password rule everywhere: any non-empty password up to 128 characters
