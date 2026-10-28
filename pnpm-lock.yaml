@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       limitkit:
-        specifier: ^0.2.0
-        version: 0.2.0
+        specifier: ^0.2.1
+        version: 0.2.1
     devDependencies:
       '@auth/core':
         specifier: 0.41.3
@@ -1512,8 +1512,8 @@ packages:
     resolution: {integrity: sha512-+bT2uH4E5LGE7h/n3evcS/sQlJXCpIp6ym8OWJ5eV6+67Dsql/LaaT7qJBAt2rzfoa/5QBGBhxDix1dMt2kQKQ==}
     engines: {node: '>= 0.8.0'}
 
-  limitkit@0.2.0:
-    resolution: {integrity: sha512-x05857iOBGf04eRBAXWTtRTrGhRdBfW9fZa8rfJDx3rQNRBVQpwK2z9aiMYNWhRp71QoIjvA0rl4ZiL4+6O8rA==}
+  limitkit@0.2.1:
+    resolution: {integrity: sha512-8IBrAi+W9axLDDiUE5F2+wabhLTNs1wpaBSf+RfytdXDm/KpOB6S8Xw7j0uoTQH5ti4A/EiRfyK1DbR6NcY1gA==}
     engines: {node: '>=20'}
 
   locate-path@6.0.0:
@@ -2935,7 +2935,7 @@ snapshots:
       prelude-ls: 1.2.1
       type-check: 0.4.0
 
-  limitkit@0.2.0: {}
+  limitkit@0.2.1: {}
 
   locate-path@6.0.0:
     dependencies:
