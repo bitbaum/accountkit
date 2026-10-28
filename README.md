@@ -232,3 +232,12 @@ control), so sign-up and reset cannot drift. Both forms and the server read
 the one rule from `src/auth/password.ts`; there is no other password
 requirement and no hint text. Passwordless methods keep their existing flow.
 Products consume this behavior through the package rather than duplicating it.
+
+A product that keeps its own sign-in and its own bcrypt/bcryptjs uses
+`@bitbaum/accountkit/auth/password` for the rule (a `require` build exists for
+CommonJS backends), `@bitbaum/accountkit/auth/password-field` for the field and
+`@bitbaum/accountkit/auth/hash` for hashing. `createPasswordHasher(bcrypt)`
+hashes the SHA-256 of the password, so a long password is not cut at bcrypt's
+72 bytes, and still verifies old plain bcrypt hashes; its `verify` returns
+`rehash: true` when a sign-in matched an old hash, and the product then stores
+`hash(password)`. No one has to reset a password.

@@ -17,6 +17,12 @@ records, not claims that this file existed at release time.
 - New entry `@bitbaum/accountkit/auth/password-field` exporting `PasswordField`,
   so a product with its own reset or sign-up page renders the same field
   (pass `classes` to style it with the product's CSS).
+- New entry `@bitbaum/accountkit/auth/hash` (ESM and CommonJS):
+  `createPasswordHasher(bcrypt)` for products that keep bcrypt/bcryptjs. New
+  hashes are bcrypt over the SHA-256 of the password (stored as `$bs1$…`), so
+  the whole password counts instead of its first 72 bytes. Old plain bcrypt
+  hashes still verify, exactly as before, and `verify` says when to store the
+  new form (rehash on sign-in). Nobody has to reset a password.
 
 ## 0.9.0 — 2026-10-28
 

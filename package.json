@@ -83,6 +83,16 @@
       "types": "./dist/auth/react.d.ts",
       "default": "./dist/auth/react.js"
     },
+    "./auth/hash": {
+      "import": {
+        "types": "./dist/auth/hash.d.ts",
+        "default": "./dist/auth/hash.js"
+      },
+      "require": {
+        "types": "./dist/auth/hash.d.cts",
+        "default": "./dist/auth/hash.cjs"
+      }
+    },
     "./auth/password-field": {
       "types": "./dist/auth/password-field.d.ts",
       "default": "./dist/auth/password-field.js"
@@ -94,11 +104,11 @@
   },
   "peerDependencies": {
     "@better-auth/passkey": "^1.7.10",
+    "@bitbaum/mail-kit": "^0.2.0",
     "better-auth": "^1.7.10",
     "drizzle-orm": "^0.45.4",
     "next": "^16.4.0",
-    "react": ">=18",
-    "@bitbaum/mail-kit": "^0.2.0"
+    "react": ">=18"
   },
   "scripts": {
     "build": "rm -rf dist && tsc -p tsconfig.json && node scripts/build-cjs.mjs",
@@ -123,6 +133,7 @@
     "@types/pg": "^8.23.1",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.3",
+    "bcryptjs": "^3.0.3",
     "better-auth": "^1.7.10",
     "drizzle-kit": "^0.31.11",
     "drizzle-orm": "^0.45.4",
