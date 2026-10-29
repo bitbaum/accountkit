@@ -251,6 +251,15 @@ role mapping, migration verification and product journeys remain the consumer's
 responsibility. This option alone does not migrate any data.
 
 
+### A product's own plugins
+
+`plugins` (both `createAuthRuntime` and `createAuthInstance`) mounts a
+product's own better-auth plugins for its domain, such as `organization()`
+for workspaces, after AccountKit's own. They add endpoints and tables; the
+shared sign-in methods, limits and cookie rules stay AccountKit's. Pass their
+tables in `schema` under the plugin's model names (`organization`, `member`,
+`invitation`), and a `session` table with any column the plugin adds.
+
 ### Account tables beside a product's own
 
 A product whose tables already use the standard names (a NextAuth `users`,

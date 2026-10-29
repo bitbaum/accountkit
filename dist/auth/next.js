@@ -26,6 +26,7 @@ export function createAuthRuntime(options) {
             domainCredentials: options.domainCredentials,
             provisioning: options.provisioning,
             sessionLifetime: options.sessionLifetime,
+            plugins: options.plugins,
             env: options.env,
             onAccountCreated: options.onAccountCreated,
             database: options.getDatabase(),
