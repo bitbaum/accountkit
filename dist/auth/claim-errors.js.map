@@ -1,0 +1,1 @@
+{"version":3,"file":"claim-errors.js","sourceRoot":"","sources":["../../src/auth/claim-errors.ts"],"names":[],"mappings":"AAAA;;;GAGG;AACH,MAAM,CAAC,MAAM,YAAY,GAAG;IAC1B,OAAO,EAAE,eAAe;IACxB,cAAc,EAAE,uBAAuB;IACvC,UAAU,EAAE,mBAAmB;IAC/B,kBAAkB,EAAE,4BAA4B;IAChD,oBAAoB,EAAE,8BAA8B;IACpD,qBAAqB,EAAE,+BAA+B;CAC9C,CAAC"}

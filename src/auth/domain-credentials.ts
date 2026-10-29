@@ -30,6 +30,7 @@ export function domainCredentialsPlugin(credentials: DomainCredentials) {
     "/get-session",
     "/sign-out",
     "/sign-up/email",
+    "/provision/claim",
     "/request-password-reset",
     "/forget-password",
     "/reset-password",

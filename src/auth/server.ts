@@ -20,6 +20,14 @@ import {
   domainCredentialsPlugin,
   type DomainCredentials,
 } from "./domain-credentials.js";
+import {
+  provisioningPlugin,
+  type AccountProvisioning,
+} from "./provisioning.js";
+import {
+  recordResetAddress,
+  recoveryVerificationPlugin,
+} from "./recovery-verification.js";
 
 /**
  * Accounts for a bitbaum product: better-auth 1.x on Drizzle + pg, configured
@@ -29,6 +37,12 @@ import {
  */
 const MIN_SECRET_LENGTH = 32;
 const DEV_SECRET = "development-only-secret-never-used-in-production-0000";
+
+export type { DomainCredentials } from "./domain-credentials.js";
+export type {
+  AccountProvisioning,
+  ProvisionedIdentity,
+} from "./provisioning.js";
 
 export type AuthMailKind = "verify" | "magicLink" | "reset";
 
@@ -62,6 +76,12 @@ export interface CreateAuthOptions {
   legacyBcrypt?: BcryptLike;
   /** Optional domain proof (for example an existing housing login code). */
   domainCredentials?: DomainCredentials;
+  /**
+   * First password for an identity the product created without one (an
+   * invitation, a login code), and linking a second identity to an existing
+   * account on that account's own password. See ./provisioning.
+   */
+  provisioning?: AccountProvisioning;
   mail: AuthMailer;
   env?: NodeJS.ProcessEnv;
   /**
@@ -287,7 +307,16 @@ export function createAuthInstance(options: CreateAuthOptions): Auth {
       requireEmailVerification: methods.verifyEmail,
       revokeSessionsOnPasswordReset: true,
       sendResetPassword: mail.configured
-        ? async ({ user, url }) => mail.send("reset", user.email, url)
+        ? async ({ user, url, token }) => {
+            // Remember which address the link went to, so using it verifies
+            // that address (./recovery-verification).
+            await recordResetAddress(
+              (await auth.$context).internalAdapter,
+              token,
+              user,
+            );
+            await mail.send("reset", user.email, url);
+          }
         : undefined,
     },
     emailVerification: {
@@ -300,6 +329,14 @@ export function createAuthInstance(options: CreateAuthOptions): Auth {
       ...(options.domainCredentials
         ? [domainCredentialsPlugin(options.domainCredentials)]
         : []),
+      ...(options.provisioning
+        ? [
+            provisioningPlugin(options.provisioning, {
+              requireEmailVerification: methods.verifyEmail,
+            }),
+          ]
+        : []),
+      recoveryVerificationPlugin(),
       // allowPasswordless: someone who signs in only by passkey, link or OIDC can
       // still add a second factor (with a fresh session instead of a password).
       factorForAllMethods(site),

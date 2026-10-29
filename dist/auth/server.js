@@ -11,6 +11,8 @@ import { authSchema } from "./schema.js";
 import { factorForAllMethods } from "./factor.js";
 import { createPasswordHasher } from "./hash.js";
 import { domainCredentialsPlugin, } from "./domain-credentials.js";
+import { provisioningPlugin, } from "./provisioning.js";
+import { recordResetAddress, recoveryVerificationPlugin, } from "./recovery-verification.js";
 /**
  * Accounts for a bitbaum product: better-auth 1.x on Drizzle + pg, configured
  * the same way everywhere (fleet STACK.md, "Identity"). A product passes in
@@ -212,7 +214,12 @@ export function createAuthInstance(options) {
             requireEmailVerification: methods.verifyEmail,
             revokeSessionsOnPasswordReset: true,
             sendResetPassword: mail.configured
-                ? async ({ user, url }) => mail.send("reset", user.email, url)
+                ? async ({ user, url, token }) => {
+                    // Remember which address the link went to, so using it verifies
+                    // that address (./recovery-verification).
+                    await recordResetAddress((await auth.$context).internalAdapter, token, user);
+                    await mail.send("reset", user.email, url);
+                }
                 : undefined,
         },
         emailVerification: {
@@ -224,6 +231,14 @@ export function createAuthInstance(options) {
             ...(options.domainCredentials
                 ? [domainCredentialsPlugin(options.domainCredentials)]
                 : []),
+            ...(options.provisioning
+                ? [
+                    provisioningPlugin(options.provisioning, {
+                        requireEmailVerification: methods.verifyEmail,
+                    }),
+                ]
+                : []),
+            recoveryVerificationPlugin(),
             // allowPasswordless: someone who signs in only by passkey, link or OIDC can
             // still add a second factor (with a fresh session instead of a password).
             factorForAllMethods(site),

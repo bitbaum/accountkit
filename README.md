@@ -269,3 +269,33 @@ change account security or list other sessions. Show a password/passkey/provider
 sign-in action before offering account management. An account with an enabled
 second factor must use another configured primary method; domain proof alone
 never bypasses MFA. The shared tables require no change for this option.
+
+### First passwords and linking a second identity
+
+A product that created people before they had a password (an invitation, a
+login code) passes `provisioning.resolve(credential)`. It returns `null`, or
+`{ userId, link?, complete?, release? }` for the shared user that holds the
+identity the proof names. This enables `POST /api/auth/provision/claim` with
+`{ credential, email, password, name?, callbackURL? }`, rate limited as a
+credential. Take a single-use proof inside `resolve` and give it back in
+`release`, which runs on every failure after it.
+
+- A user with no password gets one, under its existing id, at the address typed.
+  An address that cannot receive mail (`.invalid`) is refused. A verified
+  address is never replaced; the same address keeps its verification, a new
+  one starts unverified.
+- An address that belongs to another account joins this identity to it only on
+  that account's own password, then calls `link(targetUserId)`. Without `link`
+  the claim is refused. If that account has no password yet (invited, never
+  claimed), the claim is refused with `CLAIM_EMAIL_NEEDS_RECOVERY`: recovery
+  through its mailbox comes first.
+- An identity that already has a password is refused; sign in or recover.
+- With mail configured an unverified address gets a verification link and no
+  session (`status: "verify_email"`); the link signs them in. An account with a
+  second factor is linked but must still sign in (`status: "sign_in"`).
+
+Refusals carry the codes in `CLAIM_ERRORS` (`@bitbaum/accountkit/auth`).
+
+A used password-reset link verifies the address it was sent to, unless the
+account's address changed after it was sent. Recovery therefore leaves an
+imported or invited account with a usable sign-in when mail is configured.

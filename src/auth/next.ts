@@ -27,6 +27,8 @@ export interface AuthRuntimeOptions {
   /** See CreateAuthOptions.legacyBcrypt; only needed for imported credentials. */
   legacyBcrypt?: CreateAuthOptions["legacyBcrypt"];
   domainCredentials?: CreateAuthOptions["domainCredentials"];
+  /** See CreateAuthOptions.provisioning: first passwords and identity linking. */
+  provisioning?: CreateAuthOptions["provisioning"];
   /**
    * For a product whose rows were keyed on an OIDC subject before it had
    * accounts (an OrangeCat actor id). A person who FIRST came in through that
@@ -61,6 +63,7 @@ export function createAuthRuntime(options: AuthRuntimeOptions) {
       schema: options.schema,
       legacyBcrypt: options.legacyBcrypt,
       domainCredentials: options.domainCredentials,
+      provisioning: options.provisioning,
       env: options.env,
       onAccountCreated: options.onAccountCreated,
       database: options.getDatabase(),

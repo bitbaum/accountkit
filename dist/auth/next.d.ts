@@ -13,6 +13,8 @@ export interface AuthRuntimeOptions {
     /** See CreateAuthOptions.legacyBcrypt; only needed for imported credentials. */
     legacyBcrypt?: CreateAuthOptions["legacyBcrypt"];
     domainCredentials?: CreateAuthOptions["domainCredentials"];
+    /** See CreateAuthOptions.provisioning: first passwords and identity linking. */
+    provisioning?: CreateAuthOptions["provisioning"];
     /**
      * For a product whose rows were keyed on an OIDC subject before it had
      * accounts (an OrangeCat actor id). A person who FIRST came in through that
