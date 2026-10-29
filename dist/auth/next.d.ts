@@ -2,6 +2,8 @@ import { type Auth, type CreateAuthOptions, type AuthSite, type AuthMailer, type
 export interface AuthRuntimeOptions {
     site: AuthSite;
     mail: AuthMailer;
+    /** Map an existing deployment's secret/config names without mutating process.env. */
+    env?: NodeJS.ProcessEnv;
     /** Whether the product has a database to keep accounts in. */
     isDatabaseConfigured: (env: NodeJS.ProcessEnv) => boolean;
     /** The Drizzle database. Called on first use, never at import. */

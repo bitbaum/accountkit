@@ -24,12 +24,13 @@ export function createAuthRuntime(options) {
             schema: options.schema,
             legacyBcrypt: options.legacyBcrypt,
             domainCredentials: options.domainCredentials,
+            env: options.env,
             onAccountCreated: options.onAccountCreated,
             database: options.getDatabase(),
         });
         return instance;
     };
-    const authStatus = (env = process.env) => authStatusFor(options.isDatabaseConfigured(env), env);
+    const authStatus = (env = options.env ?? process.env) => authStatusFor(options.isDatabaseConfigured(env), env);
     const noStore = { "Cache-Control": "no-store" };
     const actorIds = new Map();
     /** The id the product's own rows use for this person. */

@@ -16,6 +16,8 @@ import {
 export interface AuthRuntimeOptions {
   site: AuthSite;
   mail: AuthMailer;
+  /** Map an existing deployment's secret/config names without mutating process.env. */
+  env?: NodeJS.ProcessEnv;
   /** Whether the product has a database to keep accounts in. */
   isDatabaseConfigured: (env: NodeJS.ProcessEnv) => boolean;
   /** The Drizzle database. Called on first use, never at import. */
@@ -59,13 +61,15 @@ export function createAuthRuntime(options: AuthRuntimeOptions) {
       schema: options.schema,
       legacyBcrypt: options.legacyBcrypt,
       domainCredentials: options.domainCredentials,
+      env: options.env,
       onAccountCreated: options.onAccountCreated,
       database: options.getDatabase(),
     });
     return instance;
   };
-  const authStatus = (env: NodeJS.ProcessEnv = process.env): AuthStatus =>
-    authStatusFor(options.isDatabaseConfigured(env), env);
+  const authStatus = (
+    env: NodeJS.ProcessEnv = options.env ?? process.env,
+  ): AuthStatus => authStatusFor(options.isDatabaseConfigured(env), env);
   const noStore = { "Cache-Control": "no-store" };
   const actorIds = new Map<string, string>();
 
