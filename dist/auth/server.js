@@ -98,10 +98,12 @@ export function createAuthInstance(options) {
         // Pinned, never inferred from the request: behind Caddy the app sees its
         // INTERNAL origin, and links built from it point at localhost.
         baseURL: site.url,
-        trustedOrigins: [
-            origin.origin,
-            ...(site.trustedOrigins ?? []).map((o) => new URL(o).origin),
-        ],
+        trustedOrigins: async () => {
+            const further = typeof site.trustedOrigins === "function"
+                ? await site.trustedOrigins().catch(() => [])
+                : (site.trustedOrigins ?? []);
+            return [origin.origin, ...further.map((o) => new URL(o).origin)];
+        },
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         database: drizzleAdapter(options.database, {
             provider: "pg",

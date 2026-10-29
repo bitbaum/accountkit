@@ -72,7 +72,7 @@ test("a product's own plugin mounts beside the shared methods, on its own tables
       url: "https://plugins.example.test",
       title: "Plugins",
       slug: "plugins",
-      trustedOrigins: ["https://tenant.example.test/"],
+      trustedOrigins: async () => ["https://tenant.example.test/"],
     };
     const auth = createAuthInstance({
       site,
