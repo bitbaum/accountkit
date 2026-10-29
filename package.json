@@ -1,6 +1,6 @@
 {
   "name": "@bitbaum/accountkit",
-  "version": "0.11.0",
+  "version": "0.12.0",
   "description": "One account for every bitbaum product: the account menu, accounts themselves (better-auth: password, magic link, passkeys, 2FA, OIDC) and Sign in with OrangeCat. Styled from @bitbaum/design-tokens.",
   "license": "MIT",
   "author": "Cato",
