@@ -10,6 +10,9 @@ records, not claims that this file existed at release time.
   plugins (for example `organization()`), mounted after AccountKit's. Tables
   in `schema` beyond the standard six are handed to the database adapter by
   model name.
+- Add `site.trustedOrigins`: further hosts of the same product pass the origin
+  check, each with its own host-only cookie. A lookup may stand in for the
+  list when the hosts are data.
 
 ## 0.13.0 — 2026-10-29
 

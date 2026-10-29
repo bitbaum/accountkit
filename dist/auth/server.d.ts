@@ -22,6 +22,13 @@ export interface AuthSite {
     title: string;
     /** Cookie prefix. */
     slug: string;
+    /**
+     * Further public origins that serve the same product (a tenant host beside
+     * the platform host). Requests from them pass the origin check; each host
+     * keeps its own host-only cookie. Links in mail and passkeys use `url`.
+     * A lookup (for hosts kept as data) is asked on each checked request.
+     */
+    trustedOrigins?: string[] | (() => Promise<string[]>);
 }
 export interface CreateAuthOptions {
     site: AuthSite;
