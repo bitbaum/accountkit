@@ -25,6 +25,10 @@ import {
   type AccountProvisioning,
 } from "./provisioning.js";
 import {
+  sessionLifetimePlugin,
+  type SessionLifetime,
+} from "./session-lifetime.js";
+import {
   recordResetAddress,
   recoveryVerificationPlugin,
 } from "./recovery-verification.js";
@@ -39,6 +43,7 @@ const MIN_SECRET_LENGTH = 32;
 const DEV_SECRET = "development-only-secret-never-used-in-production-0000";
 
 export type { DomainCredentials } from "./domain-credentials.js";
+export type { SessionLifetime } from "./session-lifetime.js";
 export type {
   AccountProvisioning,
   ProvisionedIdentity,
@@ -82,6 +87,11 @@ export interface CreateAuthOptions {
    * account on that account's own password. See ./provisioning.
    */
   provisioning?: AccountProvisioning;
+  /**
+   * Seconds of inactivity after which this person's sessions end, or nothing
+   * for the shared default (14 days). See ./session-lifetime.
+   */
+  sessionLifetime?: SessionLifetime;
   mail: AuthMailer;
   env?: NodeJS.ProcessEnv;
   /**
@@ -337,6 +347,9 @@ export function createAuthInstance(options: CreateAuthOptions): Auth {
           ]
         : []),
       recoveryVerificationPlugin(),
+      ...(options.sessionLifetime
+        ? [sessionLifetimePlugin(options.sessionLifetime)]
+        : []),
       // allowPasswordless: someone who signs in only by passkey, link or OIDC can
       // still add a second factor (with a fresh session instead of a password).
       factorForAllMethods(site),
