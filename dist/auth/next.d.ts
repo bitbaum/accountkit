@@ -10,6 +10,7 @@ export interface AuthRuntimeOptions {
     schema?: Record<string, unknown>;
     /** See CreateAuthOptions.legacyBcrypt; only needed for imported credentials. */
     legacyBcrypt?: CreateAuthOptions["legacyBcrypt"];
+    domainCredentials?: CreateAuthOptions["domainCredentials"];
     /**
      * For a product whose rows were keyed on an OIDC subject before it had
      * accounts (an OrangeCat actor id). A person who FIRST came in through that

@@ -11,6 +11,9 @@ importers:
       limitkit:
         specifier: ^0.2.1
         version: 0.2.1
+      zod:
+        specifier: ^4.6.7
+        version: 4.6.7
     devDependencies:
       '@auth/core':
         specifier: 0.41.3

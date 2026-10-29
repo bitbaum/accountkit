@@ -32,6 +32,7 @@ const MAIL = new Set([
 
 const CREDENTIAL_PREFIXES = [
   "/sign-in/email",
+  "/sign-in/domain",
   "/sign-in/social",
   "/reset-password",
   "/change-password",

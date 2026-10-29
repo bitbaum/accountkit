@@ -10,6 +10,7 @@ import { DEFAULT_ROLE } from "./roles.js";
 import { authSchema } from "./schema.js";
 import { factorForAllMethods } from "./factor.js";
 import { createPasswordHasher } from "./hash.js";
+import { domainCredentialsPlugin, } from "./domain-credentials.js";
 /**
  * Accounts for a bitbaum product: better-auth 1.x on Drizzle + pg, configured
  * the same way everywhere (fleet STACK.md, "Identity"). A product passes in
@@ -220,6 +221,9 @@ export function createAuthInstance(options) {
             sendVerificationEmail: async ({ user, url }) => mail.send("verify", user.email, url),
         },
         plugins: [
+            ...(options.domainCredentials
+                ? [domainCredentialsPlugin(options.domainCredentials)]
+                : []),
             // allowPasswordless: someone who signs in only by passkey, link or OIDC can
             // still add a second factor (with a fresh session instead of a password).
             factorForAllMethods(site),
