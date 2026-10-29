@@ -29,6 +29,8 @@ export interface AuthRuntimeOptions {
   domainCredentials?: CreateAuthOptions["domainCredentials"];
   /** See CreateAuthOptions.provisioning: first passwords and identity linking. */
   provisioning?: CreateAuthOptions["provisioning"];
+  /** See CreateAuthOptions.sessionLifetime: a shorter idle limit for some people. */
+  sessionLifetime?: CreateAuthOptions["sessionLifetime"];
   /**
    * For a product whose rows were keyed on an OIDC subject before it had
    * accounts (an OrangeCat actor id). A person who FIRST came in through that
@@ -64,6 +66,7 @@ export function createAuthRuntime(options: AuthRuntimeOptions) {
       legacyBcrypt: options.legacyBcrypt,
       domainCredentials: options.domainCredentials,
       provisioning: options.provisioning,
+      sessionLifetime: options.sessionLifetime,
       env: options.env,
       onAccountCreated: options.onAccountCreated,
       database: options.getDatabase(),

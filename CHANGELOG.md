@@ -6,6 +6,13 @@ records, not claims that this file existed at release time.
 
 ## Unreleased
 
+- Add opt-in `sessionLifetime(userId)` to the server and Next runtime: a
+  product-chosen idle limit for the people it names. Their sessions end after
+  that much inactivity and slide at most hourly while active; the shared
+  14-day refresh no longer extends them. Everyone else keeps the default.
+
+## 0.11.0 — 2026-10-29
+
 - Add opt-in `provisioning` to the server and Next runtime:
   `POST /api/auth/provision/claim` gives an identity a product created without
   a password (an invitation, a login code) its first password under its

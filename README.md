@@ -296,6 +296,14 @@ credential. Take a single-use proof inside `resolve` and give it back in
 
 Refusals carry the codes in `CLAIM_ERRORS` (`@bitbaum/accountkit/auth`).
 
+### A shorter idle limit for some people
+
+`sessionLifetime(userId)` returns seconds, or nothing for the shared default
+(14 days). For a person it names, a session idle longer than that is deleted on
+its next request, an active one slides to now + limit at most once an hour,
+and the shared 14-day refresh never applies. Products use it where their own
+rule is stricter, for example staff on 8 hours.
+
 A used password-reset link verifies the address it was sent to, unless the
 account's address changed after it was sent. Recovery therefore leaves an
 imported or invited account with a usable sign-in when mail is configured.

@@ -4,7 +4,9 @@ import { type OidcClient } from "./methods.js";
 import { type BcryptLike } from "./hash.js";
 import { type DomainCredentials } from "./domain-credentials.js";
 import { type AccountProvisioning } from "./provisioning.js";
+import { type SessionLifetime } from "./session-lifetime.js";
 export type { DomainCredentials } from "./domain-credentials.js";
+export type { SessionLifetime } from "./session-lifetime.js";
 export type { AccountProvisioning, ProvisionedIdentity, } from "./provisioning.js";
 export type AuthMailKind = "verify" | "magicLink" | "reset";
 export interface AuthMailer {
@@ -41,6 +43,11 @@ export interface CreateAuthOptions {
      * account on that account's own password. See ./provisioning.
      */
     provisioning?: AccountProvisioning;
+    /**
+     * Seconds of inactivity after which this person's sessions end, or nothing
+     * for the shared default (14 days). See ./session-lifetime.
+     */
+    sessionLifetime?: SessionLifetime;
     mail: AuthMailer;
     env?: NodeJS.ProcessEnv;
     /**

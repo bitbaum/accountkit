@@ -12,6 +12,7 @@ import { factorForAllMethods } from "./factor.js";
 import { createPasswordHasher } from "./hash.js";
 import { domainCredentialsPlugin, } from "./domain-credentials.js";
 import { provisioningPlugin, } from "./provisioning.js";
+import { sessionLifetimePlugin, } from "./session-lifetime.js";
 import { recordResetAddress, recoveryVerificationPlugin, } from "./recovery-verification.js";
 /**
  * Accounts for a bitbaum product: better-auth 1.x on Drizzle + pg, configured
@@ -239,6 +240,9 @@ export function createAuthInstance(options) {
                 ]
                 : []),
             recoveryVerificationPlugin(),
+            ...(options.sessionLifetime
+                ? [sessionLifetimePlugin(options.sessionLifetime)]
+                : []),
             // allowPasswordless: someone who signs in only by passkey, link or OIDC can
             // still add a second factor (with a fresh session instead of a password).
             factorForAllMethods(site),

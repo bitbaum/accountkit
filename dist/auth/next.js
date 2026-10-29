@@ -25,6 +25,7 @@ export function createAuthRuntime(options) {
             legacyBcrypt: options.legacyBcrypt,
             domainCredentials: options.domainCredentials,
             provisioning: options.provisioning,
+            sessionLifetime: options.sessionLifetime,
             env: options.env,
             onAccountCreated: options.onAccountCreated,
             database: options.getDatabase(),
