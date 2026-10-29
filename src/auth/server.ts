@@ -16,6 +16,10 @@ import { DEFAULT_ROLE } from "./roles.js";
 import { authSchema } from "./schema.js";
 import { factorForAllMethods } from "./factor.js";
 import { createPasswordHasher, type BcryptLike } from "./hash.js";
+import {
+  domainCredentialsPlugin,
+  type DomainCredentials,
+} from "./domain-credentials.js";
 
 /**
  * Accounts for a bitbaum product: better-auth 1.x on Drizzle + pg, configured
@@ -56,6 +60,8 @@ export interface CreateAuthOptions {
    * retain their existing user ids and copy hashes without decrypting them.
    */
   legacyBcrypt?: BcryptLike;
+  /** Optional domain proof (for example an existing housing login code). */
+  domainCredentials?: DomainCredentials;
   mail: AuthMailer;
   env?: NodeJS.ProcessEnv;
   /**
@@ -291,6 +297,9 @@ export function createAuthInstance(options: CreateAuthOptions): Auth {
         mail.send("verify", user.email, url),
     },
     plugins: [
+      ...(options.domainCredentials
+        ? [domainCredentialsPlugin(options.domainCredentials)]
+        : []),
       // allowPasswordless: someone who signs in only by passkey, link or OIDC can
       // still add a second factor (with a fresh session instead of a password).
       factorForAllMethods(site),

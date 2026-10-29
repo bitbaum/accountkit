@@ -2,6 +2,7 @@ import { betterAuth } from "better-auth";
 import type { GenericOAuthConfig } from "better-auth/plugins";
 import { type OidcClient } from "./methods.js";
 import { type BcryptLike } from "./hash.js";
+import { type DomainCredentials } from "./domain-credentials.js";
 export type AuthMailKind = "verify" | "magicLink" | "reset";
 export interface AuthMailer {
     /** Whether mail can be sent at all. Without it the methods that need mail are hidden. */
@@ -29,6 +30,8 @@ export interface CreateAuthOptions {
      * retain their existing user ids and copy hashes without decrypting them.
      */
     legacyBcrypt?: BcryptLike;
+    /** Optional domain proof (for example an existing housing login code). */
+    domainCredentials?: DomainCredentials;
     mail: AuthMailer;
     env?: NodeJS.ProcessEnv;
     /**

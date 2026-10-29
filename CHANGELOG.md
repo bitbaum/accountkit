@@ -4,6 +4,21 @@ This maintained file was started on 2026-10-27. The entries below were
 reconstructed from the linked published releases; they are retrospective
 records, not claims that this file existed at release time.
 
+## 0.10.0 — 2026-10-29
+
+- Add opt-in `domainCredentials` to the server and Next runtime for existing
+  product-owned proofs such as a housing login code. The product verifies the
+  proof and supplies an existing shared user id; AccountKit owns the session,
+  cookies, origin checks and credential rate-limit bucket.
+- A `bindSession` callback can persist narrower product identity scope before
+  the session is exposed. Failures revoke the new session. Domain sessions
+  cannot manage account credentials, enroll a second factor or list other
+  sessions; they have a fixed expiry. A password, passkey or configured provider
+  is required for account management. Accounts with an enabled second factor
+  must use another configured primary method; a domain proof never bypasses it.
+- No consumer data is migrated by these options. Products must preserve their
+  identity and authorization mappings and exercise their own journeys.
+
 ## 0.9.2 — 2026-10-29
 
 - The shared server and Next runtime accept `legacyBcrypt` during credential

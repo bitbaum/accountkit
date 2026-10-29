@@ -249,3 +249,23 @@ under the same stable user ids. The runtime then verifies plain bcrypt and
 resets write native scrypt; reset still revokes existing sessions. Identity and
 role mapping, migration verification and product journeys remain the consumer's
 responsibility. This option alone does not migrate any data.
+
+
+### Domain credentials during migration
+
+`createAuthRuntime` and `createAuthInstance` accept an optional
+`domainCredentials.verify(credential)` callback. It returns `null` for an invalid
+proof, or `{ userId, bindSession? }` for an existing shared user. This enables
+`POST /api/auth/sign-in/domain` with `{ credential }`; use the runtime's `POST`
+handler so the shared credential limiter applies. Never accept a user id from
+the request as the verification result.
+
+`bindSession(sessionId)` persists product-owned restrictions before the session
+cookie is set. For example, a staff code of a dual-identity account grants only
+the staff surface. Store that scope against the shared session id with cascade
+deletion and read it on every product request. A failed binding revokes the new
+session. Domain sessions have fixed expiry and cannot enroll credentials,
+change account security or list other sessions. Show a password/passkey/provider
+sign-in action before offering account management. An account with an enabled
+second factor must use another configured primary method; domain proof alone
+never bypasses MFA. The shared tables require no change for this option.

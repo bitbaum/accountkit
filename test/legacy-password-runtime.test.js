@@ -31,6 +31,11 @@ test("imported bcrypt credentials retain identity and reset into the native runt
       createAuthRuntime({
         site,
         mail,
+        env: {
+          NODE_ENV: "production",
+          BETTER_AUTH_SECRET:
+            "synthetic-import-runtime-secret-at-least-32-characters",
+        },
         legacyBcrypt: bcrypt,
         isDatabaseConfigured: () => true,
         getDatabase: () => db,
