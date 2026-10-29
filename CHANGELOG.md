@@ -6,6 +6,13 @@ records, not claims that this file existed at release time.
 
 ## Unreleased
 
+- Add `createAuthTables(prefix)` to `@bitbaum/accountkit/auth/schema`: the
+  account tables under a name prefix, for a product whose own tables already
+  use the standard names. The default `authSchema` and table exports are
+  unchanged; the SQL they generate is identical.
+
+## 0.12.0 — 2026-10-29
+
 - Add opt-in `sessionLifetime(userId)` to the server and Next runtime: a
   product-chosen idle limit for the people it names. Their sessions end after
   that much inactivity and slide at most hourly while active; the shared

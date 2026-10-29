@@ -251,6 +251,14 @@ role mapping, migration verification and product journeys remain the consumer's
 responsibility. This option alone does not migrate any data.
 
 
+### Account tables beside a product's own
+
+A product whose tables already use the standard names (a NextAuth `users`,
+`accounts`, `sessions`) creates the account tables under a prefix and passes
+them to the runtime: `const tables = createAuthTables("auth_")`, then
+`schema: tables` (both `createAuthRuntime` and `createAuthInstance`). The
+columns are identical to the standard set; only table and index names change.
+
 ### Domain credentials during migration
 
 `createAuthRuntime` and `createAuthInstance` accept an optional
