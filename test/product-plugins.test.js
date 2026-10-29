@@ -72,6 +72,7 @@ test("a product's own plugin mounts beside the shared methods, on its own tables
       url: "https://plugins.example.test",
       title: "Plugins",
       slug: "plugins",
+      trustedOrigins: ["https://tenant.example.test/"],
     };
     const auth = createAuthInstance({
       site,
@@ -116,6 +117,24 @@ test("a product's own plugin mounts beside the shared methods, on its own tables
     assert.deepEqual(
       (await list.json()).map((o) => o.slug),
       ["synthetic-org"],
+    );
+    // A second host of the same product passes the origin check; others do not.
+    const fromOrigin = (origin) =>
+      auth.handler(
+        new Request(site.url + "/api/auth/sign-in/email", {
+          method: "POST",
+          headers: { origin, "content-type": "application/json" },
+          body: JSON.stringify({
+            email: "owner@example.test",
+            password: "synthetic owner password",
+          }),
+        }),
+      );
+    const tenant = await fromOrigin("https://tenant.example.test");
+    assert.equal(tenant.status, 200);
+    assert.equal(
+      (await fromOrigin("https://foreign.example.test")).status,
+      403,
     );
     // The shared rules still hold: a role in the body is never accepted.
     const { rows } = await pg.query("SELECT role FROM users");

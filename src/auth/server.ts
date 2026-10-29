@@ -65,6 +65,12 @@ export interface AuthSite {
   title: string;
   /** Cookie prefix. */
   slug: string;
+  /**
+   * Further public origins that serve the same product (a tenant host beside
+   * the platform host). Requests from them pass the origin check; each host
+   * keeps its own host-only cookie. Links in mail and passkeys use `url`.
+   */
+  trustedOrigins?: string[];
 }
 
 export interface CreateAuthOptions {
@@ -204,7 +210,10 @@ export function createAuthInstance(options: CreateAuthOptions): Auth {
     // Pinned, never inferred from the request: behind Caddy the app sees its
     // INTERNAL origin, and links built from it point at localhost.
     baseURL: site.url,
-    trustedOrigins: [origin.origin],
+    trustedOrigins: [
+      origin.origin,
+      ...(site.trustedOrigins ?? []).map((o) => new URL(o).origin),
+    ],
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     database: drizzleAdapter(options.database as any, {
       provider: "pg",

@@ -260,6 +260,11 @@ shared sign-in methods, limits and cookie rules stay AccountKit's. Pass their
 tables in `schema` under the plugin's model names (`organization`, `member`,
 `invitation`), and a `session` table with any column the plugin adds.
 
+A product served on more than one host (a tenant host beside its platform
+host) lists the others in `site.trustedOrigins`. Their requests pass the
+origin check and keep their own host-only cookies; mail links and passkeys
+use `site.url`.
+
 ### Account tables beside a product's own
 
 A product whose tables already use the standard names (a NextAuth `users`,
