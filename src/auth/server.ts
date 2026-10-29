@@ -1,5 +1,5 @@
 import { passkey } from "@better-auth/passkey";
-import { betterAuth } from "better-auth";
+import { betterAuth, type BetterAuthPlugin } from "better-auth";
 import { hashPassword, verifyPassword } from "better-auth/crypto";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
@@ -92,6 +92,13 @@ export interface CreateAuthOptions {
    * for the shared default (14 days). See ./session-lifetime.
    */
   sessionLifetime?: SessionLifetime;
+  /**
+   * The product's own better-auth plugins for its domain (for example
+   * `organization()` for workspaces). Mounted after AccountKit's own, so they
+   * add endpoints and tables; they do not replace the shared sign-in methods.
+   * Their tables must be in `schema`.
+   */
+  plugins?: BetterAuthPlugin[];
   mail: AuthMailer;
   env?: NodeJS.ProcessEnv;
   /**
@@ -208,6 +215,10 @@ export function createAuthInstance(options: CreateAuthOptions): Auth {
         verification: schema.verification,
         passkey: schema.passkey,
         twoFactor: schema.twoFactor,
+        // A product's own plugin tables (organization, member, …) by model name.
+        ...Object.fromEntries(
+          Object.entries(schema).filter(([model]) => !(model in authSchema)),
+        ),
       },
     }),
     telemetry: { enabled: false },
@@ -368,6 +379,7 @@ export function createAuthInstance(options: CreateAuthOptions): Auth {
           ]
         : []),
       ...(providers.length > 0 ? [genericOAuth({ config: providers })] : []),
+      ...(options.plugins ?? []),
       // Lets server actions set cookies; keep it last.
       nextCookies(),
     ],

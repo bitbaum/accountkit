@@ -6,6 +6,13 @@ records, not claims that this file existed at release time.
 
 ## Unreleased
 
+- Add `plugins` to the server and Next runtime: a product's own better-auth
+  plugins (for example `organization()`), mounted after AccountKit's. Tables
+  in `schema` beyond the standard six are handed to the database adapter by
+  model name.
+
+## 0.13.0 — 2026-10-29
+
 - Add `createAuthTables(prefix)` to `@bitbaum/accountkit/auth/schema`: the
   account tables under a name prefix, for a product whose own tables already
   use the standard names. The default `authSchema` and table exports are

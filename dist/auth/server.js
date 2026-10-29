@@ -109,6 +109,8 @@ export function createAuthInstance(options) {
                 verification: schema.verification,
                 passkey: schema.passkey,
                 twoFactor: schema.twoFactor,
+                // A product's own plugin tables (organization, member, …) by model name.
+                ...Object.fromEntries(Object.entries(schema).filter(([model]) => !(model in authSchema))),
             },
         }),
         telemetry: { enabled: false },
@@ -260,6 +262,7 @@ export function createAuthInstance(options) {
                 ]
                 : []),
             ...(providers.length > 0 ? [genericOAuth({ config: providers })] : []),
+            ...(options.plugins ?? []),
             // Lets server actions set cookies; keep it last.
             nextCookies(),
         ],

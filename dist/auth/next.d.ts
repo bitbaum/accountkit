@@ -17,6 +17,8 @@ export interface AuthRuntimeOptions {
     provisioning?: CreateAuthOptions["provisioning"];
     /** See CreateAuthOptions.sessionLifetime: a shorter idle limit for some people. */
     sessionLifetime?: CreateAuthOptions["sessionLifetime"];
+    /** See CreateAuthOptions.plugins: the product's own domain plugins. */
+    plugins?: CreateAuthOptions["plugins"];
     /**
      * For a product whose rows were keyed on an OIDC subject before it had
      * accounts (an OrangeCat actor id). A person who FIRST came in through that

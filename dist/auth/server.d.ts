@@ -1,4 +1,4 @@
-import { betterAuth } from "better-auth";
+import { betterAuth, type BetterAuthPlugin } from "better-auth";
 import type { GenericOAuthConfig } from "better-auth/plugins";
 import { type OidcClient } from "./methods.js";
 import { type BcryptLike } from "./hash.js";
@@ -48,6 +48,13 @@ export interface CreateAuthOptions {
      * for the shared default (14 days). See ./session-lifetime.
      */
     sessionLifetime?: SessionLifetime;
+    /**
+     * The product's own better-auth plugins for its domain (for example
+     * `organization()` for workspaces). Mounted after AccountKit's own, so they
+     * add endpoints and tables; they do not replace the shared sign-in methods.
+     * Their tables must be in `schema`.
+     */
+    plugins?: BetterAuthPlugin[];
     mail: AuthMailer;
     env?: NodeJS.ProcessEnv;
     /**
