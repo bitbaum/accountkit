@@ -1,5 +1,6 @@
 import { passkey } from "@better-auth/passkey";
 import { betterAuth } from "better-auth";
+import { hashPassword, verifyPassword } from "better-auth/crypto";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
 import { genericOAuth, magicLink } from "better-auth/plugins";
@@ -8,6 +9,7 @@ import { MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH } from "./password.js";
 import { DEFAULT_ROLE } from "./roles.js";
 import { authSchema } from "./schema.js";
 import { factorForAllMethods } from "./factor.js";
+import { createPasswordHasher } from "./hash.js";
 /**
  * Accounts for a bitbaum product: better-auth 1.x on Drizzle + pg, configured
  * the same way everywhere (fleet STACK.md, "Identity"). A product passes in
@@ -83,6 +85,9 @@ export function createAuthInstance(options) {
     const providers = oidcClients(env).map(oidcProvider);
     const origin = new URL(site.url);
     const schema = options.schema ?? authSchema;
+    const legacyPasswords = options.legacyBcrypt
+        ? createPasswordHasher(options.legacyBcrypt)
+        : undefined;
     const auth = betterAuth({
         appName: site.title,
         secret: authSecret(env),
@@ -185,6 +190,19 @@ export function createAuthInstance(options) {
         },
         emailAndPassword: {
             enabled: true,
+            ...(legacyPasswords
+                ? {
+                    password: {
+                        hash: hashPassword,
+                        verify: async (input) => {
+                            if (/^(?:\$bs1\$|\$2[aby]\$)/.test(input.hash)) {
+                                return (await legacyPasswords.verify(input.password, input.hash)).valid;
+                            }
+                            return verifyPassword(input);
+                        },
+                    },
+                }
+                : {}),
             minPasswordLength: MIN_PASSWORD_LENGTH,
             maxPasswordLength: MAX_PASSWORD_LENGTH,
             autoSignIn: !methods.verifyEmail,

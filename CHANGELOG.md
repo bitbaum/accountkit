@@ -4,6 +4,16 @@ This maintained file was started on 2026-10-27. The entries below were
 reconstructed from the linked published releases; they are retrospective
 records, not claims that this file existed at release time.
 
+## 0.9.2 — 2026-10-29
+
+- The shared server and Next runtime accept `legacyBcrypt` during credential
+  migration. Existing plain bcrypt and AccountKit `$bs1$` passwords remain
+  readable under their original user ids. New and reset passwords use native
+  scrypt. Products still own identity/role mapping and must verify their data
+  migration and browser journeys; this option does not migrate data itself.
+- Database regression coverage checks both imported formats, long-password
+  suffixes, native registration, recovery token reuse and session revocation.
+
 ## 0.9.1 — 2026-10-28
 
 - `@bitbaum/accountkit/auth/password` now also ships a CommonJS build

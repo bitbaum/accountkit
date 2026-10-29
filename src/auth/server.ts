@@ -1,5 +1,6 @@
 import { passkey } from "@better-auth/passkey";
 import { betterAuth } from "better-auth";
+import { hashPassword, verifyPassword } from "better-auth/crypto";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
 import { genericOAuth, magicLink } from "better-auth/plugins";
@@ -14,6 +15,7 @@ import { MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH } from "./password.js";
 import { DEFAULT_ROLE } from "./roles.js";
 import { authSchema } from "./schema.js";
 import { factorForAllMethods } from "./factor.js";
+import { createPasswordHasher, type BcryptLike } from "./hash.js";
 
 /**
  * Accounts for a bitbaum product: better-auth 1.x on Drizzle + pg, configured
@@ -48,6 +50,12 @@ export interface CreateAuthOptions {
   database: unknown;
   /** Defaults to this package's tables; pass your own only if you must. */
   schema?: Record<string, unknown>;
+  /**
+   * Read existing bcrypt and AccountKit $bs1$ credentials during migration.
+   * New and reset passwords use the runtime's native scrypt format. Products
+   * retain their existing user ids and copy hashes without decrypting them.
+   */
+  legacyBcrypt?: BcryptLike;
   mail: AuthMailer;
   env?: NodeJS.ProcessEnv;
   /**
@@ -143,6 +151,9 @@ export function createAuthInstance(options: CreateAuthOptions): Auth {
   const providers = oidcClients(env).map(oidcProvider);
   const origin = new URL(site.url);
   const schema = options.schema ?? authSchema;
+  const legacyPasswords = options.legacyBcrypt
+    ? createPasswordHasher(options.legacyBcrypt)
+    : undefined;
 
   const auth = betterAuth({
     appName: site.title,
@@ -247,6 +258,21 @@ export function createAuthInstance(options: CreateAuthOptions): Auth {
     },
     emailAndPassword: {
       enabled: true,
+      ...(legacyPasswords
+        ? {
+            password: {
+              hash: hashPassword,
+              verify: async (input: { password: string; hash: string }) => {
+                if (/^(?:\$bs1\$|\$2[aby]\$)/.test(input.hash)) {
+                  return (
+                    await legacyPasswords.verify(input.password, input.hash)
+                  ).valid;
+                }
+                return verifyPassword(input);
+              },
+            },
+          }
+        : {}),
       minPasswordLength: MIN_PASSWORD_LENGTH,
       maxPasswordLength: MAX_PASSWORD_LENGTH,
       autoSignIn: !methods.verifyEmail,
