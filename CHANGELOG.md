@@ -4,6 +4,21 @@ This maintained file was started on 2026-10-27. The entries below were
 reconstructed from the linked published releases; they are retrospective
 records, not claims that this file existed at release time.
 
+## Unreleased
+
+- Add opt-in `provisioning` to the server and Next runtime:
+  `POST /api/auth/provision/claim` gives an identity a product created without
+  a password (an invitation, a login code) its first password under its
+  existing user id. A second identity joins an existing account only on that
+  account's own password; an invited account with no password must recover
+  through its mailbox first. Verified addresses are never replaced, `.invalid`
+  addresses are refused, a single-use proof is given back on failure, and an
+  unverified address gets a verification link instead of a session when mail is
+  configured. Refusal codes are exported as `CLAIM_ERRORS`.
+- A completed password reset verifies the address the link was sent to, when
+  that address is unchanged. An imported or invited account with an unverified
+  address could previously set a password and still be refused at sign-in.
+
 ## 0.10.0 — 2026-10-29
 
 - Add opt-in `domainCredentials` to the server and Next runtime for existing

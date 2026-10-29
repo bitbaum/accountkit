@@ -16,3 +16,8 @@ export {
   type RecoveryLabels,
 } from "./labels.js";
 export { AUTH_LABEL_LOCALES, authLabelsFor } from "./translations.js";
+export {
+  CLAIM_ERRORS,
+  type ClaimError,
+  type ClaimResult,
+} from "./claim-errors.js";

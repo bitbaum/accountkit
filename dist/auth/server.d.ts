@@ -3,6 +3,9 @@ import type { GenericOAuthConfig } from "better-auth/plugins";
 import { type OidcClient } from "./methods.js";
 import { type BcryptLike } from "./hash.js";
 import { type DomainCredentials } from "./domain-credentials.js";
+import { type AccountProvisioning } from "./provisioning.js";
+export type { DomainCredentials } from "./domain-credentials.js";
+export type { AccountProvisioning, ProvisionedIdentity, } from "./provisioning.js";
 export type AuthMailKind = "verify" | "magicLink" | "reset";
 export interface AuthMailer {
     /** Whether mail can be sent at all. Without it the methods that need mail are hidden. */
@@ -32,6 +35,12 @@ export interface CreateAuthOptions {
     legacyBcrypt?: BcryptLike;
     /** Optional domain proof (for example an existing housing login code). */
     domainCredentials?: DomainCredentials;
+    /**
+     * First password for an identity the product created without one (an
+     * invitation, a login code), and linking a second identity to an existing
+     * account on that account's own password. See ./provisioning.
+     */
+    provisioning?: AccountProvisioning;
     mail: AuthMailer;
     env?: NodeJS.ProcessEnv;
     /**
