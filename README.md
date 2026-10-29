@@ -241,3 +241,11 @@ hashes the SHA-256 of the password, so a long password is not cut at bcrypt's
 72 bytes, and still verifies old plain bcrypt hashes; its `verify` returns
 `rehash: true` when a sign-in matched an old hash, and the product then stores
 `hash(password)`. No one has to reset a password.
+
+When moving those accounts into the shared runtime, pass `legacyBcrypt: bcrypt`
+to `createAuthRuntime` or `createAuthInstance` and import the existing hashes
+under the same stable user ids. The runtime then verifies plain bcrypt and
+`$bs1$` hashes as well as native scrypt hashes. New registrations and password
+resets write native scrypt; reset still revokes existing sessions. Identity and
+role mapping, migration verification and product journeys remain the consumer's
+responsibility. This option alone does not migrate any data.

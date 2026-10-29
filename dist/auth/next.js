@@ -22,6 +22,7 @@ export function createAuthRuntime(options) {
             site: options.site,
             mail: options.mail,
             schema: options.schema,
+            legacyBcrypt: options.legacyBcrypt,
             onAccountCreated: options.onAccountCreated,
             database: options.getDatabase(),
         });

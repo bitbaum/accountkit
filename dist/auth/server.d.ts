@@ -1,6 +1,7 @@
 import { betterAuth } from "better-auth";
 import type { GenericOAuthConfig } from "better-auth/plugins";
 import { type OidcClient } from "./methods.js";
+import { type BcryptLike } from "./hash.js";
 export type AuthMailKind = "verify" | "magicLink" | "reset";
 export interface AuthMailer {
     /** Whether mail can be sent at all. Without it the methods that need mail are hidden. */
@@ -22,6 +23,12 @@ export interface CreateAuthOptions {
     database: unknown;
     /** Defaults to this package's tables; pass your own only if you must. */
     schema?: Record<string, unknown>;
+    /**
+     * Read existing bcrypt and AccountKit $bs1$ credentials during migration.
+     * New and reset passwords use the runtime's native scrypt format. Products
+     * retain their existing user ids and copy hashes without decrypting them.
+     */
+    legacyBcrypt?: BcryptLike;
     mail: AuthMailer;
     env?: NodeJS.ProcessEnv;
     /**

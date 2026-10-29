@@ -8,6 +8,8 @@ export interface AuthRuntimeOptions {
     getDatabase: () => unknown;
     /** Only if the product keeps the account tables under its own definitions. */
     schema?: Record<string, unknown>;
+    /** See CreateAuthOptions.legacyBcrypt; only needed for imported credentials. */
+    legacyBcrypt?: CreateAuthOptions["legacyBcrypt"];
     /**
      * For a product whose rows were keyed on an OIDC subject before it had
      * accounts (an OrangeCat actor id). A person who FIRST came in through that
