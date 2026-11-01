@@ -127,26 +127,46 @@ export function createNextAuthCompat(options) {
             cookies: answer.cookies,
         };
     }
+    /** A hook's failure is logged and never costs the person their sign-in. */
+    async function runHook(name, hook) {
+        try {
+            await hook?.();
+        }
+        catch (error) {
+            console.error(`[auth] compat ${name} hook failed: ${error.name}`);
+        }
+    }
     async function credentialSignIn(request, provider, form) {
-        const resolved = await options.credentials[provider].resolve(form ?? new FormData());
+        let resolved;
+        let answer;
         const password = String(form?.get("password") ?? "");
-        if (resolved && "refuse" in resolved)
-            return refusal(resolved.refuse);
-        if (!resolved || !resolved.email || !password)
-            return refusal(code("missing"));
+        try {
+            resolved = await options.credentials[provider].resolve(form ?? new FormData());
+            if (resolved && "refuse" in resolved)
+                return refusal(resolved.refuse);
+            if (!resolved || !resolved.email || !password)
+                return refusal(code("missing"));
+            answer = await callShared(request, "/sign-in/email", {
+                email: resolved.email.trim().toLowerCase(),
+                password,
+            });
+        }
+        catch (error) {
+            // The product's database or the runtime is down: say so, never a 500.
+            console.error(`[auth] compat sign-in unavailable: ${error.name}`);
+            return refusal(code("unavailable"));
+        }
         const email = resolved.email.trim().toLowerCase();
-        const answer = await callShared(request, "/sign-in/email", {
-            email,
-            password,
-        });
         if (answer.status === 200) {
             const user = answer.body.user;
-            if (user?.id)
-                await options.onSignedIn?.({
+            if (user?.id) {
+                const signedIn = {
                     provider,
                     email,
                     user: { id: user.id, name: user.name },
-                });
+                };
+                await runHook("onSignedIn", options.onSignedIn && (() => options.onSignedIn(signedIn)));
+            }
             const next = sameOriginPath(form?.get("callbackUrl"), options.siteUrl(), options.landing);
             return withCookies(Response.json({ url: `${options.siteUrl()}${next}` }), answer.cookies);
         }
@@ -157,12 +177,8 @@ export function createNextAuthCompat(options) {
                 : answer.status >= 500
                     ? "unavailable"
                     : "credentials";
-        await options.onRefused?.({
-            provider,
-            email,
-            status: answer.status,
-            reason,
-        });
+        const refused = { provider, email, status: answer.status, reason };
+        await runHook("onRefused", options.onRefused && (() => options.onRefused(refused)));
         return refusal(code(reason));
     }
     /**

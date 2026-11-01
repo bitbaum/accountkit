@@ -20,7 +20,12 @@ const SITE = "https://compat.example.test";
 const PASSWORD = "synthetic legacy password";
 
 /** A product with its own `people` rows, its accounts imported into auth_*. */
-async function product({ codes, linkWhenSignedIn } = {}) {
+async function product({
+  codes,
+  linkWhenSignedIn,
+  failHooks,
+  failResolve,
+} = {}) {
   const pg = new PGlite();
   const tables = createAuthTables("auth_");
   const db = drizzle(pg, { schema: tables });
@@ -89,6 +94,7 @@ async function product({ codes, linkWhenSignedIn } = {}) {
       credentials: {
         name: "Email",
         resolve: async (form) => {
+          if (failResolve) throw new Error("database down");
           const email = String(form.get("email") ?? "").toLowerCase();
           if (!email) return null;
           const { rows } = await pg.query(
@@ -99,8 +105,14 @@ async function product({ codes, linkWhenSignedIn } = {}) {
         },
       },
     },
-    onSignedIn: async (event) => events.signedIn.push(event),
-    onRefused: async (event) => events.refused.push(event),
+    onSignedIn: async (event) => {
+      if (failHooks) throw new Error("hook down");
+      events.signedIn.push(event);
+    },
+    onRefused: async (event) => {
+      if (failHooks) throw new Error("hook down");
+      events.refused.push(event);
+    },
   });
   return {
     pg,
@@ -187,6 +199,44 @@ test("refusals carry the login page's own codes", async () => {
     assert.equal(await client.session(), null);
   } finally {
     await pg.close();
+  }
+});
+
+test("a failing resolver answers 'unavailable' and a failing hook never costs the sign-in", async () => {
+  const { client, pg } = await product({ failHooks: true });
+  try {
+    const result = await client.signIn("credentials", {
+      email: "owner@example.test",
+      password: PASSWORD,
+    });
+    assert.equal(
+      client.refusal(result),
+      null,
+      "the sign-in stands although onSignedIn threw",
+    );
+    assert.equal((await client.session()).user.id, "p-1");
+    await client.signOut();
+    const wrong = await client.signIn("credentials", {
+      email: "owner@example.test",
+      password: "nope",
+    });
+    assert.equal(
+      client.code(wrong),
+      "credentials",
+      "a refusal stands although onRefused threw",
+    );
+  } finally {
+    await pg.close();
+  }
+  const down = await product({ failResolve: true });
+  try {
+    const result = await down.client.signIn("credentials", {
+      email: "owner@example.test",
+      password: PASSWORD,
+    });
+    assert.equal(down.client.code(result), "unavailable");
+  } finally {
+    await down.pg.close();
   }
 });
 
