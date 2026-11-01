@@ -6,6 +6,14 @@ records, not claims that this file existed at release time.
 
 ## Unreleased
 
+- Fix `nextauth-compat`'s OIDC sign-in (OrangeCat, the bitbaum sign-in) on
+  better-auth 1.7, which serves generic OIDC providers through its core
+  `/sign-in/social`, `/link-social` and `/callback/<id>` endpoints. 0.18.0
+  still called the removed `/sign-in/oauth2`, so every such sign-in answered
+  `unavailable`. The callback opens only for the product's OIDC providers. A
+  journey test now runs the whole round-trip against a synthetic issuer
+  (`test/oidc-fixture.js`, shared with the second-factor test).
+
 - Add `@bitbaum/accountkit/auth/switch`: `sharedRuntimeEnabled(env)`, the
   one `AUTH_RUNTIME=accountkit` switch a product staging AccountKit beside
   Auth.js reads, free of dependencies so a proxy can ask it cheaply.

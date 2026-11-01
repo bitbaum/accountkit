@@ -114,9 +114,18 @@ const OPEN_PATHS = new Set([
   "/error",
 ]);
 
-/** AccountKit endpoints the screens reach directly; everything else answers 404. */
-export function compatPathIsOpen(path: string): boolean {
-  return OPEN_PATHS.has(path) || path.startsWith("/oauth2/callback/");
+/**
+ * AccountKit endpoints the screens reach directly; everything else answers 404.
+ * `oidcProviders` are the OIDC providers whose callback (`/callback/<id>`)
+ * comes back from the provider.
+ */
+export function compatPathIsOpen(
+  path: string,
+  oidcProviders: ReadonlySet<string> = new Set(),
+): boolean {
+  if (OPEN_PATHS.has(path)) return true;
+  const callback = /^\/callback\/([^/]+)$/.exec(path);
+  return callback !== null && oidcProviders.has(callback[1]);
 }
 
 /** A same-origin path from a client-supplied URL, or `fallback`. */
@@ -261,11 +270,13 @@ export function createNextAuthCompat<S>(options: NextAuthCompatOptions<S>) {
     const link = signedIn
       ? await (options.linkWhenSignedIn?.(request, signedIn) ?? true)
       : false;
+    // better-auth 1.7 serves generic OIDC providers through its core social
+    // endpoints; the callback is /callback/<id>.
     const answer = await callShared(
       request,
-      link ? "/oauth2/link" : "/sign-in/oauth2",
+      link ? "/link-social" : "/sign-in/social",
       {
-        providerId,
+        provider: providerId,
         callbackURL: `${site}${next}`,
         errorCallbackURL: link
           ? `${site}${options.linkErrorPath ?? next}`
@@ -445,7 +456,7 @@ export function createNextAuthCompat<S>(options: NextAuthCompatOptions<S>) {
       // next-auth/react sends a provider this runtime does not offer here.
       return redirectTo(`${site}${options.signInPath}?error=OAuthSignin`);
     }
-    if (compatPathIsOpen(path)) return null;
+    if (compatPathIsOpen(path, oidcProviderIds())) return null;
     return Response.json({ error: "not_found" }, { status: 404 });
   }
 
