@@ -1,9 +1,14 @@
 import { randomUUID } from "node:crypto";
 import { passkey } from "@better-auth/passkey";
-import { betterAuth, type BetterAuthPlugin } from "better-auth";
+import {
+  betterAuth,
+  type AuthContext,
+  type BetterAuthPlugin,
+} from "better-auth";
 import { hashPassword, verifyPassword } from "better-auth/crypto";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
+import { decryptOAuthToken } from "better-auth/oauth2";
 import { genericOAuth, magicLink } from "better-auth/plugins";
 import type { GenericOAuthConfig } from "better-auth/plugins";
 import {
@@ -137,12 +142,33 @@ export interface CreateAuthOptions {
    * included), once the person exists. A product that used to identify people by another id — an
    * OrangeCat actor id, say — re-keys its own rows here. Must be idempotent;
    * a throw is logged and never blocks the sign-in.
+   *
+   * `tokens` are the provider's, for a product that acts at the provider on
+   * the person's behalf (Loki publishing to OrangeCat) and keeps them in its
+   * own table. AccountKit itself never stores provider tokens.
+   *
+   * A product whose mirror trigger records the same sign-in method in
+   * AccountKit's table while this runs need not avoid it: that record, for
+   * this person, gives way to AccountKit's own.
    */
-  onAccountCreated?: (account: {
-    userId: string;
-    providerId: string;
-    accountId: string;
-  }) => Promise<void>;
+  onAccountCreated?: (account: CreatedAccount) => Promise<void>;
+}
+
+/** A sign-in method as it is attached to a person. */
+export interface CreatedAccount {
+  userId: string;
+  providerId: string;
+  accountId: string;
+  tokens: ProviderTokens;
+}
+
+/** What a provider handed over at sign-in; every field may be absent. */
+export interface ProviderTokens {
+  accessToken: string | null;
+  refreshToken: string | null;
+  idToken: string | null;
+  accessTokenExpiresAt: Date | null;
+  scope: string | null;
 }
 
 /** A product's own stored password format, read during migration. */
@@ -223,6 +249,35 @@ export function oidcProvider(client: OidcClient): GenericOAuthConfig {
 }
 
 export type Auth = ReturnType<typeof betterAuth>;
+
+/** The tokens on an account about to be stored, as the provider sent them. */
+async function providerTokens(
+  data: Record<string, unknown>,
+  context: AuthContext | undefined,
+): Promise<ProviderTokens> {
+  // better-auth has already encrypted them (encryptOAuthTokens) by now.
+  const token = async (value: unknown) =>
+    typeof value === "string" && value
+      ? context
+        ? await decryptOAuthToken(value, context)
+        : value
+      : null;
+  const text = (value: unknown) =>
+    typeof value === "string" && value ? value : null;
+  const expires = data.accessTokenExpiresAt;
+  return {
+    accessToken: await token(data.accessToken),
+    refreshToken: await token(data.refreshToken),
+    idToken: await token(data.idToken),
+    accessTokenExpiresAt:
+      expires instanceof Date
+        ? expires
+        : expires
+          ? new Date(String(expires))
+          : null,
+    scope: text(data.scope),
+  };
+}
 
 export function createAuthInstance(options: CreateAuthOptions): Auth {
   const env = options.env ?? process.env;
@@ -318,17 +373,37 @@ export function createAuthInstance(options: CreateAuthOptions): Auth {
           // Runs just before the sign-in method is stored, when the person's
           // row already exists. (better-auth's `after` hooks are queued behind
           // a transaction this adapter never opens, and did not fire.)
-          before: async (data) => {
+          before: async (data, context) => {
+            const account = {
+              userId: String(data.userId),
+              providerId: String(data.providerId),
+              accountId: String(data.accountId),
+            };
             try {
               await options.onAccountCreated?.({
-                userId: String(data.userId),
-                providerId: String(data.providerId),
-                accountId: String(data.accountId),
+                ...account,
+                tokens: await providerTokens(data, context?.context),
               });
             } catch (error) {
               console.error(
                 `[auth] onAccountCreated failed: ${(error as Error).name}`,
               );
+            }
+            // A product's mirror may have recorded this very method for this
+            // person just now (its own row, written in the hook above); left
+            // in place it would collide with the row about to be stored.
+            if (
+              options.onAccountCreated &&
+              account.providerId !== "credential"
+            ) {
+              await context?.context.adapter.deleteMany({
+                model: "account",
+                where: [
+                  { field: "providerId", value: account.providerId },
+                  { field: "accountId", value: account.accountId },
+                  { field: "userId", value: account.userId },
+                ],
+              });
             }
             return {
               data: {

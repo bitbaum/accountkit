@@ -310,6 +310,10 @@ test("an OrangeCat sign-in round-trips through next-auth/react's protocol; a cro
       ORANGECAT_OAUTH_CLIENT_ID: fixture.clientId,
       ORANGECAT_OAUTH_CLIENT_SECRET: fixture.clientSecret,
     };
+    // A product like the ones migrating: a hook that writes its own row, whose
+    // mirror trigger records the OrangeCat link in AccountKit's table at once,
+    // and that keeps the provider's tokens for itself.
+    const created = [];
     const runtime = createAuthRuntime({
       site: { url: SITE, title: "Compat", slug: "compat" },
       mail: { configured: false, send: async () => {} },
@@ -317,6 +321,20 @@ test("an OrangeCat sign-in round-trips through next-auth/react's protocol; a cro
       isDatabaseConfigured: () => true,
       getDatabase: () => db,
       schema: tables,
+      ids: "uuid",
+      onAccountCreated: async (account) => {
+        created.push(account);
+        await pg.query(
+          `INSERT INTO auth_accounts (id, account_id, provider_id, user_id, created_at, updated_at)
+           VALUES ($1, $2, $3, $4, now(), now()) ON CONFLICT DO NOTHING`,
+          [
+            `mirror:${account.accountId}`,
+            account.accountId,
+            account.providerId,
+            account.userId,
+          ],
+        );
+      },
     });
     const compat = createNextAuthCompat({
       runtime,
@@ -349,11 +367,26 @@ test("an OrangeCat sign-in round-trips through next-auth/react's protocol; a cro
     assert.equal(landed.headers.get("location"), `${SITE}/projects`);
     assert.equal(fixture.state.tokenExchanges, 1);
     const { rows } = await pg.query(
-      `SELECT account_id FROM auth_accounts WHERE provider_id = 'orangecat'`,
+      `SELECT id, account_id, access_token FROM auth_accounts WHERE provider_id = 'orangecat'`,
     );
-    assert.deepEqual(
-      rows.map((row) => row.account_id),
-      ["actor-1"],
+    assert.equal(
+      rows.length,
+      1,
+      "the mirror's record gave way to AccountKit's",
+    );
+    assert.equal(rows[0].account_id, "actor-1");
+    assert.notEqual(rows[0].id, "mirror:actor-1");
+    assert.equal(
+      rows[0].access_token,
+      null,
+      "AccountKit stores no provider token",
+    );
+    assert.equal(created.length, 1);
+    assert.equal(created[0].providerId, "orangecat");
+    assert.equal(
+      created[0].tokens.accessToken,
+      "synthetic-access-token",
+      "the product's hook receives the provider's tokens",
     );
     assert.ok((await client.session())?.user?.id, "signed in");
 

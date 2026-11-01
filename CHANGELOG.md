@@ -6,6 +6,17 @@ records, not claims that this file existed at release time.
 
 ## Unreleased
 
+- Fix a first OIDC sign-in failing with `unable_to_create_user` in a product
+  whose `onAccountCreated` writes its own row while a mirror trigger records
+  the same OrangeCat link in AccountKit's table (evig, loki, petvity and
+  surf-your-life all do). That record, for the same person, now gives way to
+  AccountKit's own. A different person holding the link still fails, as it
+  must.
+- `onAccountCreated` receives `tokens` (`accessToken`, `refreshToken`,
+  `idToken`, `accessTokenExpiresAt`, `scope`). A product that acts at the
+  provider on the person's behalf (Loki publishing to OrangeCat) keeps them in
+  its own table. AccountKit still stores no provider token.
+
 - Fix `nextauth-compat`'s OIDC sign-in (OrangeCat, the bitbaum sign-in) on
   better-auth 1.7, which serves generic OIDC providers through its core
   `/sign-in/social`, `/link-social` and `/callback/<id>` endpoints. 0.18.0

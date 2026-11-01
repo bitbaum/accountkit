@@ -91,12 +91,31 @@ export interface CreateAuthOptions {
      * included), once the person exists. A product that used to identify people by another id — an
      * OrangeCat actor id, say — re-keys its own rows here. Must be idempotent;
      * a throw is logged and never blocks the sign-in.
+     *
+     * `tokens` are the provider's, for a product that acts at the provider on
+     * the person's behalf (Loki publishing to OrangeCat) and keeps them in its
+     * own table. AccountKit itself never stores provider tokens.
+     *
+     * A product whose mirror trigger records the same sign-in method in
+     * AccountKit's table while this runs need not avoid it: that record, for
+     * this person, gives way to AccountKit's own.
      */
-    onAccountCreated?: (account: {
-        userId: string;
-        providerId: string;
-        accountId: string;
-    }) => Promise<void>;
+    onAccountCreated?: (account: CreatedAccount) => Promise<void>;
+}
+/** A sign-in method as it is attached to a person. */
+export interface CreatedAccount {
+    userId: string;
+    providerId: string;
+    accountId: string;
+    tokens: ProviderTokens;
+}
+/** What a provider handed over at sign-in; every field may be absent. */
+export interface ProviderTokens {
+    accessToken: string | null;
+    refreshToken: string | null;
+    idToken: string | null;
+    accessTokenExpiresAt: Date | null;
+    scope: string | null;
 }
 /** A product's own stored password format, read during migration. */
 export interface LegacyPasswordFormat {
