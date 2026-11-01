@@ -95,6 +95,7 @@ export function createAuthInstance(options) {
     const legacyPasswords = options.legacyBcrypt
         ? createPasswordHasher(options.legacyBcrypt)
         : undefined;
+    const legacyFormat = options.legacyPassword;
     const auth = betterAuth({
         appName: site.title,
         secret: authSecret(env),
@@ -207,12 +208,16 @@ export function createAuthInstance(options) {
         },
         emailAndPassword: {
             enabled: true,
-            ...(legacyPasswords
+            ...(legacyPasswords || legacyFormat
                 ? {
                     password: {
                         hash: hashPassword,
                         verify: async (input) => {
-                            if (/^(?:\$bs1\$|\$2[aby]\$)/.test(input.hash)) {
+                            if (legacyFormat?.matches(input.hash)) {
+                                return legacyFormat.verify(input.password, input.hash);
+                            }
+                            if (legacyPasswords &&
+                                /^(?:\$bs1\$|\$2[aby]\$)/.test(input.hash)) {
                                 return (await legacyPasswords.verify(input.password, input.hash)).valid;
                             }
                             return verifyPassword(input);

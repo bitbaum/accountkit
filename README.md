@@ -250,6 +250,12 @@ resets write native scrypt; reset still revokes existing sessions. Identity and
 role mapping, migration verification and product journeys remain the consumer's
 responsibility. This option alone does not migrate any data.
 
+A product that stored its own format instead passes
+`legacyPassword: { matches(hash), verify(password, hash) }`. `matches` claims a
+stored hash by its shape and is asked first, so it must claim only that
+product's hashes; `verify` answers whether the password fits. It works alone or
+beside `legacyBcrypt`, and new passwords are native scrypt either way.
+
 
 ### A product's own plugins
 
