@@ -42,6 +42,14 @@ export interface CreateAuthOptions {
      * retain their existing user ids and copy hashes without decrypting them.
      */
     legacyBcrypt?: BcryptLike;
+    /**
+     * Read a product's own pre-AccountKit password format during migration (for
+     * example a hand-rolled scrypt `hex.salt`). `matches` claims a stored hash
+     * by its shape; `verify` checks a password against it. Checked before
+     * bcrypt and the native format, so it must claim only its own hashes. New
+     * and reset passwords use the runtime's native scrypt format.
+     */
+    legacyPassword?: LegacyPasswordFormat;
     /** Optional domain proof (for example an existing housing login code). */
     domainCredentials?: DomainCredentials;
     /**
@@ -89,6 +97,11 @@ export interface CreateAuthOptions {
         providerId: string;
         accountId: string;
     }) => Promise<void>;
+}
+/** A product's own stored password format, read during migration. */
+export interface LegacyPasswordFormat {
+    matches: (hash: string) => boolean;
+    verify: (password: string, hash: string) => Promise<boolean>;
 }
 export type AuthStatus = {
     ready: true;

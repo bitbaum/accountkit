@@ -6,6 +6,12 @@ records, not claims that this file existed at release time.
 
 ## Unreleased
 
+- Add `legacyPassword: { matches, verify }` to the server and Next runtime: a
+  product's own pre-AccountKit password format (a hand-rolled scrypt
+  `hex.salt`, say) signs in as it is, alone or beside `legacyBcrypt`. `matches`
+  is asked first and must claim only that format; new and changed passwords
+  are native scrypt.
+
 - **Changed default: confirming an address no longer blocks sign-in.** With
   mail configured, a password sign-up is signed in at once and is mailed a
   confirmation link; an unconfirmed account signs in; a first-password claim
