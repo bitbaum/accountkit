@@ -106,6 +106,11 @@ export function provisioningPlugin(provisioning, options) {
                         await sendVerificationEmailFn(ctx, user);
                         return { status: "verify_email", userId };
                     }
+                    // No wall: they are signed in now, and an unconfirmed address
+                    // still gets its link, as at sign-up.
+                    if (options.sendVerification && !user.emailVerified) {
+                        await sendVerificationEmailFn(ctx, user);
+                    }
                     const session = await ctx.context.internalAdapter.createSession(userId);
                     if (!session)
                         throw new APIError("INTERNAL_SERVER_ERROR", {

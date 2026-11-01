@@ -356,7 +356,7 @@ test("a failed claim gives back a single-use proof and never moves a verified ad
   }
 });
 
-test("with mail, a claim sends the link that signs them in, and no session before it", async () => {
+test("with confirmation required, a claim sends the link that signs them in, and no session before it", async () => {
   const { pg, db } = await database();
   try {
     const sent = [];
@@ -377,6 +377,7 @@ test("with mail, a claim sends the link that signs them in, and no session befor
       mail,
       env: { ...env, NODE_ENV: "production" },
       provisioning: ids.provisioning,
+      emailConfirmation: "before-sign-in",
     });
     const { post, session } = client(auth);
     const claimed = await post("/provision/claim", {
@@ -406,6 +407,46 @@ test("with mail, a claim sends the link that signs them in, and no session befor
     const verified = await auth.handler(new Request(sent[0].url));
     assert.ok(verified.status === 200 || verified.status === 302);
     assert.equal((await session(cookie(verified))).user.id, "code-only");
+  } finally {
+    await pg.close();
+  }
+});
+
+test("by default, a claim with mail signs them in now and mails the confirmation link", async () => {
+  const { pg, db } = await database();
+  try {
+    const sent = [];
+    const mail = {
+      configured: true,
+      send: async (kind, to, url) => sent.push({ kind, to, url }),
+    };
+    const ids = product();
+    await db.insert(authSchema.user).values({
+      id: "code-only",
+      email: "code@aoz.invalid",
+      name: "",
+    });
+    ids.add("CODE", "code-only");
+    const auth = createAuthInstance({
+      site,
+      database: db,
+      mail,
+      env: { ...env, NODE_ENV: "production" },
+      provisioning: ids.provisioning,
+    });
+    const { post, session } = client(auth);
+    const claimed = await post("/provision/claim", {
+      credential: "CODE",
+      email: "mailbox@example.test",
+      password: "synthetic mailbox password",
+    });
+    assert.equal(claimed.status, 200);
+    assert.equal((await claimed.json()).status, "signed_in");
+    assert.equal((await session(cookie(claimed))).user.id, "code-only");
+    assert.deepEqual(
+      sent.map(({ kind, to }) => [kind, to]),
+      [["verify", "mailbox@example.test"]],
+    );
   } finally {
     await pg.close();
   }

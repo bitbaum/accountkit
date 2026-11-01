@@ -49,10 +49,21 @@ describe("signInMethods", () => {
     assert.equal(m.magicLink, false);
     assert.equal(m.verifyEmail, false);
   });
-  test("mail: magic link offered and verification required", () => {
+  test("mail: magic link offered, and confirming the address is no wall by default", () => {
     const m = signInMethods({ NODE_ENV: "production" }, true);
     assert.equal(m.magicLink, true);
-    assert.equal(m.verifyEmail, true);
+    assert.equal(m.verifyEmail, false);
+  });
+  test("a product that opts in requires confirmation, but only with mail", () => {
+    const strict = { emailConfirmation: "before-sign-in" };
+    assert.equal(
+      signInMethods({ NODE_ENV: "production" }, true, strict).verifyEmail,
+      true,
+    );
+    assert.equal(
+      signInMethods({ NODE_ENV: "production" }, false, strict).verifyEmail,
+      false,
+    );
   });
   test("development prints the link locally", () => {
     assert.equal(

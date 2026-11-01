@@ -51,7 +51,7 @@ export function oidcClients(env) {
     return [signinBroker(env), orangecatOidc(env)].filter((c) => c !== null);
 }
 /** What the sign-in and sign-up pages offer. Safe to send to the browser: booleans only. */
-export function signInMethods(env, mailConfigured) {
+export function signInMethods(env, mailConfigured, options = {}) {
     const development = env.NODE_ENV === "development";
     return {
         passwordReset: mailConfigured,
@@ -59,7 +59,7 @@ export function signInMethods(env, mailConfigured) {
         passkey: true,
         twoFactor: true,
         magicLink: mailConfigured || development,
-        verifyEmail: mailConfigured,
+        verifyEmail: mailConfigured && options.emailConfirmation === "before-sign-in",
         signin: signinBroker(env) !== null,
         orangecat: orangecatOidc(env) !== null,
     };

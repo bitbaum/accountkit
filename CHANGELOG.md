@@ -6,6 +6,14 @@ records, not claims that this file existed at release time.
 
 ## Unreleased
 
+- **Changed default: confirming an address no longer blocks sign-in.** With
+  mail configured, a password sign-up is signed in at once and is mailed a
+  confirmation link; an unconfirmed account signs in; a first-password claim
+  signs the person in and mails the link. Following the link still sets
+  `emailVerified`. Products that need the old wall pass
+  `emailConfirmation: "before-sign-in"` (server, Next runtime, and the third
+  argument of `signInMethods`).
+
 - Add opt-in `ids: "uuid"` to the server and Next runtime: every id the
   runtime mints is a random UUID, so a person AccountKit creates (a first OIDC
   sign-in, its own sign-up) can get a row in a product whose tables reference

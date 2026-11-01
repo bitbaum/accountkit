@@ -32,6 +32,7 @@ export interface AccountProvisioning {
 }
 export declare function provisioningPlugin(provisioning: AccountProvisioning, options: {
     requireEmailVerification: boolean;
+    sendVerification?: boolean;
 }): {
     id: string;
     endpoints: {

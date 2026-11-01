@@ -274,6 +274,20 @@ them to the runtime: `const tables = createAuthTables("auth_")`, then
 `schema: tables` (both `createAuthRuntime` and `createAuthInstance`). The
 columns are identical to the standard set; only table and index names change.
 
+### Confirming an address never stands in the way
+
+By default a password account signs in the moment it is created, and an
+existing account signs in whether or not its address was ever confirmed. With
+mail, every sign-up is also sent a confirmation link; following it sets
+`user.emailVerified`. A product that keeps some powers for confirmed addresses
+(staff, payouts) reads `emailVerified` on the session itself.
+
+A product that cannot let an unconfirmed address in passes
+`emailConfirmation: "before-sign-in"` to `createAuthRuntime` /
+`createAuthInstance`, and the same value to `signInMethods(env, mailConfigured,
+{ emailConfirmation })` so its forms say "check your inbox". It takes effect
+only with mail: without mail the link could never arrive.
+
 ### UUID ids for a product keyed on uuid
 
 A product whose own rows reference people by a `uuid` column (evig's `users`)
@@ -322,8 +336,10 @@ credential. Take a single-use proof inside `resolve` and give it back in
   claimed), the claim is refused with `CLAIM_EMAIL_NEEDS_RECOVERY`: recovery
   through its mailbox comes first.
 - An identity that already has a password is refused; sign in or recover.
-- With mail configured an unverified address gets a verification link and no
-  session (`status: "verify_email"`); the link signs them in. An account with a
+- The person is signed in at once (`status: "signed_in"`); with mail an
+  unverified address also gets its confirmation link. A product that set
+  `emailConfirmation: "before-sign-in"` gets the link and no session instead
+  (`status: "verify_email"`); the link signs them in. An account with a
   second factor is linked but must still sign in (`status: "sign_in"`).
 
 Refusals carry the codes in `CLAIM_ERRORS` (`@bitbaum/accountkit/auth`).

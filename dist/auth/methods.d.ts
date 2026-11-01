@@ -46,13 +46,33 @@ export interface SignInMethods {
     passkey: boolean;
     twoFactor: boolean;
     magicLink: boolean;
-    /** Whether an email must be confirmed before a password account signs in. */
+    /**
+     * Whether an email must be confirmed before a password account signs in.
+     * False by default: people sign in at once and confirm later (see
+     * EmailConfirmation). True only for a product that opts in, with mail.
+     */
     verifyEmail: boolean;
     signin: boolean;
     orangecat: boolean;
 }
+/**
+ * When a password account must have confirmed its address.
+ *
+ *  - "after-sign-in" (the default for every product): sign-up signs the person
+ *    in at once. With mail, a confirmation link is sent too; confirming is
+ *    never a wall in front of using the product. A product that reserves some
+ *    powers for confirmed addresses reads `user.emailVerified` itself.
+ *  - "before-sign-in": a product that cannot let an unconfirmed address in
+ *    opts into the wall. It applies only with mail, because without mail the
+ *    link could never arrive.
+ */
+export type EmailConfirmation = "after-sign-in" | "before-sign-in";
+export interface SignInMethodOptions {
+    /** Pass the same value the server was created with. Default "after-sign-in". */
+    emailConfirmation?: EmailConfirmation;
+}
 /** What the sign-in and sign-up pages offer. Safe to send to the browser: booleans only. */
-export declare function signInMethods(env: Env, mailConfigured: boolean): SignInMethods;
+export declare function signInMethods(env: Env, mailConfigured: boolean, options?: SignInMethodOptions): SignInMethods;
 /**
  * The address given to a person who signed in with a method that brought no
  * email, or whose email we do not trust as an identity.

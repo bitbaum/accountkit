@@ -86,7 +86,9 @@ export function oidcProvider(client) {
 export function createAuthInstance(options) {
     const env = options.env ?? process.env;
     const { site, mail } = options;
-    const methods = signInMethods(env, mail.configured);
+    const methods = signInMethods(env, mail.configured, {
+        emailConfirmation: options.emailConfirmation,
+    });
     const providers = oidcClients(env).map(oidcProvider);
     const origin = new URL(site.url);
     const schema = options.schema ?? authSchema;
@@ -221,8 +223,8 @@ export function createAuthInstance(options) {
             minPasswordLength: MIN_PASSWORD_LENGTH,
             maxPasswordLength: MAX_PASSWORD_LENGTH,
             autoSignIn: !methods.verifyEmail,
-            // Without mail a verification link could never arrive, and requiring
-            // one would strand every new account.
+            // Only a product that opted into "before-sign-in", and only with mail:
+            // without mail a link could never arrive and would strand every account.
             requireEmailVerification: methods.verifyEmail,
             revokeSessionsOnPasswordReset: true,
             sendResetPassword: mail.configured
@@ -235,7 +237,8 @@ export function createAuthInstance(options) {
                 : undefined,
         },
         emailVerification: {
-            sendOnSignUp: methods.verifyEmail,
+            // With mail, every sign-up gets a confirmation link, wall or not.
+            sendOnSignUp: mail.configured,
             autoSignInAfterVerification: true,
             sendVerificationEmail: async ({ user, url }) => mail.send("verify", user.email, url),
         },
@@ -247,6 +250,7 @@ export function createAuthInstance(options) {
                 ? [
                     provisioningPlugin(options.provisioning, {
                         requireEmailVerification: methods.verifyEmail,
+                        sendVerification: mail.configured,
                     }),
                 ]
                 : []),

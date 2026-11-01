@@ -24,6 +24,8 @@ export interface AuthRuntimeOptions {
   getDatabase: () => unknown;
   /** Only if the product keeps the account tables under its own definitions. */
   schema?: Record<string, unknown>;
+  /** See CreateAuthOptions.emailConfirmation: default "after-sign-in", no wall. */
+  emailConfirmation?: CreateAuthOptions["emailConfirmation"];
   /** See CreateAuthOptions.ids: UUIDs for a product whose rows key on a uuid. */
   ids?: CreateAuthOptions["ids"];
   /** See CreateAuthOptions.legacyBcrypt; only needed for imported credentials. */
@@ -69,6 +71,7 @@ export function createAuthRuntime(options: AuthRuntimeOptions) {
       schema: options.schema,
       legacyBcrypt: options.legacyBcrypt,
       ids: options.ids,
+      emailConfirmation: options.emailConfirmation,
       domainCredentials: options.domainCredentials,
       provisioning: options.provisioning,
       sessionLifetime: options.sessionLifetime,
