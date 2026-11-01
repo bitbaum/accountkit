@@ -1,4 +1,5 @@
 import { test } from "node:test";
+import { sharedRuntimeEnabled } from "@bitbaum/accountkit/auth/switch";
 import assert from "node:assert/strict";
 import bcrypt from "bcryptjs";
 import { PGlite } from "@electric-sql/pglite";
@@ -383,5 +384,16 @@ test("the import rehearsal counts what the import wrote and rolls everything bac
     assert.throws(() => countsSql("x; DROP"), /prefix/);
   } finally {
     await pg.close();
+  }
+});
+
+test("the shared runtime is on only for AUTH_RUNTIME=accountkit", () => {
+  assert.equal(sharedRuntimeEnabled({ AUTH_RUNTIME: "accountkit" }), true);
+  for (const value of [undefined, "", "authjs", "AccountKit", "1"]) {
+    assert.equal(
+      sharedRuntimeEnabled({ AUTH_RUNTIME: value }),
+      false,
+      String(value),
+    );
   }
 });

@@ -283,7 +283,8 @@ export const { GET, POST } = compat.route;
 The product supplies only what is its own: the session shape (re-read from
 its rows on every request), which address each credentials form signs in (or
 a refusal code such as an account lock), the codes its login page reads, and
-hooks after a sign-in or a refusal. `sessionFor(headers)` serves a proxy,
+hooks after a sign-in or a refusal. `sharedRuntimeEnabled()` (`@bitbaum/accountkit/auth/switch`) reads the one
+switch, `AUTH_RUNTIME=accountkit`. `sessionFor(headers)` serves a proxy,
 `currentSession()` a server component, and `sessionIdFor(headers)` names the
 session making a change so the product can keep it while ending the others.
 AccountKit's own sign-up, reset and password endpoints answer 404 through it,
