@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { passkey } from "@better-auth/passkey";
 import { betterAuth } from "better-auth";
 import { hashPassword, verifyPassword } from "better-auth/crypto";
@@ -128,6 +129,9 @@ export function createAuthInstance(options) {
             // An IP address next to a session is personal data the product does not need.
             ipAddress: { disableIpTracking: true },
             cookiePrefix: site.slug,
+            ...(options.ids === "uuid"
+                ? { database: { generateId: () => randomUUID() } }
+                : {}),
         },
         session: {
             expiresIn: 14 * 24 * 60 * 60,

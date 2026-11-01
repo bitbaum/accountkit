@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { passkey } from "@better-auth/passkey";
 import { betterAuth, type BetterAuthPlugin } from "better-auth";
 import { hashPassword, verifyPassword } from "better-auth/crypto";
@@ -108,6 +109,14 @@ export interface CreateAuthOptions {
   plugins?: BetterAuthPlugin[];
   mail: AuthMailer;
   env?: NodeJS.ProcessEnv;
+  /**
+   * `"uuid"`: every id the runtime mints (users included) is a random UUID.
+   * For a product whose own rows reference its people by a `uuid` column, so
+   * a person AccountKit creates (a first OIDC sign-in, its own sign-up) can be
+   * given a product row under the same id. Ids already stored are untouched.
+   * Default: better-auth's own random string ids.
+   */
+  ids?: "uuid";
   /**
    * Called as a sign-in method is attached to a person (a first sign-up
    * included), once the person exists. A product that used to identify people by another id — an
@@ -244,6 +253,9 @@ export function createAuthInstance(options: CreateAuthOptions): Auth {
       // An IP address next to a session is personal data the product does not need.
       ipAddress: { disableIpTracking: true },
       cookiePrefix: site.slug,
+      ...(options.ids === "uuid"
+        ? { database: { generateId: () => randomUUID() } }
+        : {}),
     },
     session: {
       expiresIn: 14 * 24 * 60 * 60,
