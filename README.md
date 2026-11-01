@@ -291,6 +291,12 @@ AccountKit's own sign-up, reset and password endpoints answer 404 through it,
 so the product's writers stay the only ones until it adopts AccountKit's
 screens.
 
+When the product renders `SignInForm`, `SignUpForm` and `AccountPanel` and has
+retired its own credential writers, it passes `screens: "accountkit"`: every
+AccountKit endpoint opens (magic link, passkeys, two-factor, recovery,
+password change), and `useSession` and `signOut` on its remaining pages keep
+answering with the product's own session shape.
+
 `accountkit-rehearse-import <import.sql>` runs a product's own import SQL
 against `DATABASE_URL` in one transaction that always rolls back, and prints
 only counts. It uses the product's `pg` or `postgres` driver.

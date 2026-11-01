@@ -6,6 +6,12 @@ records, not claims that this file existed at release time.
 
 ## Unreleased
 
+- `createNextAuthCompat({ screens: "accountkit" })` opens every AccountKit
+  endpoint (sign-up, magic link, passkeys, two-factor, recovery, password
+  change) beside the `next-auth/react` session protocol. A product moving off
+  Auth.js renders AccountKit's screens and keeps `useSession` and `signOut` on
+  its own session shape until those pages move too. The default, `"product"`,
+  keeps those endpoints closed as before.
 - Fix a first OIDC sign-in failing with `unable_to_create_user` in a product
   whose `onAccountCreated` writes its own row while a mirror trigger records
   the same OrangeCat link in AccountKit's table (evig, loki, petvity and

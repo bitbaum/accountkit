@@ -252,6 +252,8 @@ export function createNextAuthCompat(options) {
             // next-auth/react sends a provider this runtime does not offer here.
             return redirectTo(`${site}${options.signInPath}?error=OAuthSignin`);
         }
+        if (options.screens === "accountkit")
+            return null;
         if (compatPathIsOpen(path, oidcProviderIds()))
             return null;
         return Response.json({ error: "not_found" }, { status: 404 });
