@@ -1,9 +1,10 @@
 import { randomUUID } from "node:crypto";
 import { passkey } from "@better-auth/passkey";
-import { betterAuth } from "better-auth";
+import { betterAuth, } from "better-auth";
 import { hashPassword, verifyPassword } from "better-auth/crypto";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
+import { decryptOAuthToken } from "better-auth/oauth2";
 import { genericOAuth, magicLink } from "better-auth/plugins";
 import { oidcClients, placeholderEmail, signInMethods, } from "./methods.js";
 import { MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH } from "./password.js";
@@ -81,6 +82,28 @@ export function oidcProvider(client) {
                 image: undefined,
             };
         },
+    };
+}
+/** The tokens on an account about to be stored, as the provider sent them. */
+async function providerTokens(data, context) {
+    // better-auth has already encrypted them (encryptOAuthTokens) by now.
+    const token = async (value) => typeof value === "string" && value
+        ? context
+            ? await decryptOAuthToken(value, context)
+            : value
+        : null;
+    const text = (value) => typeof value === "string" && value ? value : null;
+    const expires = data.accessTokenExpiresAt;
+    return {
+        accessToken: await token(data.accessToken),
+        refreshToken: await token(data.refreshToken),
+        idToken: await token(data.idToken),
+        accessTokenExpiresAt: expires instanceof Date
+            ? expires
+            : expires
+                ? new Date(String(expires))
+                : null,
+        scope: text(data.scope),
     };
 }
 export function createAuthInstance(options) {
@@ -173,16 +196,34 @@ export function createAuthInstance(options) {
                     // Runs just before the sign-in method is stored, when the person's
                     // row already exists. (better-auth's `after` hooks are queued behind
                     // a transaction this adapter never opens, and did not fire.)
-                    before: async (data) => {
+                    before: async (data, context) => {
+                        const account = {
+                            userId: String(data.userId),
+                            providerId: String(data.providerId),
+                            accountId: String(data.accountId),
+                        };
                         try {
                             await options.onAccountCreated?.({
-                                userId: String(data.userId),
-                                providerId: String(data.providerId),
-                                accountId: String(data.accountId),
+                                ...account,
+                                tokens: await providerTokens(data, context?.context),
                             });
                         }
                         catch (error) {
                             console.error(`[auth] onAccountCreated failed: ${error.name}`);
+                        }
+                        // A product's mirror may have recorded this very method for this
+                        // person just now (its own row, written in the hook above); left
+                        // in place it would collide with the row about to be stored.
+                        if (options.onAccountCreated &&
+                            account.providerId !== "credential") {
+                            await context?.context.adapter.deleteMany({
+                                model: "account",
+                                where: [
+                                    { field: "providerId", value: account.providerId },
+                                    { field: "accountId", value: account.accountId },
+                                    { field: "userId", value: account.userId },
+                                ],
+                            });
                         }
                         return {
                             data: {
