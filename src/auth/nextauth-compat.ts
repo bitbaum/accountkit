@@ -19,6 +19,12 @@ import type { AuthSession } from "./next.js";
  * password endpoints answer 404 until the product adopts AccountKit's screens:
  * a second credential writer would put hashes in the shared table that the
  * product's own table never sees, and rolling back would lose them.
+ *
+ * Once the product has adopted them (`SignInForm`, `SignUpForm`,
+ * `AccountPanel`) and retired its own credential writers, `screens:
+ * "accountkit"` opens every AccountKit endpoint, so magic links, passkeys,
+ * two-factor and recovery work, while the pages that still call
+ * `next-auth/react` (`useSession`, `signOut`) keep the product's session shape.
  */
 
 /** The shared runtime, as `createAuthRuntime` returns it. */
@@ -97,6 +103,14 @@ export interface NextAuthCompatOptions<S> {
   linkErrorPath?: string;
   /** The env OIDC providers are read from (default: process.env). */
   env?: () => Record<string, string | undefined>;
+  /**
+   * Whose screens sign people in and write credentials. `"product"` (the
+   * default) keeps AccountKit's sign-up, reset and password endpoints closed,
+   * so the product's own writers stay the only ones. `"accountkit"` opens
+   * every AccountKit endpoint: use it once the product renders AccountKit's
+   * screens and its own credential writers are gone.
+   */
+  screens?: "product" | "accountkit";
 }
 
 /** One AccountKit endpoint's answer, for the compat layer to translate. */
@@ -456,6 +470,7 @@ export function createNextAuthCompat<S>(options: NextAuthCompatOptions<S>) {
       // next-auth/react sends a provider this runtime does not offer here.
       return redirectTo(`${site}${options.signInPath}?error=OAuthSignin`);
     }
+    if (options.screens === "accountkit") return null;
     if (compatPathIsOpen(path, oidcProviderIds())) return null;
     return Response.json({ error: "not_found" }, { status: 404 });
   }

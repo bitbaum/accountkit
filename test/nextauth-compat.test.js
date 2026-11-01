@@ -27,6 +27,7 @@ async function product({
   linkWhenSignedIn,
   failHooks,
   failResolve,
+  screens,
 } = {}) {
   const pg = new PGlite();
   const tables = createAuthTables("auth_");
@@ -77,6 +78,7 @@ async function product({
     codes,
     env: () => ({}),
     linkWhenSignedIn,
+    screens,
     toSession: async (shared) => {
       const { rows } = await pg.query(
         `SELECT id, role FROM people WHERE id = $1`,
@@ -239,6 +241,59 @@ test("a failing resolver answers 'unavailable' and a failing hook never costs th
     assert.equal(down.client.code(result), "unavailable");
   } finally {
     await down.pg.close();
+  }
+});
+
+test('screens: "accountkit" opens AccountKit\'s own endpoints beside the session protocol', async () => {
+  const { client, compat, pg } = await product({ screens: "accountkit" });
+  const json = (route, body) =>
+    compat.route.POST(
+      new Request(`${SITE}/api/auth${route}`, {
+        method: "POST",
+        headers: {
+          origin: SITE,
+          "content-type": "application/json",
+          "x-forwarded-for": "198.51.100.77",
+          cookie: client.cookie,
+        },
+        body: JSON.stringify(body),
+      }),
+    );
+  try {
+    const signUp = await json("/sign-up/email", {
+      name: "",
+      email: "new@example.test",
+      password: "a synthetic new password",
+    });
+    assert.equal(signUp.status, 200);
+    const { user } = await signUp.json();
+    await pg.query(`INSERT INTO people VALUES ($1, 'member', false)`, [
+      user.id,
+    ]);
+    client.cookie = signUp.headers
+      .getSetCookie()
+      .map((set) => set.split(";")[0])
+      .join("; ");
+    // The pages that still call next-auth/react read the product's shape.
+    assert.deepEqual((await client.session())?.user, {
+      id: user.id,
+      role: "member",
+      email: "new@example.test",
+    });
+    assert.notEqual(
+      (await json("/request-password-reset", { email: "new@example.test" }))
+        .status,
+      404,
+    );
+    // And an imported password still signs in through the old protocol.
+    client.cookie = "";
+    const legacy = await client.signIn("credentials", {
+      email: "owner@example.test",
+      password: PASSWORD,
+    });
+    assert.equal(client.refusal(legacy), null);
+  } finally {
+    await pg.close();
   }
 });
 
