@@ -10,6 +10,8 @@ export interface AuthRuntimeOptions {
     getDatabase: () => unknown;
     /** Only if the product keeps the account tables under its own definitions. */
     schema?: Record<string, unknown>;
+    /** See CreateAuthOptions.ids: UUIDs for a product whose rows key on a uuid. */
+    ids?: CreateAuthOptions["ids"];
     /** See CreateAuthOptions.legacyBcrypt; only needed for imported credentials. */
     legacyBcrypt?: CreateAuthOptions["legacyBcrypt"];
     domainCredentials?: CreateAuthOptions["domainCredentials"];

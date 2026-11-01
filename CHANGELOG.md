@@ -6,6 +6,10 @@ records, not claims that this file existed at release time.
 
 ## Unreleased
 
+- Add opt-in `ids: "uuid"` to the server and Next runtime: every id the
+  runtime mints is a random UUID, so a person AccountKit creates (a first OIDC
+  sign-in, its own sign-up) can get a row in a product whose tables reference
+  people by a `uuid` column. Stored ids are untouched; the default is unchanged.
 - Add `plugins` to the server and Next runtime: a product's own better-auth
   plugins (for example `organization()`), mounted after AccountKit's. Tables
   in `schema` beyond the standard six are handed to the database adapter by

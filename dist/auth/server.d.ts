@@ -65,6 +65,14 @@ export interface CreateAuthOptions {
     mail: AuthMailer;
     env?: NodeJS.ProcessEnv;
     /**
+     * `"uuid"`: every id the runtime mints (users included) is a random UUID.
+     * For a product whose own rows reference its people by a `uuid` column, so
+     * a person AccountKit creates (a first OIDC sign-in, its own sign-up) can be
+     * given a product row under the same id. Ids already stored are untouched.
+     * Default: better-auth's own random string ids.
+     */
+    ids?: "uuid";
+    /**
      * Called as a sign-in method is attached to a person (a first sign-up
      * included), once the person exists. A product that used to identify people by another id — an
      * OrangeCat actor id, say — re-keys its own rows here. Must be idempotent;

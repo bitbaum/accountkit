@@ -274,6 +274,15 @@ them to the runtime: `const tables = createAuthTables("auth_")`, then
 `schema: tables` (both `createAuthRuntime` and `createAuthInstance`). The
 columns are identical to the standard set; only table and index names change.
 
+### UUID ids for a product keyed on uuid
+
+A product whose own rows reference people by a `uuid` column (evig's `users`)
+passes `ids: "uuid"` (both `createAuthRuntime` and `createAuthInstance`). Every
+id the runtime mints is then a random UUID, so a person AccountKit creates
+itself, at a first OIDC sign-in or through its own sign-up, can be given the
+product's row under the same id in `onAccountCreated`. Imported ids stay as
+they were; without the option the ids are better-auth's own strings.
+
 ### Domain credentials during migration
 
 `createAuthRuntime` and `createAuthInstance` accept an optional

@@ -23,6 +23,7 @@ export function createAuthRuntime(options) {
             mail: options.mail,
             schema: options.schema,
             legacyBcrypt: options.legacyBcrypt,
+            ids: options.ids,
             domainCredentials: options.domainCredentials,
             provisioning: options.provisioning,
             sessionLifetime: options.sessionLifetime,
