@@ -1,6 +1,6 @@
 import { betterAuth, type BetterAuthPlugin } from "better-auth";
 import type { GenericOAuthConfig } from "better-auth/plugins";
-import { type OidcClient } from "./methods.js";
+import { type EmailConfirmation, type OidcClient } from "./methods.js";
 import { type BcryptLike } from "./hash.js";
 import { type DomainCredentials } from "./domain-credentials.js";
 import { type AccountProvisioning } from "./provisioning.js";
@@ -72,6 +72,12 @@ export interface CreateAuthOptions {
      * Default: better-auth's own random string ids.
      */
     ids?: "uuid";
+    /**
+     * When a password account must have confirmed its address. Default
+     * "after-sign-in": no wall, a confirmation link is still mailed. See
+     * EmailConfirmation in ./methods; pass the same value to signInMethods.
+     */
+    emailConfirmation?: EmailConfirmation;
     /**
      * Called as a sign-in method is attached to a person (a first sign-up
      * included), once the person exists. A product that used to identify people by another id — an

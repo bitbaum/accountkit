@@ -10,6 +10,7 @@ import {
   oidcClients,
   placeholderEmail,
   signInMethods,
+  type EmailConfirmation,
   type OidcClient,
 } from "./methods.js";
 import { MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH } from "./password.js";
@@ -118,6 +119,12 @@ export interface CreateAuthOptions {
    */
   ids?: "uuid";
   /**
+   * When a password account must have confirmed its address. Default
+   * "after-sign-in": no wall, a confirmation link is still mailed. See
+   * EmailConfirmation in ./methods; pass the same value to signInMethods.
+   */
+  emailConfirmation?: EmailConfirmation;
+  /**
    * Called as a sign-in method is attached to a person (a first sign-up
    * included), once the person exists. A product that used to identify people by another id — an
    * OrangeCat actor id, say — re-keys its own rows here. Must be idempotent;
@@ -206,7 +213,9 @@ export type Auth = ReturnType<typeof betterAuth>;
 export function createAuthInstance(options: CreateAuthOptions): Auth {
   const env = options.env ?? process.env;
   const { site, mail } = options;
-  const methods = signInMethods(env, mail.configured);
+  const methods = signInMethods(env, mail.configured, {
+    emailConfirmation: options.emailConfirmation,
+  });
   const providers = oidcClients(env).map(oidcProvider);
   const origin = new URL(site.url);
   const schema = options.schema ?? authSchema;
@@ -348,8 +357,8 @@ export function createAuthInstance(options: CreateAuthOptions): Auth {
       minPasswordLength: MIN_PASSWORD_LENGTH,
       maxPasswordLength: MAX_PASSWORD_LENGTH,
       autoSignIn: !methods.verifyEmail,
-      // Without mail a verification link could never arrive, and requiring
-      // one would strand every new account.
+      // Only a product that opted into "before-sign-in", and only with mail:
+      // without mail a link could never arrive and would strand every account.
       requireEmailVerification: methods.verifyEmail,
       revokeSessionsOnPasswordReset: true,
       sendResetPassword: mail.configured
@@ -366,7 +375,8 @@ export function createAuthInstance(options: CreateAuthOptions): Auth {
         : undefined,
     },
     emailVerification: {
-      sendOnSignUp: methods.verifyEmail,
+      // With mail, every sign-up gets a confirmation link, wall or not.
+      sendOnSignUp: mail.configured,
       autoSignInAfterVerification: true,
       sendVerificationEmail: async ({ user, url }) =>
         mail.send("verify", user.email, url),
@@ -379,6 +389,7 @@ export function createAuthInstance(options: CreateAuthOptions): Auth {
         ? [
             provisioningPlugin(options.provisioning, {
               requireEmailVerification: methods.verifyEmail,
+              sendVerification: mail.configured,
             }),
           ]
         : []),

@@ -46,7 +46,7 @@ export interface AccountProvisioning {
 
 export function provisioningPlugin(
   provisioning: AccountProvisioning,
-  options: { requireEmailVerification: boolean },
+  options: { requireEmailVerification: boolean; sendVerification?: boolean },
 ) {
   return {
     id: "accountkit-provisioning",
@@ -187,6 +187,11 @@ export function provisioningPlugin(
               // address before it signs anyone in. The link signs them in.
               await sendVerificationEmailFn(ctx, user);
               return { status: "verify_email", userId };
+            }
+            // No wall: they are signed in now, and an unconfirmed address
+            // still gets its link, as at sign-up.
+            if (options.sendVerification && !user.emailVerified) {
+              await sendVerificationEmailFn(ctx, user);
             }
             const session =
               await ctx.context.internalAdapter.createSession(userId);
