@@ -6,6 +6,9 @@ records, not claims that this file existed at release time.
 
 ## Unreleased
 
+- Add `@bitbaum/accountkit/auth/switch`: `sharedRuntimeEnabled(env)`, the
+  one `AUTH_RUNTIME=accountkit` switch a product staging AccountKit beside
+  Auth.js reads, free of dependencies so a proxy can ask it cheaply.
 - Add `@bitbaum/accountkit/auth/nextauth-compat`: `createNextAuthCompat`
   answers `next-auth/react`'s client protocol from the shared runtime, so a
   product's Auth.js pages run on AccountKit unchanged while it migrates. The

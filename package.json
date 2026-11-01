@@ -79,6 +79,10 @@
       "types": "./dist/auth/nextauth-compat.d.ts",
       "default": "./dist/auth/nextauth-compat.js"
     },
+    "./auth/switch": {
+      "types": "./dist/auth/switch.d.ts",
+      "default": "./dist/auth/switch.js"
+    },
     "./auth/compat-testing": {
       "types": "./dist/auth/compat-testing.d.ts",
       "default": "./dist/auth/compat-testing.js"
