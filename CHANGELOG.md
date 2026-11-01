@@ -6,6 +6,17 @@ records, not claims that this file existed at release time.
 
 ## Unreleased
 
+- Add `@bitbaum/accountkit/auth/nextauth-compat`: `createNextAuthCompat`
+  answers `next-auth/react`'s client protocol from the shared runtime, so a
+  product's Auth.js pages run on AccountKit unchanged while it migrates. The
+  product supplies its session shape, credentials resolvers, login codes and
+  hooks. Five products carried a copy of this each.
+- Add the `accountkit-rehearse-import` command and
+  `@bitbaum/accountkit/auth/import-rehearsal`: a product's import SQL in one
+  transaction that always rolls back, reported as counts only.
+- Add `@bitbaum/accountkit/auth/compat-testing`: a cookie-keeping client for
+  journey tests of a product on the compat layer.
+
 - Add `legacyPassword: { matches, verify }` to the server and Next runtime: a
   product's own pre-AccountKit password format (a hand-rolled scrypt
   `hex.salt`, say) signs in as it is, alone or beside `legacyBcrypt`. `matches`

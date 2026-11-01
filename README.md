@@ -257,6 +257,45 @@ product's hashes; `verify` answers whether the password fits. It works alone or
 beside `legacyBcrypt`, and new passwords are native scrypt either way.
 
 
+### Moving a product off Auth.js
+
+A product whose pages call `next-auth/react` can run on the shared runtime
+before any page changes. `@bitbaum/accountkit/auth/nextauth-compat` answers
+that client protocol (`session`, `csrf`, `providers`, `signout`, each
+credentials callback, and `signin/<oidc>` for every configured OIDC client)
+from AccountKit:
+
+```ts
+const compat = createNextAuthCompat({
+  runtime: sharedAuth, // createAuthRuntime(...)
+  siteUrl: () => process.env.AUTH_URL!,
+  signInPath: "/login",
+  landing: "/dashboard",
+  toSession: async (shared) => productSessionFromRows(shared.user.id),
+  credentials: {
+    credentials: { name: "Email", resolve: async (form) => ({ email: String(form.get("email")) }) },
+  },
+});
+// app/api/auth/[...nextauth]/route.ts, with the switch on:
+export const { GET, POST } = compat.route;
+```
+
+The product supplies only what is its own: the session shape (re-read from
+its rows on every request), which address each credentials form signs in (or
+a refusal code such as an account lock), the codes its login page reads, and
+hooks after a sign-in or a refusal. `sessionFor(headers)` serves a proxy,
+`currentSession()` a server component, and `sessionIdFor(headers)` names the
+session making a change so the product can keep it while ending the others.
+AccountKit's own sign-up, reset and password endpoints answer 404 through it,
+so the product's writers stay the only ones until it adopts AccountKit's
+screens.
+
+`accountkit-rehearse-import <import.sql>` runs a product's own import SQL
+against `DATABASE_URL` in one transaction that always rolls back, and prints
+only counts. It uses the product's `pg` or `postgres` driver.
+`@bitbaum/accountkit/auth/compat-testing` gives journey tests a client that
+speaks what `next-auth/react` sends and keeps the cookie jar.
+
 ### A product's own plugins
 
 `plugins` (both `createAuthRuntime` and `createAuthInstance`) mounts a
