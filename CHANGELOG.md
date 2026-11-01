@@ -10,7 +10,9 @@ records, not claims that this file existed at release time.
   answers `next-auth/react`'s client protocol from the shared runtime, so a
   product's Auth.js pages run on AccountKit unchanged while it migrates. The
   product supplies its session shape, credentials resolvers, login codes and
-  hooks. Five products carried a copy of this each.
+  hooks. Five products carried a copy of this each. A resolver that throws answers
+  `unavailable` (never a 500), and a hook that throws is logged without
+  costing the person their sign-in.
 - Add the `accountkit-rehearse-import` command and
   `@bitbaum/accountkit/auth/import-rehearsal`: a product's import SQL in one
   transaction that always rolls back, reported as counts only.
