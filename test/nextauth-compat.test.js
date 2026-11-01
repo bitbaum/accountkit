@@ -16,6 +16,7 @@ import {
   countsSql,
   rehearseImport,
 } from "@bitbaum/accountkit/auth/import-rehearsal";
+import { oidcFixture } from "./oidc-fixture.js";
 
 const SITE = "https://compat.example.test";
 const PASSWORD = "synthetic legacy password";
@@ -294,8 +295,10 @@ test("sessionIdFor names the session that makes a change; a deleted person reads
   }
 });
 
-test("a cross-site navigation cannot start an OIDC round-trip", async () => {
+test("an OrangeCat sign-in round-trips through next-auth/react's protocol; a cross-site navigation cannot start one", async () => {
   const pg = new PGlite();
+  const fixture = oidcFixture({ subject: "actor-1" });
+  fixture.install();
   try {
     const tables = createAuthTables("auth_");
     const db = drizzle(pg, { schema: tables });
@@ -303,8 +306,9 @@ test("a cross-site navigation cannot start an OIDC round-trip", async () => {
     const env = {
       NODE_ENV: "production",
       BETTER_AUTH_SECRET: "synthetic-compat-runtime-secret-at-least-32-chars",
-      ORANGECAT_OAUTH_CLIENT_ID: "compat",
-      ORANGECAT_OAUTH_CLIENT_SECRET: "secret",
+      ORANGECAT_OAUTH_ISSUER: fixture.issuer,
+      ORANGECAT_OAUTH_CLIENT_ID: fixture.clientId,
+      ORANGECAT_OAUTH_CLIENT_SECRET: fixture.clientSecret,
     };
     const runtime = createAuthRuntime({
       site: { url: SITE, title: "Compat", slug: "compat" },
@@ -320,18 +324,48 @@ test("a cross-site navigation cannot start an OIDC round-trip", async () => {
       signInPath: "/login",
       landing: "/",
       env: () => env,
-      toSession: async () => null,
+      toSession: async (shared) => ({ user: { id: shared.user.id } }),
       credentials: {},
     });
+    const client = createCompatClient({ compat, site: SITE });
     assert.deepEqual(Object.keys(compat.providers()), ["orangecat"]);
-    const response = await compat.route.GET(
+
+    // signIn("orangecat", { redirect: false }) as next-auth/react posts it.
+    const started = await client.call("/signin/orangecat", {
+      csrfToken: "test",
+      callbackUrl: `${SITE}/projects`,
+    });
+    assert.equal(started.status, 200);
+    const back = fixture.approve((await started.json()).url);
+    assert.equal(
+      `${back.origin}${back.pathname}`,
+      `${SITE}/api/auth/callback/orangecat`,
+      "the redirect OrangeCat already accepts for every product",
+    );
+    const landed = await client.call(
+      back.pathname.replace(/^\/api\/auth/, "") + back.search,
+    );
+    assert.equal(landed.status, 302);
+    assert.equal(landed.headers.get("location"), `${SITE}/projects`);
+    assert.equal(fixture.state.tokenExchanges, 1);
+    const { rows } = await pg.query(
+      `SELECT account_id FROM auth_accounts WHERE provider_id = 'orangecat'`,
+    );
+    assert.deepEqual(
+      rows.map((row) => row.account_id),
+      ["actor-1"],
+    );
+    assert.ok((await client.session())?.user?.id, "signed in");
+
+    const crossSite = await compat.route.GET(
       new Request(`${SITE}/api/auth/signin/orangecat?callbackUrl=/x`, {
         headers: { "sec-fetch-site": "cross-site" },
       }),
     );
-    assert.equal(response.status, 302);
-    assert.equal(response.headers.get("location"), `${SITE}/login`);
+    assert.equal(crossSite.status, 302);
+    assert.equal(crossSite.headers.get("location"), `${SITE}/login`);
   } finally {
+    fixture.restore();
     await pg.close();
   }
 });

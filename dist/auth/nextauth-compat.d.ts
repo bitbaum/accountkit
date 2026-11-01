@@ -92,8 +92,12 @@ export interface SharedAnswer {
     body: Record<string, unknown>;
     cookies: string[];
 }
-/** AccountKit endpoints the screens reach directly; everything else answers 404. */
-export declare function compatPathIsOpen(path: string): boolean;
+/**
+ * AccountKit endpoints the screens reach directly; everything else answers 404.
+ * `oidcProviders` are the OIDC providers whose callback (`/callback/<id>`)
+ * comes back from the provider.
+ */
+export declare function compatPathIsOpen(path: string, oidcProviders?: ReadonlySet<string>): boolean;
 /** A same-origin path from a client-supplied URL, or `fallback`. */
 export declare function sameOriginPath(raw: FormDataEntryValue | string | null | undefined, site: string, fallback: string): string;
 export declare function createNextAuthCompat<S>(options: NextAuthCompatOptions<S>): {

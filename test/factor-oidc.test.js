@@ -1,99 +1,29 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { generateKeyPairSync, createSign, createHash } from "node:crypto";
 import { PGlite } from "@electric-sql/pglite";
 import { drizzle } from "drizzle-orm/pglite";
 import { pushSchema } from "drizzle-kit/api";
 import { createAuthInstance } from "../dist/auth/server.js";
 import * as schema from "../dist/auth/schema.js";
 import { otpForURI } from "./totp-helper.js";
+import { oidcFixture } from "./oidc-fixture.js";
 
 test("verified OrangeCat OIDC callbacks preserve identity and require an enabled second factor", async () => {
   const pg = new PGlite();
-  const realFetch = globalThis.fetch;
-  const issuer = "https://oidc-fixture.example.test";
   const site = {
     url: "https://oidc-app.example.test",
     title: "OIDC fixture",
     slug: "oidc-factor",
   };
-  const { privateKey, publicKey } = generateKeyPairSync("rsa", {
-    modulusLength: 2048,
+  const fixture = oidcFixture({
+    extraClaims: {
+      preferred_username: "@Fixture",
+      role: "admin",
+      email: "provider-mail@example.test",
+      email_verified: true,
+    },
   });
-  const jwk = {
-    ...publicKey.export({ format: "jwk" }),
-    kid: "fixture-key",
-    alg: "RS256",
-    use: "sig",
-  };
-  let authorization;
-  let tokenExchanges = 0;
-  const claims = () => ({
-    iss: issuer,
-    aud: "fixture-client",
-    sub: "fixture-person",
-    iat: Math.floor(Date.now() / 1000),
-    exp: Math.floor(Date.now() / 1000) + 300,
-    nonce: authorization?.searchParams.get("nonce") ?? undefined,
-    preferred_username: "@Fixture",
-    role: "admin",
-    email: "provider-mail@example.test",
-    email_verified: true,
-  });
-  globalThis.fetch = async (input, init) => {
-    const url = new URL(input instanceof Request ? input.url : String(input));
-    if (url.origin !== issuer) return realFetch(input, init);
-    if (url.pathname === "/.well-known/openid-configuration")
-      return Response.json({
-        issuer,
-        authorization_endpoint: issuer + "/authorize",
-        token_endpoint: issuer + "/token",
-        jwks_uri: issuer + "/jwks",
-        userinfo_endpoint: issuer + "/userinfo",
-        response_types_supported: ["code"],
-        id_token_signing_alg_values_supported: ["RS256"],
-        token_endpoint_auth_methods_supported: ["client_secret_post"],
-        code_challenge_methods_supported: ["S256"],
-      });
-    if (url.pathname === "/jwks") return Response.json({ keys: [jwk] });
-    if (url.pathname === "/userinfo") return Response.json(claims());
-    if (url.pathname === "/token") {
-      const body = new URLSearchParams(
-        init?.body ?? (input instanceof Request ? await input.text() : ""),
-      );
-      assert.equal(body.get("client_id"), "fixture-client");
-      assert.ok(
-        body.get("client_secret") === "synthetic-oidc-fixture-secret",
-        "client_secret_post is used",
-      );
-      assert.equal(
-        createHash("sha256")
-          .update(body.get("code_verifier"))
-          .digest("base64url"),
-        authorization.searchParams.get("code_challenge"),
-        "real token exchange proves PKCE possession",
-      );
-      tokenExchanges++;
-      const header = Buffer.from(
-        JSON.stringify({ alg: "RS256", typ: "JWT", kid: jwk.kid }),
-      ).toString("base64url");
-      const payload = Buffer.from(JSON.stringify(claims())).toString(
-        "base64url",
-      );
-      const content = header + "." + payload;
-      const signature = createSign("RSA-SHA256")
-        .update(content)
-        .sign(privateKey)
-        .toString("base64url");
-      return Response.json({
-        access_token: "synthetic-access-token",
-        token_type: "Bearer",
-        expires_in: 300,
-        id_token: content + "." + signature,
-      });
-    }
-    return new Response(null, { status: 404 });
-  };
+  fixture.install();
   try {
     const db = drizzle(pg, { schema: schema.authSchema });
     await (await pushSchema(schema.authSchema, db)).apply();
@@ -105,9 +35,9 @@ test("verified OrangeCat OIDC callbacks preserve identity and require an enabled
         NODE_ENV: "test",
         BETTER_AUTH_SECRET:
           "synthetic-oidc-factor-fixture-secret-with-more-than-32-characters",
-        ORANGECAT_OAUTH_ISSUER: issuer,
-        ORANGECAT_OAUTH_CLIENT_ID: "fixture-client",
-        ORANGECAT_OAUTH_CLIENT_SECRET: "synthetic-oidc-fixture-secret",
+        ORANGECAT_OAUTH_ISSUER: fixture.issuer,
+        ORANGECAT_OAUTH_CLIENT_ID: fixture.clientId,
+        ORANGECAT_OAUTH_CLIENT_SECRET: fixture.clientSecret,
       },
     });
     const cookies = new Map();
@@ -142,15 +72,12 @@ test("verified OrangeCat OIDC callbacks preserve identity and require an enabled
         errorCallbackURL: "/de/sign-in?error=oidc",
       });
       assert.equal(started.status, 200);
-      authorization = new URL((await started.json()).url);
-      assert.equal(authorization.origin, issuer);
+      const authorization = new URL((await started.json()).url);
       assert.equal(
         authorization.searchParams.get("code_challenge_method"),
         "S256",
       );
-      const target = new URL(authorization.searchParams.get("redirect_uri"));
-      target.searchParams.set("code", "synthetic-authorization-code");
-      target.searchParams.set("state", authorization.searchParams.get("state"));
+      const target = fixture.approve(authorization);
       return call(target.href);
     };
     assert.equal((await callback()).status, 302);
@@ -204,9 +131,9 @@ test("verified OrangeCat OIDC callbacks preserve identity and require an enabled
       (await session())?.user.id === original.user.id,
       "OIDC subject stays linked to the same account",
     );
-    assert.equal(tokenExchanges, 2);
+    assert.equal(fixture.state.tokenExchanges, 2);
   } finally {
-    globalThis.fetch = realFetch;
+    fixture.restore();
     await pg.close();
   }
 });
