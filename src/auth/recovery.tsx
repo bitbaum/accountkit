@@ -9,6 +9,7 @@ import {
   type AuthLabels,
 } from "./labels.js";
 import { PasswordField } from "./password-field.js";
+import { unbroken } from "./unbroken.js";
 import {
   DEFAULT_AUTH_CLASSES,
   type AuthClasses,
@@ -164,7 +165,7 @@ export function PasswordRecoveryForm({
           )}
           {(token || canRequest) && (
             <button className={c.button} type="submit" disabled={busy}>
-              {token ? words.reset : words.send}
+              {unbroken(token ? words.reset : words.send)}
             </button>
           )}
         </form>
@@ -175,7 +176,7 @@ export function PasswordRecoveryForm({
         disabled={busy}
         onClick={onBack}
       >
-        {labels.signIn}
+        {unbroken(labels.signIn)}
       </button>
     </div>
   );

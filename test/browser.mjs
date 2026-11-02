@@ -11,11 +11,16 @@
 //  - no name and no photo draws a glyph, not a letter from the email
 //  - a failing sign-out SAYS it failed (a dead sign-out is the worst case)
 //  - nothing scrolls sideways at 390px, in light and dark, menu open
+//  - no button label cuts a hyphenated word across two lines (evig's
+//    "per E- / Mail schicken" at 390px), in every language AccountKit ships.
+//    chatkit's findBrokenWords exempts a break beside a hyphen by design, so
+//    this check measures exactly that case.
 import { createServer } from "node:http";
 import { readFile } from "node:fs/promises";
 import { extname, join, normalize } from "node:path";
 import { fileURLToPath } from "node:url";
 import { chromium } from "playwright";
+import { AUTH_LABEL_LOCALES } from "../dist/auth/translations.js";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 const types = {
@@ -420,6 +425,54 @@ try {
       `[${width}] registration has no horizontal overflow`,
     );
     await page.close();
+  }
+  for (const locale of AUTH_LABEL_LOCALES) {
+    for (const width of [320, 390]) {
+      const page = await browser.newPage({ viewport: { width, height: 844 } });
+      await page.goto(`${base}?words=${locale}`);
+      await page.locator("#auth-words button").first().waitFor();
+      const cut = await page.evaluate(() => {
+        const found = [];
+        for (const button of document.querySelectorAll("#auth-words button")) {
+          const text = button.textContent ?? "";
+          for (const match of text.matchAll(/\S*\p{L}-\p{L}\S*/gu)) {
+            const walker = document.createTreeWalker(
+              button,
+              NodeFilter.SHOW_TEXT,
+            );
+            let offset = 0;
+            const range = document.createRange();
+            let started = false;
+            for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+              const length = node.textContent.length;
+              const start = match.index - offset;
+              const end = match.index + match[0].length - offset;
+              if (!started && start >= 0 && start < length) {
+                range.setStart(node, start);
+                started = true;
+              }
+              if (started && end <= length) {
+                range.setEnd(node, end);
+                break;
+              }
+              offset += length;
+            }
+            const tops = new Set(
+              [...range.getClientRects()]
+                .filter((r) => r.width > 0)
+                .map((r) => Math.round(r.top)),
+            );
+            if (tops.size > 1) found.push(`${match[0]} in "${text}"`);
+          }
+        }
+        return found;
+      });
+      check(
+        cut.length === 0,
+        `[${locale} ${width}] no hyphenated word is cut across lines${cut.length ? `: ${cut.join("; ")}` : ""}`,
+      );
+      await page.close();
+    }
   }
 } finally {
   await browser.close();
