@@ -37,6 +37,11 @@ export interface CompatRuntime {
   POST: (request: Request) => Promise<Response>;
   sessionFor: (headers: Headers) => Promise<AuthSession | null>;
   getSession: () => Promise<AuthSession | null>;
+  /**
+   * Whether the product's own GitHub app signs people in
+   * (`createAuthRuntime({ githubSignIn: true })`). Absent means no.
+   */
+  githubSignIn?: boolean;
 }
 
 /** Why a sign-in was refused; the product maps each to the code its login page reads. */
@@ -264,7 +269,7 @@ export function createNextAuthCompat<S>(options: NextAuthCompatOptions<S>) {
         "oidc",
       );
     }
-    if (productGithubApp(env())) {
+    if (productGithubApp(env(), options.runtime.githubSignIn)) {
       list[GITHUB_PROVIDER_ID] = entry(GITHUB_PROVIDER_ID, "GitHub", "oauth");
     }
     for (const [id, provider] of Object.entries(options.credentials)) {
@@ -275,7 +280,8 @@ export function createNextAuthCompat<S>(options: NextAuthCompatOptions<S>) {
 
   function oidcProviderIds(): Set<string> {
     const ids = oidcClients(env()).map((client) => client.providerId as string);
-    if (productGithubApp(env())) ids.push(GITHUB_PROVIDER_ID);
+    if (productGithubApp(env(), options.runtime.githubSignIn))
+      ids.push(GITHUB_PROVIDER_ID);
     return new Set(ids);
   }
 

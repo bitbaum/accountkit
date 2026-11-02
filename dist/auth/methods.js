@@ -55,8 +55,15 @@ export function orangecatOidc(env) {
  * product's GitHub sign-in, and the repository grant it acts with, across
  * unchanged. A product without its own app reaches GitHub through the bitbaum
  * sign-in instead. Both variables, or nothing.
+ *
+ * Opt-in: the app signs people in only when the product asks for it
+ * (`githubSignIn: true`). The same two variables often hold an app a product
+ * acts on repositories with and never meant as a way in (Loki), so their
+ * presence alone offers nothing.
  */
-export function productGithubApp(env) {
+export function productGithubApp(env, signIn) {
+    if (signIn !== true)
+        return null;
     const clientId = text(env.GITHUB_CLIENT_ID);
     const clientSecret = text(env.GITHUB_CLIENT_SECRET);
     return clientId && clientSecret ? { clientId, clientSecret } : null;

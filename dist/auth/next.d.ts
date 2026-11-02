@@ -37,6 +37,8 @@ export interface AuthRuntimeOptions {
     onAccountCreated?: CreateAuthOptions["onAccountCreated"];
     /** See CreateAuthOptions.onAccountDeleted. */
     onAccountDeleted?: CreateAuthOptions["onAccountDeleted"];
+    /** See CreateAuthOptions.githubSignIn. */
+    githubSignIn?: CreateAuthOptions["githubSignIn"];
     /** See CreateAuthOptions.githubScopes. */
     githubScopes?: CreateAuthOptions["githubScopes"];
 }
@@ -59,6 +61,8 @@ type SessionUser = {
 export declare function createAuthRuntime(options: AuthRuntimeOptions): {
     getAuth: () => Auth;
     authStatus: (env?: NodeJS.ProcessEnv) => AuthStatus;
+    /** Whether the product asked for its own GitHub app to sign people in. */
+    githubSignIn: boolean;
     getSession: () => Promise<AuthSession | null>;
     sessionFor: (requestHeaders: Headers) => Promise<AuthSession | null>;
     requireUser: (request: Request) => Promise<{
