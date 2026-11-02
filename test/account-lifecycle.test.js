@@ -14,7 +14,12 @@ import { oidcFixture } from "./oidc-fixture.js";
 const SECRET =
   "synthetic-lifecycle-fixture-secret-with-more-than-32-characters";
 
-async function harness({ env = {}, plugins, site: siteOverride } = {}) {
+async function harness({
+  env = {},
+  plugins,
+  site: siteOverride,
+  accountDeletion,
+} = {}) {
   const pg = new PGlite();
   const db = drizzle(pg, { schema: schema.authSchema });
   await (await pushSchema(schema.authSchema, db)).apply();
@@ -35,6 +40,7 @@ async function harness({ env = {}, plugins, site: siteOverride } = {}) {
       send: async (kind, to, url) => void sent.push({ kind, to, url }),
     },
     plugins,
+    accountDeletion,
     onAccountCreated: async (account) => void created.push(account),
     onAccountDeleted: async (account) => void deleted.push(account),
   });
@@ -229,6 +235,26 @@ test("a product's refusal stops a deletion before anything is deleted", async ()
     const r = await h.post("/delete-user", { password: credentials.password });
     assert.equal(r.status, 403);
     assert.equal((await r.json()).code, "ACCOUNT_KEPT");
+    assert.deepEqual(h.deleted, []);
+    assert.equal(await h.users(person.id), 1);
+    assert.equal(await h.count("accounts", person.id), 1);
+    assert.equal((await h.session()).user.id, person.id, "still signed in");
+  } finally {
+    await h.pg.close();
+  }
+});
+
+test("a product that keeps accounts offers no deletion endpoint", async () => {
+  const h = await harness({ accountDeletion: false });
+  try {
+    const credentials = {
+      email: "retained-lifecycle@example.invalid",
+      password: "a synthetic lifecycle passphrase",
+    };
+    await h.post("/sign-up/email", { ...credentials, name: "" });
+    const person = (await h.session()).user;
+    const r = await h.post("/delete-user", { password: credentials.password });
+    assert.equal(r.status, 404);
     assert.deepEqual(h.deleted, []);
     assert.equal(await h.users(person.id), 1);
     assert.equal(await h.count("accounts", person.id), 1);

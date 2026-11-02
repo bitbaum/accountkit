@@ -730,6 +730,7 @@ export function AccountPanel({
   linked,
   accountPath,
   homePath,
+  deletion,
 }: Common & {
   user: {
     name: string;
@@ -743,6 +744,12 @@ export function AccountPanel({
   linked: string[];
   accountPath: string;
   homePath: string;
+  /**
+   * What the panel offers in place of deleting the account, for a product
+   * created with `accountDeletion: false`: its own way, such as a link to an
+   * erasure request. Without it, the delete control.
+   */
+  deletion?: ReactNode;
 }) {
   const c = merge(classes);
   const a = labels.account;
@@ -1051,28 +1058,33 @@ export function AccountPanel({
           <button type="button" className={c.buttonQuiet} onClick={signOut}>
             {unbroken(a.signOut)}
           </button>
-          <div className={c.field}>
-            <label htmlFor="acct-confirm-delete" className={c.label}>
-              {fill(a.deleteConfirm, { word: a.deleteWord })}
-            </label>
-            <input
-              id="acct-confirm-delete"
-              className={c.input}
-              value={confirmDelete}
-              onChange={(e) => setConfirmDelete(e.target.value)}
-            />
-          </div>
-          <button
-            type="button"
-            className={c.buttonQuiet}
-            onClick={deleteAccount}
-            disabled={
-              busy ||
-              confirmDelete.trim().toLowerCase() !== a.deleteWord.toLowerCase()
-            }
-          >
-            {unbroken(a.delete)}
-          </button>
+          {deletion ?? (
+            <>
+              <div className={c.field}>
+                <label htmlFor="acct-confirm-delete" className={c.label}>
+                  {fill(a.deleteConfirm, { word: a.deleteWord })}
+                </label>
+                <input
+                  id="acct-confirm-delete"
+                  className={c.input}
+                  value={confirmDelete}
+                  onChange={(e) => setConfirmDelete(e.target.value)}
+                />
+              </div>
+              <button
+                type="button"
+                className={c.buttonQuiet}
+                onClick={deleteAccount}
+                disabled={
+                  busy ||
+                  confirmDelete.trim().toLowerCase() !==
+                    a.deleteWord.toLowerCase()
+                }
+              >
+                {unbroken(a.delete)}
+              </button>
+            </>
+          )}
         </div>
       </Section>
     </div>

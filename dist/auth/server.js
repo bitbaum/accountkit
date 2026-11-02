@@ -181,7 +181,7 @@ export function createAuthInstance(options) {
                     input: false,
                 },
             },
-            deleteUser: { enabled: true },
+            deleteUser: { enabled: options.accountDeletion !== false },
             changeEmail: { enabled: mail.configured },
         },
         ...(github

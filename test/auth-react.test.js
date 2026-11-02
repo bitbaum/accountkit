@@ -149,6 +149,38 @@ test("the account page names the methods a person has", () => {
   assert.ok(html.includes(DEFAULT_AUTH_LABELS.account.noEmail));
 });
 
+test("the account page shows a product's own way out in place of deletion", () => {
+  const props = {
+    client,
+    methods: all,
+    user: {
+      name: "Ada",
+      email: "ada@example.invalid",
+      emailVerified: true,
+      role: "customer",
+      twoFactorEnabled: false,
+    },
+    linked: ["credential"],
+    accountPath: "/account",
+    homePath: "/",
+  };
+  const standard = renderToString(h(AccountPanel, props));
+  assert.ok(standard.includes(DEFAULT_AUTH_LABELS.account.delete));
+  const kept = renderToString(
+    h(AccountPanel, {
+      ...props,
+      deletion: h("a", { href: "/privacy#erasure" }, "Request erasure"),
+    }),
+  );
+  assert.ok(kept.includes("Request erasure"));
+  assert.ok(!kept.includes(DEFAULT_AUTH_LABELS.account.delete));
+  assert.ok(!kept.includes("acct-confirm-delete"));
+  assert.ok(
+    kept.includes(DEFAULT_AUTH_LABELS.account.signOut),
+    "sign-out stays",
+  );
+});
+
 test("errors are sentences, never a provider's raw message", () => {
   assert.equal(
     authErrorText(DEFAULT_AUTH_LABELS, { code: "INVALID_EMAIL_OR_PASSWORD" }),

@@ -34,6 +34,7 @@ export function createAuthRuntime(options) {
             onAccountCreated: options.onAccountCreated,
             onAccountDeleted: options.onAccountDeleted,
             githubSignIn: options.githubSignIn,
+            accountDeletion: options.accountDeletion,
             githubScopes: options.githubScopes,
             database: options.getDatabase(),
         });

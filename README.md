@@ -337,6 +337,12 @@ anything is deleted, and `onAccountDeleted` is not called. A throw in either
 hook is logged and never blocks the sign-in or undoes the deletion, so a
 product whose row must go in the same transaction keeps a database trigger.
 
+A product with a duty to keep what an account holds (a clinic keeps medical
+records for years) passes `accountDeletion: false`: `/delete-user` answers 404
+and deletes nothing. It gives `AccountPanel` its own way out as `deletion`, for
+example a link to its erasure request, which the panel shows in place of the
+delete control, beside "Sign out".
+
 ### Account tables beside a product's own
 
 A product whose tables already use the standard names (a NextAuth `users`,

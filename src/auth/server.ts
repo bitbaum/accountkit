@@ -181,6 +181,14 @@ export interface CreateAuthOptions {
    * so a product whose row must disappear atomically keeps a database trigger.
    */
   onAccountDeleted?: (account: DeletedAccount) => Promise<void>;
+  /**
+   * Whether a person may delete their own account here. Default: yes. False
+   * for a product with a duty to keep what an account holds (a clinic keeps
+   * medical records for years): `/delete-user` then answers 404 and nothing
+   * is deleted. The account panel shows the product's own way instead
+   * (AccountPanel's `deletion`), such as a request to the people who decide.
+   */
+  accountDeletion?: boolean;
 }
 
 /**
@@ -394,7 +402,7 @@ export function createAuthInstance(options: CreateAuthOptions): Auth {
           input: false,
         },
       },
-      deleteUser: { enabled: true },
+      deleteUser: { enabled: options.accountDeletion !== false },
       changeEmail: { enabled: mail.configured },
     },
     ...(github

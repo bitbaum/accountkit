@@ -39,6 +39,8 @@ export interface AuthRuntimeOptions {
     onAccountDeleted?: CreateAuthOptions["onAccountDeleted"];
     /** See CreateAuthOptions.githubSignIn. */
     githubSignIn?: CreateAuthOptions["githubSignIn"];
+    /** See CreateAuthOptions.accountDeletion. */
+    accountDeletion?: CreateAuthOptions["accountDeletion"];
     /** See CreateAuthOptions.githubScopes. */
     githubScopes?: CreateAuthOptions["githubScopes"];
 }
