@@ -107,6 +107,12 @@ export interface CreateAuthOptions {
      */
     onAccountCreated?: (account: CreatedAccount) => Promise<void>;
     /**
+     * Extra GitHub scopes for a product's own GitHub app (see productGithubApp),
+     * beyond the identity ones: Loki asks for `repo` and `workflow`, which it
+     * acts with. The token reaches onAccountCreated, never AccountKit's table.
+     */
+    githubScopes?: string[];
+    /**
      * Called once a person's account is gone (AccountKit's account panel, or
      * any other path that deletes the user), so the product removes or
      * anonymises its own row. Runs only after the deletion, never for an account

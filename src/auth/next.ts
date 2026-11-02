@@ -51,6 +51,8 @@ export interface AuthRuntimeOptions {
   onAccountCreated?: CreateAuthOptions["onAccountCreated"];
   /** See CreateAuthOptions.onAccountDeleted. */
   onAccountDeleted?: CreateAuthOptions["onAccountDeleted"];
+  /** See CreateAuthOptions.githubScopes. */
+  githubScopes?: CreateAuthOptions["githubScopes"];
 }
 
 type SessionUser = { id: string; actorId: string; role?: unknown };
@@ -84,6 +86,7 @@ export function createAuthRuntime(options: AuthRuntimeOptions) {
       env: options.env,
       onAccountCreated: options.onAccountCreated,
       onAccountDeleted: options.onAccountDeleted,
+      githubScopes: options.githubScopes,
       database: options.getDatabase(),
     });
     return instance;

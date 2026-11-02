@@ -6,6 +6,15 @@ records, not claims that this file existed at release time.
 
 ## Unreleased
 
+- A product's own GitHub OAuth app (`GITHUB_CLIENT_ID` and
+  `GITHUB_CLIENT_SECRET`) signs people in on the shared runtime, at the
+  callback such an app already has (`/api/auth/callback/github`), and through
+  `nextauth-compat` (`signIn("github")`, or linking for a signed-in person).
+  `githubScopes` adds the scopes the product acts with (Loki: `repo` and
+  `workflow`). The token reaches `onAccountCreated`, never AccountKit's table.
+  A product without its own app still reaches GitHub through the bitbaum
+  sign-in.
+
 - `onAccountCreated` now reaches every new person. A first email sign-in link
   creates the person without a sign-in method, so the hook (which ran as a
   method was attached) never ran for them and the product had no row for that

@@ -33,6 +33,7 @@ export function createAuthRuntime(options) {
             env: options.env,
             onAccountCreated: options.onAccountCreated,
             onAccountDeleted: options.onAccountDeleted,
+            githubScopes: options.githubScopes,
             database: options.getDatabase(),
         });
         return instance;

@@ -6,7 +6,7 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
 import { decryptOAuthToken } from "better-auth/oauth2";
 import { genericOAuth, magicLink } from "better-auth/plugins";
-import { oidcClients, placeholderEmail, signInMethods, } from "./methods.js";
+import { oidcClients, productGithubApp, placeholderEmail, signInMethods, } from "./methods.js";
 import { MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH } from "./password.js";
 import { DEFAULT_ROLE } from "./roles.js";
 import { authSchema } from "./schema.js";
@@ -118,6 +118,7 @@ export function createAuthInstance(options) {
         emailConfirmation: options.emailConfirmation,
     });
     const providers = oidcClients(env).map(oidcProvider);
+    const github = productGithubApp(env);
     const origin = new URL(site.url);
     const schema = options.schema ?? authSchema;
     const legacyPasswords = options.legacyBcrypt
@@ -183,6 +184,17 @@ export function createAuthInstance(options) {
             deleteUser: { enabled: true },
             changeEmail: { enabled: mail.configured },
         },
+        ...(github
+            ? {
+                socialProviders: {
+                    github: {
+                        clientId: github.clientId,
+                        clientSecret: github.clientSecret,
+                        scope: options.githubScopes ?? [],
+                    },
+                },
+            }
+            : {}),
         account: {
             accountLinking: {
                 enabled: true,

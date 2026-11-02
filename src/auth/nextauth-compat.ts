@@ -1,5 +1,9 @@
 import * as React from "react";
-import { oidcClients } from "./methods.js";
+import {
+  GITHUB_PROVIDER_ID,
+  oidcClients,
+  productGithubApp,
+} from "./methods.js";
 import type { AuthSession } from "./next.js";
 
 /**
@@ -260,6 +264,9 @@ export function createNextAuthCompat<S>(options: NextAuthCompatOptions<S>) {
         "oidc",
       );
     }
+    if (productGithubApp(env())) {
+      list[GITHUB_PROVIDER_ID] = entry(GITHUB_PROVIDER_ID, "GitHub", "oauth");
+    }
     for (const [id, provider] of Object.entries(options.credentials)) {
       list[id] = entry(id, provider.name, "credentials");
     }
@@ -267,7 +274,9 @@ export function createNextAuthCompat<S>(options: NextAuthCompatOptions<S>) {
   }
 
   function oidcProviderIds(): Set<string> {
-    return new Set(oidcClients(env()).map((client) => client.providerId));
+    const ids = oidcClients(env()).map((client) => client.providerId as string);
+    if (productGithubApp(env())) ids.push(GITHUB_PROVIDER_ID);
+    return new Set(ids);
   }
 
   /**
