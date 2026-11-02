@@ -15,6 +15,8 @@ const signupMode = query.has("signup");
 const adapterMode = query.has("adapter");
 // ?words=<locale>: the sign-in card alone, in that language, every button on.
 const wordsLocale = query.get("words");
+// ?code: the sign-in link step with the code from the same email.
+const codeMode = query.has("code");
 
 // An Auth.js product has no Better Auth client: it passes the two recovery
 // calls only. The first call of each kind fails like a dropped connection.
@@ -120,6 +122,38 @@ mount(
   />,
 );
 
+// The link request answers { code: true } when the email carries a code.
+const codeClient = {
+  signIn: {
+    magicLink: async () => ({ data: { status: true, code: true } }),
+    emailOtp: async (input: { email: string; otp: string }) => {
+      document.body.dataset.signInCode = JSON.stringify(input);
+      return { error: { code: "INVALID_OTP", status: 400 } };
+    },
+  },
+} as unknown as AuthClientLike;
+
+mount(
+  "auth-code",
+  <SignInForm
+    client={codeClient}
+    labels={authLabelsFor(query.get("code") || "en")}
+    methods={{
+      password: true,
+      passkey: false,
+      twoFactor: false,
+      magicLink: true,
+      verifyEmail: false,
+      signin: false,
+      orangecat: false,
+      passwordReset: false,
+    }}
+    signInPath="/demo/index.html"
+    next="/account"
+    signUpLink={<a href="#signup">Create an account</a>}
+  />,
+);
+
 const groups = [
   {
     id: "nav",
@@ -134,8 +168,9 @@ function mount(id: string, node: React.ReactNode) {
   if (wordsLocale !== null && id !== "auth-words") return;
   if (
     (id === "auth-words" && wordsLocale === null) ||
+    (id === "auth-code" && !codeMode) ||
     (id === "auth-recovery-adapter" && !adapterMode) ||
-    (id === "auth-recovery" && (signupMode || adapterMode)) ||
+    (id === "auth-recovery" && (signupMode || adapterMode || codeMode)) ||
     (id === "auth-signup" && (!signupMode || adapterMode))
   )
     return;
