@@ -99,6 +99,19 @@ mount(
       magicLink: true,
       verifyEmail: true,
       signin: true,
+      // Every free provider Morulia can switch on: the longest label there is.
+      signinProviders: [
+        "Google",
+        "Microsoft",
+        "Facebook",
+        "GitHub",
+        "LinkedIn",
+        "Discord",
+        "GitLab",
+        "Slack",
+        "Twitch",
+        "Reddit",
+      ],
       orangecat: true,
       passwordReset: true,
     }}

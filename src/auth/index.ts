@@ -11,6 +11,7 @@ export {
   DEFAULT_RECOVERY_LABELS,
   authErrorText,
   fill,
+  signinButtonLabel,
   type AuthError,
   type AuthLabels,
   type RecoveryLabels,

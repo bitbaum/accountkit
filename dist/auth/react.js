@@ -3,7 +3,7 @@ import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-run
 import { useCallback, useEffect, useState, } from "react";
 import { PasswordRecoveryForm } from "./recovery.js";
 import { unbroken } from "./unbroken.js";
-import { DEFAULT_AUTH_LABELS, authErrorText, fill, } from "./labels.js";
+import { DEFAULT_AUTH_LABELS, authErrorText, fill, signinButtonLabel, } from "./labels.js";
 import { PasswordField } from "./password-field.js";
 /** Class names styled by @bitbaum/accountkit/styles.css on --acct-* variables. */
 export const DEFAULT_AUTH_CLASSES = {
@@ -42,7 +42,12 @@ export function OidcButtons({ client, methods, labels = DEFAULT_AUTH_LABELS, cla
     const c = merge(classes);
     const [busy, setBusy] = useState(null);
     const providers = [
-        methods.signin ? { id: "bitbaum-signin", label: labels.withSignin } : null,
+        methods.signin
+            ? {
+                id: "bitbaum-signin",
+                label: signinButtonLabel(labels, methods.signinProviders),
+            }
+            : null,
         methods.orangecat ? { id: "orangecat", label: labels.withOrangecat } : null,
     ].filter((p) => p !== null);
     if (providers.length === 0)
@@ -383,7 +388,11 @@ export function AccountPanel({ client, methods, labels = DEFAULT_AUTH_LABELS, cl
         window.location.assign(homePath);
     }
     const oidc = [
-        { id: "bitbaum-signin", label: labels.withSignin, on: methods.signin },
+        {
+            id: "bitbaum-signin",
+            label: signinButtonLabel(labels, methods.signinProviders),
+            on: methods.signin,
+        },
         { id: "orangecat", label: labels.withOrangecat, on: methods.orangecat },
     ];
     const methodName = (id) => id === "credential"

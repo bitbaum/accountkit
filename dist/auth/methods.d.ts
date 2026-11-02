@@ -7,9 +7,12 @@
  *  - A magic link needs mail (@bitbaum/mail-kit). Without it the option is
  *    HIDDEN in production rather than offered and silently undeliverable; in
  *    development the link is printed to the server console instead.
- *  - "bitbaum sign-in" is the shared sign-in service that holds the Google,
- *    GitHub, X, Meta and Apple credentials once and speaks OIDC to every app,
- *    issuing a per-app (pairwise) subject. Shown only when SIGNIN_* is set.
+ *  - "bitbaum sign-in" is the shared sign-in service (Morulia) that holds the
+ *    providers' credentials once and speaks OIDC to every app, issuing a
+ *    per-app (pairwise) subject. Shown only when SIGNIN_* is set AND the
+ *    service publishes at least one provider at <issuer>/api/providers; the
+ *    button names exactly the providers it publishes, so an app never offers
+ *    one that is not configured.
  *  - "Sign in with OrangeCat" is OrangeCat's OIDC provider: one click for
  *    people who already have OrangeCat, never a requirement. OrangeCat's token
  *    endpoint accepts ONLY client_secret_post and requires PKCE.
@@ -71,6 +74,12 @@ export interface SignInMethods {
      */
     verifyEmail: boolean;
     signin: boolean;
+    /**
+     * What the shared sign-in's button names, in order ("Google", "GitHub"):
+     * the providers the service publishes. Empty when `signin` is false.
+     * Optional so a capability object built before 0.24 still type-checks.
+     */
+    signinProviders?: string[];
     orangecat: boolean;
 }
 /**
@@ -88,7 +97,28 @@ export type EmailConfirmation = "after-sign-in" | "before-sign-in";
 export interface SignInMethodOptions {
     /** Pass the same value the server was created with. Default "after-sign-in". */
     emailConfirmation?: EmailConfirmation;
+    /**
+     * The shared sign-in's provider names, when the caller already has them
+     * (tests, or a product that loaded them itself with `loadSigninProviders`).
+     * Without it, the last list read from the service is used.
+     */
+    signinProviders?: readonly string[];
 }
+/** The names in a /api/providers answer, or null when it is not one. */
+export declare function parseSigninProviders(body: unknown): string[] | null;
+/**
+ * Reads the shared sign-in's provider list now and remembers it. Resolves to
+ * the names, or null when SIGNIN_* is not set or the service did not answer
+ * with a list (the last good list is kept). Never throws.
+ */
+export declare function loadSigninProviders(env: Env, fetchImpl?: typeof fetch): Promise<string[] | null>;
+/**
+ * The last provider list read from the shared sign-in, or null when none has
+ * been read yet. Starts a background refresh when it is older than a minute.
+ */
+export declare function knownSigninProviders(env: Env): string[] | null;
+/** Forgets every provider list read so far (tests). */
+export declare function resetSigninProviders(): void;
 /** What the sign-in and sign-up pages offer. Safe to send to the browser: booleans only. */
 export declare function signInMethods(env: Env, mailConfigured: boolean, options?: SignInMethodOptions): SignInMethods;
 /**

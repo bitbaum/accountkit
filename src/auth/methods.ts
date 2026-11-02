@@ -9,9 +9,12 @@ import { createHash } from "node:crypto";
  *  - A magic link needs mail (@bitbaum/mail-kit). Without it the option is
  *    HIDDEN in production rather than offered and silently undeliverable; in
  *    development the link is printed to the server console instead.
- *  - "bitbaum sign-in" is the shared sign-in service that holds the Google,
- *    GitHub, X, Meta and Apple credentials once and speaks OIDC to every app,
- *    issuing a per-app (pairwise) subject. Shown only when SIGNIN_* is set.
+ *  - "bitbaum sign-in" is the shared sign-in service (Morulia) that holds the
+ *    providers' credentials once and speaks OIDC to every app, issuing a
+ *    per-app (pairwise) subject. Shown only when SIGNIN_* is set AND the
+ *    service publishes at least one provider at <issuer>/api/providers; the
+ *    button names exactly the providers it publishes, so an app never offers
+ *    one that is not configured.
  *  - "Sign in with OrangeCat" is OrangeCat's OIDC provider: one click for
  *    people who already have OrangeCat, never a requirement. OrangeCat's token
  *    endpoint accepts ONLY client_secret_post and requires PKCE.
@@ -141,6 +144,12 @@ export interface SignInMethods {
    */
   verifyEmail: boolean;
   signin: boolean;
+  /**
+   * What the shared sign-in's button names, in order ("Google", "GitHub"):
+   * the providers the service publishes. Empty when `signin` is false.
+   * Optional so a capability object built before 0.24 still type-checks.
+   */
+  signinProviders?: string[];
   orangecat: boolean;
 }
 
@@ -160,6 +169,107 @@ export type EmailConfirmation = "after-sign-in" | "before-sign-in";
 export interface SignInMethodOptions {
   /** Pass the same value the server was created with. Default "after-sign-in". */
   emailConfirmation?: EmailConfirmation;
+  /**
+   * The shared sign-in's provider names, when the caller already has them
+   * (tests, or a product that loaded them itself with `loadSigninProviders`).
+   * Without it, the last list read from the service is used.
+   */
+  signinProviders?: readonly string[];
+}
+
+/**
+ * The providers the shared sign-in publishes, read from the service itself
+ * (<issuer>/api/providers) and kept per issuer for a minute. `signInMethods`
+ * is synchronous and called while a page renders, so it reads this cache and
+ * starts a refresh in the background when the entry is missing or old. Until
+ * the first answer arrives the button is HIDDEN: a button that names a
+ * provider the service has not switched on is worse than none. A failed read
+ * keeps the last good list.
+ */
+const PROVIDERS_TTL_MS = 60_000;
+const PROVIDERS_TIMEOUT_MS = 5_000;
+interface ProviderEntry {
+  names: string[] | null;
+  /** When the last read STARTED, answered or not: one read a minute at most. */
+  tried: number;
+  pending: Promise<string[] | null> | null;
+}
+const providerCache = new Map<string, ProviderEntry>();
+
+function providersUrl(issuer: string): string {
+  return `${issuer.replace(/\/+$/, "")}/api/providers`;
+}
+
+/** The names in a /api/providers answer, or null when it is not one. */
+export function parseSigninProviders(body: unknown): string[] | null {
+  const list = (body as { providers?: unknown } | null)?.providers;
+  if (!Array.isArray(list)) return null;
+  const names: string[] = [];
+  for (const item of list) {
+    const label = (item as { label?: unknown } | null)?.label;
+    if (typeof label !== "string" || !label.trim() || label.length > 40)
+      return null;
+    names.push(label.trim());
+  }
+  return names;
+}
+
+/**
+ * Reads the shared sign-in's provider list now and remembers it. Resolves to
+ * the names, or null when SIGNIN_* is not set or the service did not answer
+ * with a list (the last good list is kept). Never throws.
+ */
+export async function loadSigninProviders(
+  env: Env,
+  fetchImpl: typeof fetch = fetch,
+): Promise<string[] | null> {
+  const broker = signinBroker(env);
+  if (!broker) return null;
+  const key = broker.issuer;
+  const entry = providerCache.get(key) ?? {
+    names: null,
+    tried: 0,
+    pending: null,
+  };
+  providerCache.set(key, entry);
+  if (entry.pending) return entry.pending;
+  entry.tried = Date.now();
+  entry.pending = (async () => {
+    try {
+      const response = await fetchImpl(providersUrl(key), {
+        headers: { accept: "application/json" },
+        signal: AbortSignal.timeout(PROVIDERS_TIMEOUT_MS),
+      });
+      const names = response.ok
+        ? parseSigninProviders(await response.json())
+        : null;
+      if (names) entry.names = names;
+      return names ?? entry.names;
+    } catch {
+      return entry.names;
+    } finally {
+      entry.pending = null;
+    }
+  })();
+  return entry.pending;
+}
+
+/**
+ * The last provider list read from the shared sign-in, or null when none has
+ * been read yet. Starts a background refresh when it is older than a minute.
+ */
+export function knownSigninProviders(env: Env): string[] | null {
+  const broker = signinBroker(env);
+  if (!broker) return null;
+  const entry = providerCache.get(broker.issuer);
+  if (!entry || Date.now() - entry.tried > PROVIDERS_TTL_MS)
+    void loadSigninProviders(env);
+  return entry?.names ?? null;
+}
+
+/** Forgets every provider list read so far (tests). */
+export function resetSigninProviders(): void {
+  providerCache.clear();
 }
 
 /** What the sign-in and sign-up pages offer. Safe to send to the browser: booleans only. */
@@ -169,6 +279,12 @@ export function signInMethods(
   options: SignInMethodOptions = {},
 ): SignInMethods {
   const development = env.NODE_ENV === "development";
+  const names =
+    signinBroker(env) === null
+      ? null
+      : options.signinProviders
+        ? [...options.signinProviders]
+        : knownSigninProviders(env);
   return {
     passwordReset: mailConfigured,
     password: true,
@@ -177,7 +293,8 @@ export function signInMethods(
     magicLink: mailConfigured || development,
     verifyEmail:
       mailConfigured && options.emailConfirmation === "before-sign-in",
-    signin: signinBroker(env) !== null,
+    signin: (names?.length ?? 0) > 0,
+    signinProviders: names ?? [],
     orangecat: orangecatOidc(env) !== null,
   };
 }
