@@ -6,6 +6,14 @@ records, not claims that this file existed at release time.
 
 ## Unreleased
 
+- `accountDeletion: false` (`createAuthRuntime` or `createAuthInstance`)
+  turns off self-service deletion: `/delete-user` answers 404 and nothing is
+  deleted. `AccountPanel` takes `deletion`, the product's own way out (such as
+  a link to an erasure request), shown in place of the delete control. Vita
+  keeps medical records for ten years under Swiss law, so its patients ask for
+  erasure instead of pressing a button; before this, adopting AccountKit's
+  panel would have given them one.
+
 - The shared sign-in's button names only the providers Morulia has switched
   on. `signInMethods` reads them from `<SIGNIN_ISSUER>/api/providers` (cached
   per issuer, refreshed at most once a minute in the background, the last good

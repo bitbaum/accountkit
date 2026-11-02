@@ -169,7 +169,7 @@ export declare function SignUpForm({ client, methods, labels, classes, next, sig
     signInLink: ReactNode;
 }): import("react").JSX.Element;
 /** Everything about one's own account, and the way out of it. */
-export declare function AccountPanel({ client, methods, labels, classes, user, linked, accountPath, homePath, }: Common & {
+export declare function AccountPanel({ client, methods, labels, classes, user, linked, accountPath, homePath, deletion, }: Common & {
     user: {
         name: string;
         /** Null when the account has no address that can receive mail. */
@@ -182,6 +182,12 @@ export declare function AccountPanel({ client, methods, labels, classes, user, l
     linked: string[];
     accountPath: string;
     homePath: string;
+    /**
+     * What the panel offers in place of deleting the account, for a product
+     * created with `accountDeletion: false`: its own way, such as a link to an
+     * erasure request. Without it, the delete control.
+     */
+    deletion?: ReactNode;
 }): import("react").JSX.Element;
 export { DEFAULT_AUTH_LABELS, authErrorText, fill, type AuthError, type AuthLabels, };
 //# sourceMappingURL=react.d.ts.map
