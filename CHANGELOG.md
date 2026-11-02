@@ -6,6 +6,16 @@ records, not claims that this file existed at release time.
 
 ## Unreleased
 
+- `createAuthMailer` takes a product's own words and look: `render(kind,
+  url, extra)` returns the subject, text and HTML (with `extra.code` for a
+  sign-in link; `codes: true` says the template prints it), and `own` lets a
+  product send its own mail for one kind (evig's 6-digit confirmation),
+  falling back to the shared mail when it cannot. The origin check, the
+  transport and the code stay the package's. It no longer sends to an address
+  that cannot receive mail (`*.invalid` placeholders). Products that kept their
+  own mailer for their languages (causius, diplodoctor, keller) can now use
+  the shared one.
+
 - The sign-in link's email also carries a six-digit code, typed on the page
   that asked for the link. A link opens wherever the mail app opens it, often
   another browser or another device; the code finishes the sign-in where the
