@@ -356,6 +356,8 @@ records for years) passes `accountDeletion: false`: `/delete-user` answers 404
 and deletes nothing. It gives `AccountPanel` its own way out as `deletion`, for
 example a link to its erasure request, which the panel shows in place of the
 delete control, beside "Sign out".
+A product that shows and edits the person's name on its own page passes
+`ownProfile` to `AccountPanel`, which then leaves its Profile section out.
 
 ### Account tables beside a product's own
 

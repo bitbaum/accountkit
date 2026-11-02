@@ -27,6 +27,10 @@ records, not claims that this file existed at release time.
   erasure instead of pressing a button; before this, adopting AccountKit's
   panel would have given them one.
 
+- `AccountPanel` takes `ownProfile`: a product whose own row holds the
+  person's name (and shows it on its own profile page) leaves the panel's
+  Profile section out, so one person never has two names that drift apart.
+
 - The shared sign-in's button names only the providers Morulia has switched
   on. `signInMethods` reads them from `<SIGNIN_ISSUER>/api/providers` (cached
   per issuer, refreshed at most once a minute in the background, the last good
