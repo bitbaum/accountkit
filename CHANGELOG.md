@@ -6,6 +6,13 @@ records, not claims that this file existed at release time.
 
 ## Unreleased
 
+- A product's own GitHub app (`githubSignIn: true`) now shows on the shared
+  screens: `signInMethods(env, mail, { githubSignIn: true }).github`, a
+  "Continue with GitHub" button beside OrangeCat on sign-in and sign-up, and
+  the same link button as OrangeCat's in the account panel. The two variables alone
+  still offer nothing. This lets Loki, which keeps its GitHub sign-in (the
+  owner, 2026-11-02), move onto `SignInForm`.
+
 - Lightning login (LNURL-auth, LUD-04): the person's own Lightning wallet
   signs a one-time challenge shown as a QR code (or opened by a `lightning:`
   link on the same device). Free, no key, no third party, nothing paid; the

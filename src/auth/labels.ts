@@ -47,6 +47,8 @@ export interface AuthLabels {
   /** The word before the last name of a list of alternatives ("or"). */
   listOr?: string;
   withOrangecat: string;
+  /** A product's own GitHub app (`githubSignIn`). Optional; English when absent. */
+  withGithub?: string;
   withPasskey: string;
   withLink: string;
   signUpWithLink: string;
@@ -152,6 +154,7 @@ export const DEFAULT_AUTH_LABELS: AuthLabels = {
   withSigninProviders: "Continue with {providers}",
   listOr: "or",
   withOrangecat: "Continue with OrangeCat",
+  withGithub: "Continue with GitHub",
   withPasskey: "Sign in with a passkey",
   withLink: "Email me a sign-in link instead",
   signUpWithLink: "Email me a link instead",

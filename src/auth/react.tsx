@@ -169,7 +169,8 @@ function ErrorLine({
   );
 }
 
-const hasOidc = (methods: SignInMethods) => methods.signin || methods.orangecat;
+const hasOidc = (methods: SignInMethods) =>
+  methods.signin || methods.orangecat || Boolean(methods.github);
 
 function Divider({ label, className }: { label: string; className: string }) {
   return (
@@ -203,6 +204,12 @@ export function OidcButtons({
         }
       : null,
     methods.orangecat ? { id: "orangecat", label: labels.withOrangecat } : null,
+    methods.github
+      ? {
+          id: "github",
+          label: labels.withGithub ?? DEFAULT_AUTH_LABELS.withGithub!,
+        }
+      : null,
   ].filter((p): p is { id: string; label: string } => p !== null);
   if (providers.length === 0) return null;
   return (
@@ -1026,6 +1033,11 @@ export function AccountPanel({
       on: methods.signin,
     },
     { id: "orangecat", label: labels.withOrangecat, on: methods.orangecat },
+    {
+      id: "github",
+      label: labels.withGithub ?? DEFAULT_AUTH_LABELS.withGithub!,
+      on: Boolean(methods.github),
+    },
   ];
   const methodName = (id: string) =>
     id === "credential"
