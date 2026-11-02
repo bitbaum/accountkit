@@ -1,6 +1,6 @@
 "use client";
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
-import { useCallback, useEffect, useState, } from "react";
+import { useCallback, useEffect, useRef, useState, } from "react";
 import { PasswordRecoveryForm } from "./recovery.js";
 import { unbroken } from "./unbroken.js";
 import { DEFAULT_AUTH_LABELS, authErrorText, fill, signinButtonLabel, } from "./labels.js";
@@ -37,6 +37,66 @@ function ErrorLine({ message, className, }) {
 const hasOidc = (methods) => methods.signin || methods.orangecat || Boolean(methods.github);
 function Divider({ label, className }) {
     return (_jsx("div", { className: className, role: "separator", children: _jsx("span", { children: label }) }));
+}
+async function post(client, path, body) {
+    if (!client.$fetch)
+        return { ok: false, status: 0, code: "" };
+    try {
+        const answer = (await client.$fetch(path, { method: "POST", body }));
+        if (answer?.error)
+            return {
+                ok: false,
+                status: answer.error.status ?? 0,
+                code: answer.error.code ?? "",
+            };
+        return { ok: true, data: answer?.data ?? {} };
+    }
+    catch {
+        return { ok: false, status: 0, code: "" };
+    }
+}
+function codeWords(labels) {
+    return { ...DEFAULT_AUTH_LABELS.code, ...labels.code };
+}
+function claimWords(labels) {
+    return { ...DEFAULT_AUTH_LABELS.claim, ...labels.claim };
+}
+/** The code door's own form: one field, the product's words, AccountKit's refusals. */
+function CodeSignIn({ client, door, labels, classes: c, onDone, onBack, initialCode, }) {
+    const w = codeWords(labels);
+    const [code, setCode] = useState(initialCode ?? "");
+    const [busy, setBusy] = useState(false);
+    const [error, setError] = useState(null);
+    const tried = useRef(false);
+    const submit = useCallback(async (value) => {
+        const credential = value.trim();
+        if (!credential)
+            return;
+        setBusy(true);
+        setError(null);
+        const answer = await post(client, "/sign-in/domain", { credential });
+        if (answer.ok)
+            return onDone();
+        setBusy(false);
+        setError(answer.code === "DOMAIN_CREDENTIAL_REQUIRES_ANOTHER_METHOD"
+            ? w.needsAnotherMethod
+            : answer.status === 429
+                ? labels.errors.rateLimited
+                : answer.status === 0
+                    ? labels.errors.unavailable
+                    : w.invalid);
+    }, [client, labels, onDone, w.invalid, w.needsAnotherMethod]);
+    // A personal link signs in at once, once: a refusal leaves the field for a retry by hand.
+    useEffect(() => {
+        if (!initialCode || tried.current)
+            return;
+        tried.current = true;
+        void submit(initialCode);
+    }, [initialCode, submit]);
+    return (_jsxs("form", { onSubmit: (event) => {
+            event.preventDefault();
+            void submit(code);
+        }, className: c.stack, children: [_jsxs("div", { className: c.field, children: [_jsx("label", { htmlFor: "acct-domain-code", className: c.label, children: door.label }), _jsx("input", { id: "acct-domain-code", className: c.input, autoComplete: "off", autoCapitalize: door.uppercase ? "characters" : undefined, spellCheck: false, placeholder: door.placeholder, value: code, onChange: (e) => setCode(door.uppercase ? e.target.value.toUpperCase() : e.target.value), required: true }), door.hint && _jsx("p", { className: c.hint, children: door.hint })] }), _jsx(ErrorLine, { message: error, className: c.error }), _jsx("button", { type: "submit", className: c.button, disabled: busy, children: unbroken(labels.signIn) }), _jsx("button", { type: "button", className: c.buttonQuiet, onClick: onBack, disabled: busy, children: unbroken(w.useEmail) })] }));
 }
 /** "Continue with …" for each OIDC method this deployment has switched on. */
 export function OidcButtons({ client, methods, labels = DEFAULT_AUTH_LABELS, classes, callbackURL, errorCallbackURL, onError, }) {
@@ -77,9 +137,10 @@ export function OidcButtons({ client, methods, labels = DEFAULT_AUTH_LABELS, cla
  * OIDC buttons this deployment has switched on. A second factor, when the
  * account has one, is asked for on the same card.
  */
-export function SignInForm({ client, methods, labels = DEFAULT_AUTH_LABELS, classes, next, signInPath, signUpLink, initialError = false, }) {
+export function SignInForm({ client, methods, labels = DEFAULT_AUTH_LABELS, classes, next, signInPath, signUpLink, initialError = false, codeDoor, }) {
     const c = merge(classes);
-    const [step, setStep] = useState("start");
+    const [step, setStep] = useState(codeDoor?.first ? "code" : "start");
+    const [linkedCode, setLinkedCode] = useState();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [code, setCode] = useState("");
@@ -95,6 +156,16 @@ export function SignInForm({ client, methods, labels = DEFAULT_AUTH_LABELS, clas
     useEffect(() => {
         const query = new URLSearchParams(window.location.search);
         const token = query.get("token");
+        // A personal link (`?code=…`): the code door opens with it and signs in
+        // once. The code leaves the address bar, as a reset token does.
+        const linked = codeDoor?.param ? query.get(codeDoor.param) : null;
+        if (linked) {
+            setLinkedCode(codeDoor?.uppercase ? linked.trim().toUpperCase() : linked.trim());
+            setStep("code");
+            const url = new URL(window.location.href);
+            url.searchParams.delete(codeDoor.param);
+            window.history.replaceState(null, "", url.pathname + url.search + url.hash);
+        }
         const linkError = query.get("method") === "magic-link" && query.has("error");
         if (linkError)
             setError(labels.errors.SESSION_EXPIRED);
@@ -108,7 +179,7 @@ export function SignInForm({ client, methods, labels = DEFAULT_AUTH_LABELS, clas
             url.searchParams.delete("error");
             window.history.replaceState(null, "", url.pathname + url.search + url.hash);
         }
-    }, [labels]);
+    }, [labels, codeDoor?.param, codeDoor?.uppercase]);
     const fail = (e) => {
         setError(authErrorText(labels, e));
         setUnverified(e?.code === "EMAIL_NOT_VERIFIED");
@@ -229,6 +300,12 @@ export function SignInForm({ client, methods, labels = DEFAULT_AUTH_LABELS, clas
                 setStep("start");
             } }));
     }
+    if (step === "code" && codeDoor) {
+        return (_jsx(CodeSignIn, { client: client, door: codeDoor, labels: labels, classes: c, onDone: done, onBack: () => {
+                setError(null);
+                setStep("start");
+            }, initialCode: linkedCode }));
+    }
     if (step === "lightning" && client.lightning) {
         return (_jsx(LightningLogin, { client: client.lightning, labels: labels, classes: c, purpose: "sign-in", onDone: done, onTwoFactor: () => setStep("twoFactor"), onBack: () => setStep("start") }));
     }
@@ -246,7 +323,10 @@ export function SignInForm({ client, methods, labels = DEFAULT_AUTH_LABELS, clas
                     setStep("lightning");
                 }, disabled: busy, children: unbroken(lightningWords(labels).withLightning) })), (hasOidc(methods) || methods.passkey || methods.lightning) && (_jsx(Divider, { label: labels.orEmail, className: c.divider })), _jsxs("form", { onSubmit: withPassword, className: c.stack, children: [_jsxs("div", { className: c.field, children: [_jsx("label", { htmlFor: "acct-email", className: c.label, children: labels.email }), _jsx("input", { id: "acct-email", type: "email", className: c.input, autoComplete: "username webauthn", value: email, onChange: (e) => setEmail(e.target.value), required: true })] }), _jsxs("div", { className: c.field, children: [_jsx("label", { htmlFor: "acct-password", className: c.label, children: labels.password }), _jsx("input", { id: "acct-password", type: "password", className: c.input, autoComplete: "current-password", value: password, onChange: (e) => setPassword(e.target.value), required: true })] }), _jsx(ErrorLine, { message: error, className: c.error }), unverified && methods.verifyEmail && (_jsx("button", { type: "button", className: c.buttonQuiet, onClick: resendVerification, disabled: busy, children: unbroken(labels.resendVerification) })), _jsx("button", { type: "submit", className: c.button, disabled: busy, children: unbroken(labels.signIn) }), methods.magicLink && (_jsx("button", { type: "button", className: c.buttonQuiet, onClick: withLink, disabled: busy, children: unbroken(labels.withLink) })), methods.passwordReset &&
                         client.requestPasswordReset &&
-                        client.resetPassword && (_jsx("button", { type: "button", className: c.buttonQuiet, disabled: busy, onClick: () => setRecovery({}), children: unbroken((labels.recovery ?? DEFAULT_AUTH_LABELS.recovery).forgot) }))] }), _jsxs("p", { className: c.hint, children: [labels.noAccount, " ", signUpLink] })] }));
+                        client.resetPassword && (_jsx("button", { type: "button", className: c.buttonQuiet, disabled: busy, onClick: () => setRecovery({}), children: unbroken((labels.recovery ?? DEFAULT_AUTH_LABELS.recovery).forgot) }))] }), codeDoor && (_jsx("button", { type: "button", className: c.buttonQuiet, onClick: () => {
+                    setError(null);
+                    setStep("code");
+                }, disabled: busy, children: unbroken(codeDoor.open) })), _jsxs("p", { className: c.hint, children: [labels.noAccount, " ", signUpLink] })] }));
 }
 export { PasswordRecoveryForm } from "./recovery.js";
 /**
@@ -472,4 +552,69 @@ export function AccountPanel({ client, methods, labels = DEFAULT_AUTH_LABELS, cl
                                             a.deleteWord.toLowerCase(), children: unbroken(a.delete) })] }))] }) })] }));
 }
 export { DEFAULT_AUTH_LABELS, authErrorText, fill, };
+/**
+ * Claiming an identity the product provisioned: a code or a claim link, an
+ * email and a first password, sent to AccountKit's `/provision/claim` (the
+ * server's `provisioning`). The server decides everything that matters: the
+ * proof is taken once; an address already in use joins only on its own
+ * password; a confirmed address of the identity must match. This form says
+ * what happened in AccountKit's words and moves on: signed in, asked to
+ * confirm the address, or asked to sign in for a second factor.
+ */
+export function ClaimForm({ client, labels = DEFAULT_AUTH_LABELS, classes, next, signInPath, signInLink, proof, }) {
+    const c = merge(classes);
+    const w = claimWords(labels);
+    const [code, setCode] = useState(proof.kind === "code" ? (proof.initial ?? "") : "");
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [busy, setBusy] = useState(false);
+    const [error, setError] = useState(null);
+    const [outcome, setOutcome] = useState(null);
+    const refusals = {
+        CLAIM_INVALID: w.invalid,
+        CLAIM_ALREADY_CLAIMED: w.alreadyClaimed,
+        CLAIM_EMAIL_TAKEN: w.emailTaken,
+        CLAIM_EMAIL_NEEDS_RECOVERY: w.emailNeedsRecovery,
+        CLAIM_LINK_PASSWORD_MISMATCH: w.linkPasswordMismatch,
+        CLAIM_VERIFIED_EMAIL_MISMATCH: w.verifiedEmailMismatch,
+    };
+    async function submit(event) {
+        event.preventDefault();
+        const credential = proof.kind === "given"
+            ? proof.credential
+            : `${proof.prefix ?? ""}${code.trim()}`;
+        setBusy(true);
+        setError(null);
+        const answer = await post(client, "/provision/claim", {
+            credential,
+            email: email.trim(),
+            password,
+            callbackURL: next,
+        });
+        if (answer.ok) {
+            const status = String(answer.data.status ?? "signed_in");
+            if (status === "signed_in")
+                return window.location.assign(next);
+            setOutcome(status === "verify_email" ? "verify_email" : "sign_in");
+            setBusy(false);
+            return;
+        }
+        setBusy(false);
+        setError(refusals[answer.code] ??
+            (answer.status === 429
+                ? labels.errors.rateLimited
+                : answer.status === 400
+                    ? w.emailInvalid
+                    : answer.status === 0
+                        ? labels.errors.unavailable
+                        : labels.errors.generic));
+    }
+    if (outcome === "verify_email") {
+        return (_jsxs("div", { className: c.stack, children: [_jsx("p", { className: c.notice, role: "status", children: fill(w.verifyEmail, { email: email.trim() }) }), _jsx("p", { className: c.hint, children: signInLink })] }));
+    }
+    if (outcome === "sign_in") {
+        return (_jsxs("div", { className: c.stack, children: [_jsx("p", { className: c.notice, role: "status", children: w.signIn }), _jsx("button", { type: "button", className: c.button, onClick: () => window.location.assign(signInPath), children: unbroken(labels.signIn) })] }));
+    }
+    return (_jsxs("form", { onSubmit: submit, className: c.stack, children: [proof.kind === "code" && (_jsxs("div", { className: c.field, children: [_jsx("label", { htmlFor: "acct-claim-code", className: c.label, children: proof.label }), _jsx("input", { id: "acct-claim-code", className: c.input, autoComplete: "off", autoCapitalize: proof.uppercase ? "characters" : undefined, spellCheck: false, placeholder: proof.placeholder, value: code, onChange: (e) => setCode(proof.uppercase ? e.target.value.toUpperCase() : e.target.value), required: true }), proof.hint && _jsx("p", { className: c.hint, children: proof.hint })] })), _jsxs("div", { className: c.field, children: [_jsx("label", { htmlFor: "acct-claim-email", className: c.label, children: labels.email }), _jsx("input", { id: "acct-claim-email", type: "email", className: c.input, autoComplete: "email", value: email, onChange: (e) => setEmail(e.target.value), required: true })] }), _jsxs("div", { className: c.field, children: [_jsx("label", { htmlFor: "acct-password", className: c.label, children: labels.password }), _jsx(PasswordField, { id: "acct-password", value: password, onChange: setPassword, classes: c, labels: labels })] }), _jsx(ErrorLine, { message: error, className: c.error }), _jsx("button", { type: "submit", className: c.button, disabled: busy, children: unbroken(w.submit) }), _jsxs("p", { className: c.hint, children: [labels.haveAccount, " ", signInLink] })] }));
+}
 //# sourceMappingURL=react.js.map

@@ -3,6 +3,7 @@
 import {
   useCallback,
   useEffect,
+  useRef,
   useState,
   type FormEvent,
   type ReactNode,
@@ -90,6 +91,14 @@ export interface AuthClientLike extends PasswordRecoveryClient {
   };
   /** lightningClient() from ./client (in authClientPlugins). */
   lightning?: LightningClient;
+  /**
+   * better-auth's own request function: the code door and ClaimForm call the
+   * product's endpoints through it (`/sign-in/domain`, `/provision/claim`).
+   */
+  $fetch?: (
+    path: string,
+    options: { method: "POST"; body: Record<string, unknown> },
+  ) => Promise<unknown>;
   passkey: {
     addPasskey(input: {
       name?: string;
@@ -180,6 +189,161 @@ function Divider({ label, className }: { label: string; className: string }) {
   );
 }
 
+/** What a product endpoint answered: its body, or a refusal's status and code. */
+type Answer =
+  | { ok: true; data: Record<string, unknown> }
+  | { ok: false; status: number; code: string };
+
+async function post(
+  client: AuthClientLike,
+  path: string,
+  body: Record<string, unknown>,
+): Promise<Answer> {
+  if (!client.$fetch) return { ok: false, status: 0, code: "" };
+  try {
+    const answer = (await client.$fetch(path, { method: "POST", body })) as {
+      data?: Record<string, unknown> | null;
+      error?: { status?: number; code?: string } | null;
+    };
+    if (answer?.error)
+      return {
+        ok: false,
+        status: answer.error.status ?? 0,
+        code: answer.error.code ?? "",
+      };
+    return { ok: true, data: answer?.data ?? {} };
+  } catch {
+    return { ok: false, status: 0, code: "" };
+  }
+}
+
+function codeWords(labels: AuthLabels) {
+  return { ...DEFAULT_AUTH_LABELS.code!, ...labels.code };
+}
+
+function claimWords(labels: AuthLabels) {
+  return { ...DEFAULT_AUTH_LABELS.claim!, ...labels.claim };
+}
+
+/**
+ * A product's own code as a way in: what it is called is the product's word
+ * (AOZ: "Zugangscode", `AOZ-XXXXXX` or `RES-XXXXXX`); the server verifies it
+ * as a domain credential (`domainCredentials`), which refuses an account
+ * with a second factor and never lets a code session change account security.
+ */
+export interface CodeDoor {
+  /** The quiet button that opens it ("Mit Code anmelden"). */
+  open: string;
+  /** The field's label ("Zugangscode"). */
+  label: string;
+  placeholder?: string;
+  hint?: string;
+  /** The product's codes are capitals: what is typed is shown and sent so. */
+  uppercase?: boolean;
+  /** A personal link carries the code in this query parameter: open the code and sign in once. */
+  param?: string;
+  /** Open the code first, for a product whose people mostly hold one. */
+  first?: boolean;
+}
+
+/** The code door's own form: one field, the product's words, AccountKit's refusals. */
+function CodeSignIn({
+  client,
+  door,
+  labels,
+  classes: c,
+  onDone,
+  onBack,
+  initialCode,
+}: {
+  client: AuthClientLike;
+  door: CodeDoor;
+  labels: AuthLabels;
+  classes: AuthClasses;
+  onDone: () => void;
+  onBack: () => void;
+  initialCode?: string;
+}) {
+  const w = codeWords(labels);
+  const [code, setCode] = useState(initialCode ?? "");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const tried = useRef(false);
+
+  const submit = useCallback(
+    async (value: string) => {
+      const credential = value.trim();
+      if (!credential) return;
+      setBusy(true);
+      setError(null);
+      const answer = await post(client, "/sign-in/domain", { credential });
+      if (answer.ok) return onDone();
+      setBusy(false);
+      setError(
+        answer.code === "DOMAIN_CREDENTIAL_REQUIRES_ANOTHER_METHOD"
+          ? w.needsAnotherMethod
+          : answer.status === 429
+            ? labels.errors.rateLimited
+            : answer.status === 0
+              ? labels.errors.unavailable
+              : w.invalid,
+      );
+    },
+    [client, labels, onDone, w.invalid, w.needsAnotherMethod],
+  );
+
+  // A personal link signs in at once, once: a refusal leaves the field for a retry by hand.
+  useEffect(() => {
+    if (!initialCode || tried.current) return;
+    tried.current = true;
+    void submit(initialCode);
+  }, [initialCode, submit]);
+
+  return (
+    <form
+      onSubmit={(event) => {
+        event.preventDefault();
+        void submit(code);
+      }}
+      className={c.stack}
+    >
+      <div className={c.field}>
+        <label htmlFor="acct-domain-code" className={c.label}>
+          {door.label}
+        </label>
+        <input
+          id="acct-domain-code"
+          className={c.input}
+          autoComplete="off"
+          autoCapitalize={door.uppercase ? "characters" : undefined}
+          spellCheck={false}
+          placeholder={door.placeholder}
+          value={code}
+          onChange={(e) =>
+            setCode(
+              door.uppercase ? e.target.value.toUpperCase() : e.target.value,
+            )
+          }
+          required
+        />
+        {door.hint && <p className={c.hint}>{door.hint}</p>}
+      </div>
+      <ErrorLine message={error} className={c.error} />
+      <button type="submit" className={c.button} disabled={busy}>
+        {unbroken(labels.signIn)}
+      </button>
+      <button
+        type="button"
+        className={c.buttonQuiet}
+        onClick={onBack}
+        disabled={busy}
+      >
+        {unbroken(w.useEmail)}
+      </button>
+    </form>
+  );
+}
+
 /** "Continue with …" for each OIDC method this deployment has switched on. */
 export function OidcButtons({
   client,
@@ -240,7 +404,7 @@ export function OidcButtons({
   );
 }
 
-type Step = "start" | "twoFactor" | "linkSent" | "lightning";
+type Step = "start" | "twoFactor" | "linkSent" | "lightning" | "code";
 
 /**
  * Every way in, on one screen: password, passkey, a link by email, and the
@@ -256,6 +420,7 @@ export function SignInForm({
   signInPath,
   signUpLink,
   initialError = false,
+  codeDoor,
 }: Common & {
   /** Where to land, already localised (`/de/account`). */
   next: string;
@@ -264,9 +429,12 @@ export function SignInForm({
   /** The link to the sign-up page, rendered by the product's router. */
   signUpLink: ReactNode;
   initialError?: boolean;
+  /** A product's own code as a way in, beside everything else (see CodeDoor). */
+  codeDoor?: CodeDoor;
 }) {
   const c = merge(classes);
-  const [step, setStep] = useState<Step>("start");
+  const [step, setStep] = useState<Step>(codeDoor?.first ? "code" : "start");
+  const [linkedCode, setLinkedCode] = useState<string | undefined>();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [code, setCode] = useState("");
@@ -287,6 +455,22 @@ export function SignInForm({
   useEffect(() => {
     const query = new URLSearchParams(window.location.search);
     const token = query.get("token");
+    // A personal link (`?code=…`): the code door opens with it and signs in
+    // once. The code leaves the address bar, as a reset token does.
+    const linked = codeDoor?.param ? query.get(codeDoor.param) : null;
+    if (linked) {
+      setLinkedCode(
+        codeDoor?.uppercase ? linked.trim().toUpperCase() : linked.trim(),
+      );
+      setStep("code");
+      const url = new URL(window.location.href);
+      url.searchParams.delete(codeDoor!.param!);
+      window.history.replaceState(
+        null,
+        "",
+        url.pathname + url.search + url.hash,
+      );
+    }
     const linkError =
       query.get("method") === "magic-link" && query.has("error");
     if (linkError) setError(labels.errors.SESSION_EXPIRED);
@@ -303,7 +487,7 @@ export function SignInForm({
         url.pathname + url.search + url.hash,
       );
     }
-  }, [labels]);
+  }, [labels, codeDoor?.param, codeDoor?.uppercase]);
 
   const fail = (e: AuthError) => {
     setError(authErrorText(labels, e));
@@ -444,6 +628,23 @@ export function SignInForm({
           setPassword("");
           setStep("start");
         }}
+      />
+    );
+  }
+
+  if (step === "code" && codeDoor) {
+    return (
+      <CodeSignIn
+        client={client}
+        door={codeDoor}
+        labels={labels}
+        classes={c}
+        onDone={done}
+        onBack={() => {
+          setError(null);
+          setStep("start");
+        }}
+        initialCode={linkedCode}
       />
     );
   }
@@ -656,6 +857,19 @@ export function SignInForm({
             </button>
           )}
       </form>
+      {codeDoor && (
+        <button
+          type="button"
+          className={c.buttonQuiet}
+          onClick={() => {
+            setError(null);
+            setStep("code");
+          }}
+          disabled={busy}
+        >
+          {unbroken(codeDoor.open)}
+        </button>
+      )}
       <p className={c.hint}>
         {labels.noAccount} {signUpLink}
       </p>
@@ -1287,3 +1501,194 @@ export {
   type AuthError,
   type AuthLabels,
 };
+
+/**
+ * What a claim proves: a code the person types, or one the page already holds
+ * (a personal claim link's token). `prefix` (or the given credential) is the
+ * product's format for its provisioning (AOZ: `code:…`, `link:…`).
+ */
+export type ClaimProof =
+  | {
+      kind: "code";
+      /** The field's label ("Zugangscode"). */
+      label: string;
+      placeholder?: string;
+      hint?: string;
+      uppercase?: boolean;
+      /** Put before the typed code to make the credential the server resolves. */
+      prefix?: string;
+      /** A code already known (a link that carried it). */
+      initial?: string;
+    }
+  | { kind: "given"; credential: string };
+
+/**
+ * Claiming an identity the product provisioned: a code or a claim link, an
+ * email and a first password, sent to AccountKit's `/provision/claim` (the
+ * server's `provisioning`). The server decides everything that matters: the
+ * proof is taken once; an address already in use joins only on its own
+ * password; a confirmed address of the identity must match. This form says
+ * what happened in AccountKit's words and moves on: signed in, asked to
+ * confirm the address, or asked to sign in for a second factor.
+ */
+export function ClaimForm({
+  client,
+  labels = DEFAULT_AUTH_LABELS,
+  classes,
+  next,
+  signInPath,
+  signInLink,
+  proof,
+}: Common & {
+  /** Where to land once signed in. */
+  next: string;
+  /** The sign-in page, for a claim that still owes a second factor. */
+  signInPath: string;
+  /** The link to the sign-in page, rendered by the product's router. */
+  signInLink: ReactNode;
+  proof: ClaimProof;
+}) {
+  const c = merge(classes);
+  const w = claimWords(labels);
+  const [code, setCode] = useState(
+    proof.kind === "code" ? (proof.initial ?? "") : "",
+  );
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [outcome, setOutcome] = useState<"verify_email" | "sign_in" | null>(
+    null,
+  );
+
+  const refusals: Record<string, string> = {
+    CLAIM_INVALID: w.invalid,
+    CLAIM_ALREADY_CLAIMED: w.alreadyClaimed,
+    CLAIM_EMAIL_TAKEN: w.emailTaken,
+    CLAIM_EMAIL_NEEDS_RECOVERY: w.emailNeedsRecovery,
+    CLAIM_LINK_PASSWORD_MISMATCH: w.linkPasswordMismatch,
+    CLAIM_VERIFIED_EMAIL_MISMATCH: w.verifiedEmailMismatch,
+  };
+
+  async function submit(event: FormEvent) {
+    event.preventDefault();
+    const credential =
+      proof.kind === "given"
+        ? proof.credential
+        : `${proof.prefix ?? ""}${code.trim()}`;
+    setBusy(true);
+    setError(null);
+    const answer = await post(client, "/provision/claim", {
+      credential,
+      email: email.trim(),
+      password,
+      callbackURL: next,
+    });
+    if (answer.ok) {
+      const status = String(answer.data.status ?? "signed_in");
+      if (status === "signed_in") return window.location.assign(next);
+      setOutcome(status === "verify_email" ? "verify_email" : "sign_in");
+      setBusy(false);
+      return;
+    }
+    setBusy(false);
+    setError(
+      refusals[answer.code] ??
+        (answer.status === 429
+          ? labels.errors.rateLimited
+          : answer.status === 400
+            ? w.emailInvalid
+            : answer.status === 0
+              ? labels.errors.unavailable
+              : labels.errors.generic),
+    );
+  }
+
+  if (outcome === "verify_email") {
+    return (
+      <div className={c.stack}>
+        <p className={c.notice} role="status">
+          {fill(w.verifyEmail, { email: email.trim() })}
+        </p>
+        <p className={c.hint}>{signInLink}</p>
+      </div>
+    );
+  }
+  if (outcome === "sign_in") {
+    return (
+      <div className={c.stack}>
+        <p className={c.notice} role="status">
+          {w.signIn}
+        </p>
+        <button
+          type="button"
+          className={c.button}
+          onClick={() => window.location.assign(signInPath)}
+        >
+          {unbroken(labels.signIn)}
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <form onSubmit={submit} className={c.stack}>
+      {proof.kind === "code" && (
+        <div className={c.field}>
+          <label htmlFor="acct-claim-code" className={c.label}>
+            {proof.label}
+          </label>
+          <input
+            id="acct-claim-code"
+            className={c.input}
+            autoComplete="off"
+            autoCapitalize={proof.uppercase ? "characters" : undefined}
+            spellCheck={false}
+            placeholder={proof.placeholder}
+            value={code}
+            onChange={(e) =>
+              setCode(
+                proof.uppercase ? e.target.value.toUpperCase() : e.target.value,
+              )
+            }
+            required
+          />
+          {proof.hint && <p className={c.hint}>{proof.hint}</p>}
+        </div>
+      )}
+      <div className={c.field}>
+        <label htmlFor="acct-claim-email" className={c.label}>
+          {labels.email}
+        </label>
+        <input
+          id="acct-claim-email"
+          type="email"
+          className={c.input}
+          autoComplete="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+      </div>
+      <div className={c.field}>
+        <label htmlFor="acct-password" className={c.label}>
+          {labels.password}
+        </label>
+        <PasswordField
+          id="acct-password"
+          value={password}
+          onChange={setPassword}
+          classes={c}
+          labels={labels}
+        />
+      </div>
+      <ErrorLine message={error} className={c.error} />
+      <button type="submit" className={c.button} disabled={busy}>
+        {unbroken(w.submit)}
+      </button>
+      <p className={c.hint}>
+        {labels.haveAccount} {signInLink}
+      </p>
+    </form>
+  );
+}

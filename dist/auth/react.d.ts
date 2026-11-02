@@ -98,6 +98,14 @@ export interface AuthClientLike extends PasswordRecoveryClient {
     };
     /** lightningClient() from ./client (in authClientPlugins). */
     lightning?: LightningClient;
+    /**
+     * better-auth's own request function: the code door and ClaimForm call the
+     * product's endpoints through it (`/sign-in/domain`, `/provision/claim`).
+     */
+    $fetch?: (path: string, options: {
+        method: "POST";
+        body: Record<string, unknown>;
+    }) => Promise<unknown>;
     passkey: {
         addPasskey(input: {
             name?: string;
@@ -142,6 +150,26 @@ interface Common {
     labels?: AuthLabels;
     classes?: Partial<AuthClasses>;
 }
+/**
+ * A product's own code as a way in: what it is called is the product's word
+ * (AOZ: "Zugangscode", `AOZ-XXXXXX` or `RES-XXXXXX`); the server verifies it
+ * as a domain credential (`domainCredentials`), which refuses an account
+ * with a second factor and never lets a code session change account security.
+ */
+export interface CodeDoor {
+    /** The quiet button that opens it ("Mit Code anmelden"). */
+    open: string;
+    /** The field's label ("Zugangscode"). */
+    label: string;
+    placeholder?: string;
+    hint?: string;
+    /** The product's codes are capitals: what is typed is shown and sent so. */
+    uppercase?: boolean;
+    /** A personal link carries the code in this query parameter: open the code and sign in once. */
+    param?: string;
+    /** Open the code first, for a product whose people mostly hold one. */
+    first?: boolean;
+}
 /** "Continue with …" for each OIDC method this deployment has switched on. */
 export declare function OidcButtons({ client, methods, labels, classes, callbackURL, errorCallbackURL, onError, }: Common & {
     callbackURL: string;
@@ -153,7 +181,7 @@ export declare function OidcButtons({ client, methods, labels, classes, callback
  * OIDC buttons this deployment has switched on. A second factor, when the
  * account has one, is asked for on the same card.
  */
-export declare function SignInForm({ client, methods, labels, classes, next, signInPath, signUpLink, initialError, }: Common & {
+export declare function SignInForm({ client, methods, labels, classes, next, signInPath, signUpLink, initialError, codeDoor, }: Common & {
     /** Where to land, already localised (`/de/account`). */
     next: string;
     /** This page, localised: where a failed OIDC round trip comes back to. */
@@ -161,6 +189,8 @@ export declare function SignInForm({ client, methods, labels, classes, next, sig
     /** The link to the sign-up page, rendered by the product's router. */
     signUpLink: ReactNode;
     initialError?: boolean;
+    /** A product's own code as a way in, beside everything else (see CodeDoor). */
+    codeDoor?: CodeDoor;
 }): import("react").JSX.Element;
 export { PasswordRecoveryForm } from "./recovery.js";
 /**
@@ -204,4 +234,42 @@ export declare function AccountPanel({ client, methods, labels, classes, user, l
     ownProfile?: boolean;
 }): import("react").JSX.Element;
 export { DEFAULT_AUTH_LABELS, authErrorText, fill, type AuthError, type AuthLabels, };
+/**
+ * What a claim proves: a code the person types, or one the page already holds
+ * (a personal claim link's token). `prefix` (or the given credential) is the
+ * product's format for its provisioning (AOZ: `code:…`, `link:…`).
+ */
+export type ClaimProof = {
+    kind: "code";
+    /** The field's label ("Zugangscode"). */
+    label: string;
+    placeholder?: string;
+    hint?: string;
+    uppercase?: boolean;
+    /** Put before the typed code to make the credential the server resolves. */
+    prefix?: string;
+    /** A code already known (a link that carried it). */
+    initial?: string;
+} | {
+    kind: "given";
+    credential: string;
+};
+/**
+ * Claiming an identity the product provisioned: a code or a claim link, an
+ * email and a first password, sent to AccountKit's `/provision/claim` (the
+ * server's `provisioning`). The server decides everything that matters: the
+ * proof is taken once; an address already in use joins only on its own
+ * password; a confirmed address of the identity must match. This form says
+ * what happened in AccountKit's words and moves on: signed in, asked to
+ * confirm the address, or asked to sign in for a second factor.
+ */
+export declare function ClaimForm({ client, labels, classes, next, signInPath, signInLink, proof, }: Common & {
+    /** Where to land once signed in. */
+    next: string;
+    /** The sign-in page, for a claim that still owes a second factor. */
+    signInPath: string;
+    /** The link to the sign-in page, rendered by the product's router. */
+    signInLink: ReactNode;
+    proof: ClaimProof;
+}): import("react").JSX.Element;
 //# sourceMappingURL=react.d.ts.map

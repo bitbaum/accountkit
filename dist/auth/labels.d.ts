@@ -72,6 +72,37 @@ export interface AuthLabels {
         retry: string;
         taken: string;
     };
+    /**
+     * A product's own code as a way in (SignInForm's `codeDoor`, the server's
+     * `domainCredentials`). Optional; English when absent.
+     */
+    code?: {
+        /** The code names nobody, or the request was refused. */
+        invalid: string;
+        /** The account has a second factor: a code alone cannot open it. */
+        needsAnotherMethod: string;
+        /** Back from the code to email and password. */
+        useEmail: string;
+    };
+    /**
+     * Claiming an identity a product provisioned (ClaimForm, the server's
+     * `provisioning`): a code or a claim link, an email and a first password.
+     * Optional; English when absent.
+     */
+    claim?: {
+        submit: string;
+        /** After a claim that waits for the address to be confirmed. {email} */
+        verifyEmail: string;
+        /** After a claim that linked an existing account with a second factor. */
+        signIn: string;
+        invalid: string;
+        alreadyClaimed: string;
+        emailTaken: string;
+        emailNeedsRecovery: string;
+        linkPasswordMismatch: string;
+        verifiedEmailMismatch: string;
+        emailInvalid: string;
+    };
     confirmInbox: string;
     back: string;
     totpPrompt: string;

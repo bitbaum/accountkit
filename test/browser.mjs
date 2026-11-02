@@ -429,6 +429,111 @@ try {
     );
     await page.close();
   }
+  // A product's own code as a way in (AOZ), and a claim, in every shipped language.
+  for (const locale of AUTH_LABEL_LOCALES) {
+    for (const width of [320, 390]) {
+      const page = await browser.newPage({ viewport: { width, height: 844 } });
+      const errors = [];
+      page.on("pageerror", (error) => errors.push(error.message));
+      const words = authLabelsFor(locale);
+      const door = { ...authLabelsFor("en").code, ...words.code };
+      await page.goto(`${base}?door=${locale}`);
+      const screen = page.locator("#auth-door");
+      await screen.getByRole("button", { name: "Mit Code anmelden" }).click();
+      const field = screen.getByLabel("Zugangscode", { exact: true });
+      await field.fill("aoz-abc2fa");
+      check(
+        (await field.inputValue()) === "AOZ-ABC2FA",
+        `[door ${locale} ${width}] a code is typed in capitals`,
+      );
+      await screen
+        .getByRole("button", { name: words.signIn, exact: true })
+        .click();
+      await screen.getByText(door.needsAnotherMethod).waitFor();
+      const sent = await page.evaluate(() =>
+        JSON.parse(document.body.dataset.door),
+      );
+      check(
+        sent.path === "/sign-in/domain" && sent.credential === "AOZ-ABC2FA",
+        `[door ${locale} ${width}] the code goes to /sign-in/domain as typed`,
+      );
+      check(
+        (await screen.getByRole("button", { name: door.useEmail }).count()) ===
+          1,
+        `[door ${locale} ${width}] the way back to email is on the same screen`,
+      );
+      check(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= innerWidth,
+        ),
+        `[door ${locale} ${width}] no sideways scroll`,
+      );
+      await page.screenshot({
+        path: `/tmp/accountkit-door-${locale}-${width}.png`,
+        fullPage: true,
+      });
+      // A personal link signs in once, and the code leaves the address bar.
+      await page.goto(`${base}?door=${locale}&personal=res-link01`);
+      await page.waitForURL((url) => url.hash === "#signed-in");
+      const linked = await page.evaluate(() => ({
+        sent: JSON.parse(document.body.dataset.door ?? "{}"),
+        calls: Number(document.body.dataset.doorCalls ?? 0),
+        search: location.search,
+      }));
+      check(
+        linked.sent.credential === "RES-LINK01" &&
+          linked.calls === 1 &&
+          !linked.search.includes("personal"),
+        `[door ${locale} ${width}] a personal link signs in once and leaves the address bar`,
+      );
+
+      const claim = { ...authLabelsFor("en").claim, ...words.claim };
+      await page.goto(`${base}?claim=${locale}`);
+      const form = page.locator("#auth-claim");
+      await form.getByLabel("Zugangscode", { exact: true }).fill("aoz-claim1");
+      await form
+        .getByLabel(words.email, { exact: true })
+        .fill("taken@example.ch");
+      await form.locator("#acct-password").fill("a synthetic password");
+      await form.getByRole("button", { name: claim.submit }).click();
+      await form.getByText(claim.emailTaken).waitFor();
+      const asked = await page.evaluate(() =>
+        JSON.parse(document.body.dataset.claim),
+      );
+      check(
+        asked.path === "/provision/claim" &&
+          asked.credential === "code:AOZ-CLAIM1" &&
+          asked.email === "taken@example.ch",
+        `[claim ${locale} ${width}] the claim sends the product's credential, the address and the password`,
+      );
+      await form
+        .getByLabel(words.email, { exact: true })
+        .fill("new@example.ch");
+      await form.getByRole("button", { name: claim.submit }).click();
+      await form
+        .getByText(claim.verifyEmail.replace("{email}", "new@example.ch"))
+        .waitFor();
+      check(
+        true,
+        `[claim ${locale} ${width}] a claim that waits for the address says so`,
+      );
+      check(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= innerWidth,
+        ),
+        `[claim ${locale} ${width}] no sideways scroll`,
+      );
+      await page.screenshot({
+        path: `/tmp/accountkit-claim-${locale}-${width}.png`,
+        fullPage: true,
+      });
+      check(
+        errors.length === 0,
+        `[door/claim ${locale} ${width}] no runtime errors (${errors.join(" | ")})`,
+      );
+      await page.close();
+    }
+  }
   for (const [locale, width] of [
     ["en", 320],
     ["en", 390],
