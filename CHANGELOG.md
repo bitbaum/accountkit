@@ -6,6 +6,17 @@ records, not claims that this file existed at release time.
 
 ## Unreleased
 
+- The shared sign-in's button names only the providers Morulia has switched
+  on. `signInMethods` reads them from `<SIGNIN_ISSUER>/api/providers` (cached
+  per issuer, refreshed at most once a minute in the background, the last good
+  list kept on a failed read) and returns them as `signinProviders`; `signin`
+  is true only when that list has at least one name. Until 0.24 the button
+  read "Continue with Google, Apple, GitHub, X or Facebook" whatever was
+  configured, so an app could name a provider that led nowhere. The label is
+  `withSigninProviders` ("Continue with {providers}") joined with `listOr`, in
+  all six languages; a product's own older `withSignin` keeps its words. The
+  fallback `withSignin` no longer names Apple or X, which are paid.
+
 - A button label that keeps a hyphenated word whole now reads as one sentence
   again. 0.22.1 put the parts beside each other, and a flex button (AccountKit's
   own stylesheet, and evig's) laid each one out as its own item: evig's sign-in

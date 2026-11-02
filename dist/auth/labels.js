@@ -12,7 +12,9 @@ export const DEFAULT_AUTH_LABELS = {
     recovery: DEFAULT_RECOVERY_LABELS,
     signIn: "Sign in",
     createAccount: "Create an account",
-    withSignin: "Continue with Google, Apple, GitHub, X or Facebook",
+    withSignin: "Continue with Google, GitHub or Facebook",
+    withSigninProviders: "Continue with {providers}",
+    listOr: "or",
     withOrangecat: "Continue with OrangeCat",
     withPasskey: "Sign in with a passkey",
     withLink: "Email me a sign-in link instead",
@@ -126,5 +128,29 @@ export function authErrorText(labels, error) {
         return labels.errors[error.code];
     }
     return labels.errors.generic;
+}
+/**
+ * "Continue with Google, GitHub or Facebook" for exactly the providers the
+ * shared sign-in publishes, in its order. A product's own labels that predate
+ * `withSigninProviders` still read in their language: the template and the
+ * word for "or" are taken from their `withSignin` when it has the shape every
+ * shipped one had ("<words> Google, …, <or> <last>"); otherwise English.
+ */
+export function signinButtonLabel(labels, providers) {
+    if (!providers || providers.length === 0)
+        return labels.withSignin;
+    let template = labels.withSigninProviders;
+    let or = labels.listOr;
+    if (!template || !or) {
+        const shape = /^(.*?)Google, .* (\S+) \S+$/u.exec(labels.withSignin);
+        template ??= shape
+            ? `${shape[1]}{providers}`
+            : DEFAULT_AUTH_LABELS.withSigninProviders;
+        or ??= shape ? shape[2] : DEFAULT_AUTH_LABELS.listOr;
+    }
+    const names = providers.length === 1
+        ? providers[0]
+        : `${providers.slice(0, -1).join(", ")} ${or} ${providers[providers.length - 1]}`;
+    return fill(template, { providers: names });
 }
 //# sourceMappingURL=labels.js.map

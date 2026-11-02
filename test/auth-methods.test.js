@@ -13,8 +13,15 @@ import {
   oidcClients,
   orangecatOidc,
   placeholderEmail,
+  knownSigninProviders,
+  loadSigninProviders,
+  parseSigninProviders,
+  resetSigninProviders,
   signInMethods,
   signinBroker,
+  signinButtonLabel,
+  DEFAULT_AUTH_LABELS,
+  authLabelsFor,
   usableIssuer,
 } from "../dist/auth/index.js";
 
@@ -72,9 +79,11 @@ describe("signInMethods", () => {
     );
   });
   test("each OIDC button shows exactly when its values are set", () => {
-    assert.equal(signInMethods({ ...BROKER }, false).signin, true);
+    const listed = { signinProviders: ["GitHub"] };
+    assert.equal(signInMethods({ ...BROKER }, false, listed).signin, true);
     assert.equal(
-      signInMethods({ ...BROKER, SIGNIN_CLIENT_SECRET: " " }, false).signin,
+      signInMethods({ ...BROKER, SIGNIN_CLIENT_SECRET: " " }, false, listed)
+        .signin,
       false,
     );
     assert.equal(signInMethods({ ...ORANGECAT }, false).orangecat, true);
@@ -188,5 +197,132 @@ describe("the session secret", () => {
       ready: false,
       reason: "no_database",
     });
+  });
+});
+
+describe("the shared sign-in's button names only what the service publishes", () => {
+  const answer =
+    (body, status = 200) =>
+    async (url) => {
+      answer.urls.push(String(url));
+      return new Response(JSON.stringify(body), {
+        status,
+        headers: { "content-type": "application/json" },
+      });
+    };
+  answer.urls = [];
+
+  test("hidden until the service has said which providers are on", () => {
+    resetSigninProviders();
+    const m = signInMethods({ ...BROKER, NODE_ENV: "test" }, false);
+    assert.equal(m.signin, false);
+    assert.deepEqual(m.signinProviders, []);
+  });
+
+  test("names the published providers, in the service's order", async () => {
+    resetSigninProviders();
+    const names = await loadSigninProviders(
+      BROKER,
+      answer({
+        providers: [
+          { id: "google", label: "Google" },
+          { id: "github", label: "GitHub" },
+        ],
+      }),
+    );
+    assert.deepEqual(names, ["Google", "GitHub"]);
+    assert.equal(answer.urls.at(-1), "https://signin.example.ch/api/providers");
+    assert.deepEqual(knownSigninProviders(BROKER), ["Google", "GitHub"]);
+    const m = signInMethods(BROKER, false);
+    assert.equal(m.signin, true);
+    assert.deepEqual(m.signinProviders, ["Google", "GitHub"]);
+  });
+
+  test("an empty list hides the button", async () => {
+    resetSigninProviders();
+    await loadSigninProviders(BROKER, answer({ providers: [] }));
+    assert.equal(signInMethods(BROKER, false).signin, false);
+  });
+
+  test("a failed read keeps the last good list; a broken answer is not a list", async () => {
+    resetSigninProviders();
+    await loadSigninProviders(
+      BROKER,
+      answer({ providers: [{ label: "GitHub" }] }),
+    );
+    await loadSigninProviders(BROKER, answer({ error: "down" }, 503));
+    await loadSigninProviders(BROKER, async () => {
+      throw new Error("offline");
+    });
+    assert.deepEqual(knownSigninProviders(BROKER), ["GitHub"]);
+    assert.equal(parseSigninProviders({ providers: [{ label: 3 }] }), null);
+    assert.equal(parseSigninProviders({ providers: "Google" }), null);
+    assert.equal(parseSigninProviders(null), null);
+  });
+
+  test("nothing is read without SIGNIN_*", async () => {
+    resetSigninProviders();
+    let called = false;
+    const none = await loadSigninProviders({}, async () => {
+      called = true;
+      return new Response("{}");
+    });
+    assert.equal(none, null);
+    assert.equal(called, false);
+    assert.equal(
+      signInMethods({}, false, { signinProviders: ["GitHub"] }).signin,
+      false,
+    );
+  });
+
+  test("the label lists exactly the providers, in every language", () => {
+    assert.equal(
+      signinButtonLabel(DEFAULT_AUTH_LABELS, ["GitHub"]),
+      "Continue with GitHub",
+    );
+    assert.equal(
+      signinButtonLabel(DEFAULT_AUTH_LABELS, ["Google", "Microsoft", "GitHub"]),
+      "Continue with Google, Microsoft or GitHub",
+    );
+    assert.equal(
+      signinButtonLabel(authLabelsFor("de"), ["Google", "GitHub"]),
+      "Weiter mit Google oder GitHub",
+    );
+    assert.equal(
+      signinButtonLabel(authLabelsFor("fr"), ["Google", "Discord"]),
+      "Continuer avec Google ou Discord",
+    );
+    for (const locale of ["de", "fr", "it", "rm", "ru", "es", "en"]) {
+      const label = signinButtonLabel(authLabelsFor(locale), ["GitLab"]);
+      assert.match(label, /GitLab$/, locale);
+      assert.doesNotMatch(label, /Apple|Google/, locale);
+    }
+  });
+
+  test("a product's own older labels keep their language", () => {
+    const old = {
+      ...DEFAULT_AUTH_LABELS,
+      withSignin: "Weiter mit Google, Apple, GitHub, X oder Facebook",
+      withSigninProviders: undefined,
+      listOr: undefined,
+    };
+    assert.equal(
+      signinButtonLabel(old, ["Google", "GitHub"]),
+      "Weiter mit Google oder GitHub",
+    );
+    const odd = { ...old, withSignin: "Sign in elsewhere" };
+    assert.equal(
+      signinButtonLabel(odd, ["Google", "GitHub"]),
+      "Continue with Google or GitHub",
+    );
+  });
+
+  test("no default label names a paid provider", () => {
+    for (const locale of ["de", "fr", "it", "rm", "ru", "es", "en"])
+      assert.doesNotMatch(
+        authLabelsFor(locale).withSignin,
+        /Apple|\bX\b/,
+        locale,
+      );
   });
 });
