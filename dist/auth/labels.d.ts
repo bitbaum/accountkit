@@ -50,6 +50,13 @@ export interface AuthLabels {
     /** @deprecated Unused since sign-up stopped asking for a name. */
     displayNameHint: string;
     checkInbox: string;
+    /**
+     * Under "we sent a link": the same email carries a code to type here
+     * (./sign-in-code). Optional for products that pass their own labels.
+     */
+    codePrompt?: string;
+    /** The button that signs in with that code. Optional, as codePrompt. */
+    signInWithCode?: string;
     confirmInbox: string;
     back: string;
     totpPrompt: string;

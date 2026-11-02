@@ -9,11 +9,21 @@ export type { DomainCredentials } from "./domain-credentials.js";
 export type { SessionLifetime } from "./session-lifetime.js";
 export type { AccountProvisioning, ProvisionedIdentity, } from "./provisioning.js";
 export type AuthMailKind = "verify" | "magicLink" | "reset";
+/** What an account mail carries besides its link. */
+export interface AuthMailExtra {
+    /** A sign-in code, only with a sign-in link and only to a mailer with `codes`. */
+    code?: string;
+}
 export interface AuthMailer {
     /** Whether mail can be sent at all. Without it the methods that need mail are hidden. */
     configured: boolean;
-    /** Send an account mail. Must not throw, and must not log the link. */
-    send(kind: AuthMailKind, to: string, url: string): Promise<void>;
+    /**
+     * Whether this mailer prints `extra.code` in the sign-in link's email. Only
+     * then is a sign-in code minted (./sign-in-code). `createAuthMailer` does.
+     */
+    codes?: boolean;
+    /** Send an account mail. Must not throw, and must not log the link or the code. */
+    send(kind: AuthMailKind, to: string, url: string, extra?: AuthMailExtra): Promise<void>;
 }
 export interface AuthSite {
     /** The public origin, e.g. https://causius.orangecat.ch. Pinned, never inferred. */

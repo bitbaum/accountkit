@@ -1,5 +1,5 @@
 import { passkeyClient } from "@better-auth/passkey/client";
-import { magicLinkClient, twoFactorClient } from "better-auth/client/plugins";
+import { emailOTPClient, magicLinkClient, twoFactorClient } from "better-auth/client/plugins";
 /**
  * The plugins the browser client needs, the same in every product:
  *
@@ -14,6 +14,7 @@ import { magicLinkClient, twoFactorClient } from "better-auth/client/plugins";
 export declare function authClientPlugins(): [
     ReturnType<typeof twoFactorClient>,
     ReturnType<typeof passkeyClient>,
-    ReturnType<typeof magicLinkClient>
+    ReturnType<typeof magicLinkClient>,
+    ReturnType<typeof emailOTPClient>
 ];
 //# sourceMappingURL=client.d.ts.map

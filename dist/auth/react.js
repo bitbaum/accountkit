@@ -81,6 +81,9 @@ export function SignInForm({ client, methods, labels = DEFAULT_AUTH_LABELS, clas
     const [busy, setBusy] = useState(false);
     const [error, setError] = useState(initialError ? labels.errors.generic : null);
     const [unverified, setUnverified] = useState(false);
+    // The link's email also carries a code when the server says so (./sign-in-code).
+    const [codeSent, setCodeSent] = useState(false);
+    const [signInCode, setSignInCode] = useState("");
     const [recovery, setRecovery] = useState(null);
     useEffect(() => {
         const query = new URLSearchParams(window.location.search);
@@ -143,15 +146,43 @@ export function SignInForm({ client, methods, labels = DEFAULT_AUTH_LABELS, clas
             return setError(labels.errors.emailFirst);
         setBusy(true);
         setError(null);
-        const { error: e } = await client.signIn.magicLink({
+        const { data, error: e } = await client.signIn.magicLink({
             email,
             callbackURL: next,
             errorCallbackURL: `${signInPath}?method=magic-link&next=${encodeURIComponent(next)}`,
         });
         if (e)
             return fail(e);
+        setCodeSent(Boolean(client.signIn.emailOtp &&
+            data &&
+            typeof data === "object" &&
+            "code" in data &&
+            data.code === true));
+        setSignInCode("");
         setStep("linkSent");
         setBusy(false);
+    }
+    async function withCode(event) {
+        event.preventDefault();
+        if (!client.signIn.emailOtp)
+            return;
+        setBusy(true);
+        setError(null);
+        const { data, error: e } = await client.signIn.emailOtp({
+            email,
+            otp: signInCode.replace(/\s+/g, ""),
+        });
+        if (e)
+            return fail(e);
+        if (data &&
+            typeof data === "object" &&
+            "twoFactorRedirect" in data &&
+            data.twoFactorRedirect) {
+            setStep("twoFactor");
+            setBusy(false);
+            return;
+        }
+        done();
     }
     async function withPasskey() {
         setBusy(true);
@@ -192,7 +223,10 @@ export function SignInForm({ client, methods, labels = DEFAULT_AUTH_LABELS, clas
             } }));
     }
     if (step === "linkSent") {
-        return (_jsxs("div", { className: c.stack, children: [_jsx("p", { className: c.notice, role: "status", children: fill(labels.checkInbox, { email }) }), _jsx("button", { type: "button", className: c.buttonQuiet, onClick: () => setStep("start"), children: unbroken(labels.back) })] }));
+        return (_jsxs("div", { className: c.stack, children: [_jsx("p", { className: c.notice, role: "status", children: fill(labels.checkInbox, { email }) }), codeSent && (_jsxs("form", { onSubmit: withCode, className: c.stack, children: [_jsxs("div", { className: c.field, children: [_jsx("label", { htmlFor: "acct-sign-in-code", className: c.label, children: labels.codePrompt ?? DEFAULT_AUTH_LABELS.codePrompt }), _jsx("input", { id: "acct-sign-in-code", className: c.input, inputMode: "numeric", autoComplete: "one-time-code", pattern: "[0-9 ]*", maxLength: 7, value: signInCode, onChange: (e) => setSignInCode(e.target.value), required: true })] }), _jsx(ErrorLine, { message: error, className: c.error }), _jsx("button", { type: "submit", className: c.button, disabled: busy, children: unbroken(labels.signInWithCode ?? DEFAULT_AUTH_LABELS.signInWithCode) })] })), _jsx("button", { type: "button", className: c.buttonQuiet, onClick: () => {
+                        setError(null);
+                        setStep("start");
+                    }, children: unbroken(labels.back) })] }));
     }
     if (step === "twoFactor") {
         return (_jsxs("form", { onSubmit: withSecondFactor, className: c.stack, children: [_jsx("p", { className: c.hint, children: useBackup ? labels.backupPrompt : labels.totpPrompt }), _jsxs("div", { className: c.field, children: [_jsx("label", { htmlFor: "acct-code", className: c.label, children: useBackup ? labels.backupCode : labels.totpCode }), _jsx("input", { id: "acct-code", className: c.input, inputMode: useBackup ? "text" : "numeric", autoComplete: "one-time-code", value: code, onChange: (e) => setCode(e.target.value), required: true })] }), _jsxs("label", { className: c.check, children: [_jsx("input", { type: "checkbox", checked: trustDevice, onChange: (e) => setTrustDevice(e.target.checked) }), labels.trustDevice] }), _jsx(ErrorLine, { message: error, className: c.error }), _jsx("button", { type: "submit", className: c.button, disabled: busy, children: unbroken(labels.verify) }), _jsx("button", { type: "button", className: c.buttonQuiet, onClick: () => setUseBackup(!useBackup), children: unbroken(useBackup ? labels.useTotp : labels.useBackup) })] }));

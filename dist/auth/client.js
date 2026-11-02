@@ -1,5 +1,5 @@
 import { passkeyClient } from "@better-auth/passkey/client";
-import { magicLinkClient, twoFactorClient } from "better-auth/client/plugins";
+import { emailOTPClient, magicLinkClient, twoFactorClient, } from "better-auth/client/plugins";
 /**
  * The plugins the browser client needs, the same in every product:
  *
@@ -12,6 +12,11 @@ import { magicLinkClient, twoFactorClient } from "better-auth/client/plugins";
  * origin (/api/auth), which is all a strict CSP's `connect-src 'self'` allows.
  */
 export function authClientPlugins() {
-    return [twoFactorClient(), passkeyClient(), magicLinkClient()];
+    return [
+        twoFactorClient(),
+        passkeyClient(),
+        magicLinkClient(),
+        emailOTPClient(),
+    ];
 }
 //# sourceMappingURL=client.js.map

@@ -1,4 +1,6 @@
 import { conventionalFrom, isMailConfigured, sendMail, } from "@bitbaum/mail-kit";
+/** "123456" → "123 456": easier to read off one screen and type into another. */
+export const spacedCode = (code) => code.length === 6 ? `${code.slice(0, 3)} ${code.slice(3)}` : code;
 /** Shared account-mail adapter; a no-op sender is never reported as configured. */
 export function createAuthMailer(options) {
     const env = () => {
@@ -19,7 +21,9 @@ export function createAuthMailer(options) {
         get configured() {
             return isMailConfigured(env());
         },
-        async send(kind, to, url) {
+        // The sign-in link's email also carries a code (./sign-in-code).
+        codes: true,
+        async send(kind, to, url, extra) {
             // Refuse unexpected origins before sending a bearer credential by email.
             let sameOrigin = false;
             try {
@@ -35,7 +39,9 @@ export function createAuthMailer(options) {
             const result = await sendMail({
                 to,
                 subject: subjects[kind],
-                text: `${subjects[kind]}\n\n${url}\n\nIf you did not request this, you can ignore this email.`,
+                text: kind === "magicLink" && extra?.code
+                    ? `${subjects[kind]}\n\n${url}\n\nOn another device? Type this code on the page where you asked for the link: ${spacedCode(extra.code)}\nThe link and the code each work for 10 minutes.\n\nIf you did not request this, you can ignore this email.`
+                    : `${subjects[kind]}\n\n${url}\n\nIf you did not request this, you can ignore this email.`,
             }, { env: env() });
             if (!result.sent)
                 console.error("[auth] account email delivery failed", result.status ?? "transport");
