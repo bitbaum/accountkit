@@ -16,6 +16,7 @@ export const DEFAULT_AUTH_LABELS = {
     withSigninProviders: "Continue with {providers}",
     listOr: "or",
     withOrangecat: "Continue with OrangeCat",
+    withGithub: "Continue with GitHub",
     withPasskey: "Sign in with a passkey",
     withLink: "Email me a sign-in link instead",
     signUpWithLink: "Email me a link instead",

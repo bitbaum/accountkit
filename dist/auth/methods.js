@@ -181,6 +181,7 @@ export function signInMethods(env, mailConfigured, options = {}) {
         signinProviders: names ?? [],
         orangecat: orangecatOidc(env) !== null,
         lightning: lightningOn(env),
+        github: productGithubApp(env, options.githubSignIn) !== null,
     };
 }
 /**
