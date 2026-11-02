@@ -6,6 +6,18 @@ records, not claims that this file existed at release time.
 
 ## Unreleased
 
+- Screens for a product's own codes (#67). `SignInForm` takes `codeDoor`: a
+  quiet button opens one field in the product's words (AOZ: "Zugangscode"),
+  sent to the server's `/sign-in/domain` (`domainCredentials`). A personal
+  link's `?<param>=` opens it and signs in once, then leaves the address bar.
+  An account with a second factor is refused in AccountKit's words with the
+  way back to email on the same screen. `ClaimForm` is new: a code (or a claim
+  link's credential the page holds), an email and a first password, sent to
+  `/provision/claim` (`provisioning`), saying what happened: signed in, asked
+  to confirm the address, or asked to sign in for a second factor; every
+  `CLAIM_*` refusal is a sentence. New optional labels `code` and `claim` in
+  all seven languages; the client's `$fetch` carries both calls.
+
 - A product's own GitHub app (`githubSignIn: true`) now shows on the shared
   screens: `signInMethods(env, mail, { githubSignIn: true }).github`, a
   "Continue with GitHub" button beside OrangeCat on sign-in and sign-up, and

@@ -80,6 +80,37 @@ export interface AuthLabels {
     retry: string;
     taken: string;
   };
+  /**
+   * A product's own code as a way in (SignInForm's `codeDoor`, the server's
+   * `domainCredentials`). Optional; English when absent.
+   */
+  code?: {
+    /** The code names nobody, or the request was refused. */
+    invalid: string;
+    /** The account has a second factor: a code alone cannot open it. */
+    needsAnotherMethod: string;
+    /** Back from the code to email and password. */
+    useEmail: string;
+  };
+  /**
+   * Claiming an identity a product provisioned (ClaimForm, the server's
+   * `provisioning`): a code or a claim link, an email and a first password.
+   * Optional; English when absent.
+   */
+  claim?: {
+    submit: string;
+    /** After a claim that waits for the address to be confirmed. {email} */
+    verifyEmail: string;
+    /** After a claim that linked an existing account with a second factor. */
+    signIn: string;
+    invalid: string;
+    alreadyClaimed: string;
+    emailTaken: string;
+    emailNeedsRecovery: string;
+    linkPasswordMismatch: string;
+    verifiedEmailMismatch: string;
+    emailInvalid: string;
+  };
   confirmInbox: string;
   back: string;
   totpPrompt: string;
@@ -179,6 +210,31 @@ export const DEFAULT_AUTH_LABELS: AuthLabels = {
     expired: "This code has expired.",
     retry: "Show a new code",
     taken: "This wallet already signs in to another account.",
+  },
+  code: {
+    invalid: "This code is not valid. Check it, or sign in with your email.",
+    needsAnotherMethod:
+      "This account has two-step sign-in. Sign in with your email and password or a passkey.",
+    useEmail: "Sign in with email instead",
+  },
+  claim: {
+    submit: "Set up my account",
+    verifyEmail:
+      "We sent a link to {email}. Open it to confirm your address, then sign in.",
+    signIn:
+      "Your account is linked. Sign in to finish with your second factor.",
+    invalid: "This code or link is not valid, or it has expired.",
+    alreadyClaimed:
+      "This code already has an account. Sign in, or reset its password.",
+    emailTaken:
+      "This address belongs to another account. Use another address, or sign in to it first.",
+    emailNeedsRecovery:
+      "This address already has an account without a password. Set its password through recovery, then come back.",
+    linkPasswordMismatch:
+      "This address already has an account. Enter that account's password to link the two.",
+    verifiedEmailMismatch:
+      "This identity is tied to another confirmed address. Use that address.",
+    emailInvalid: "Enter an email address that can receive mail.",
   },
   confirmInbox:
     "We sent a link to {email}. Open it to confirm your address and finish creating your account.",

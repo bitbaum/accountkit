@@ -4,6 +4,7 @@ import { AccountMenu, SignInError } from "../src/index.js";
 import {
   PasswordRecoveryForm,
   SignInForm,
+  ClaimForm,
   SignUpForm,
   type AuthClientLike,
   type PasswordRecoveryClient,
@@ -19,6 +20,9 @@ const wordsLocale = query.get("words");
 const codeMode = query.has("code");
 // ?lightning: Lightning login, the wallet answering on the second poll.
 const lightningMode = query.has("lightning");
+// A product's own code as a way in, and a claim (AOZ).
+const doorMode = query.has("door");
+const claimMode = query.has("claim");
 
 // An Auth.js product has no Better Auth client: it passes the two recovery
 // calls only. The first call of each kind fails like a dropped connection.
@@ -197,6 +201,93 @@ mount(
   />,
 );
 
+// The code door: a code for an account with a second factor is refused,
+// any other is accepted. What was sent is recorded for the browser check.
+const doorClient = {
+  signIn: {},
+  $fetch: async (path: string, options: { body: Record<string, unknown> }) => {
+    document.body.dataset.doorCalls = String(
+      Number(document.body.dataset.doorCalls ?? 0) + 1,
+    );
+    document.body.dataset.door = JSON.stringify({ path, ...options.body });
+    return String(options.body.credential).endsWith("2FA")
+      ? {
+          error: {
+            status: 403,
+            code: "DOMAIN_CREDENTIAL_REQUIRES_ANOTHER_METHOD",
+          },
+        }
+      : { data: { success: true } };
+  },
+} as unknown as AuthClientLike;
+
+mount(
+  "auth-door",
+  <SignInForm
+    client={doorClient}
+    labels={authLabelsFor(query.get("door") || "en")}
+    methods={{
+      password: true,
+      passkey: true,
+      twoFactor: false,
+      magicLink: false,
+      verifyEmail: false,
+      signin: false,
+      orangecat: false,
+      passwordReset: false,
+    }}
+    signInPath="/demo/index.html"
+    next="#signed-in"
+    signUpLink={<a href="#signup">Create an account</a>}
+    codeDoor={{
+      open: "Mit Code anmelden",
+      label: "Zugangscode",
+      placeholder: "AOZ-XXXXXX oder RES-XXXXXX",
+      uppercase: true,
+      param: "personal",
+    }}
+  />,
+);
+
+// A claim: an address already in use is refused, any other is signed in.
+const claimClient = {
+  signIn: {},
+  $fetch: async (path: string, options: { body: Record<string, unknown> }) => {
+    document.body.dataset.claim = JSON.stringify({ path, ...options.body });
+    return options.body.email === "taken@example.ch"
+      ? { error: { status: 409, code: "CLAIM_EMAIL_TAKEN" } }
+      : { data: { success: true, status: "verify_email" } };
+  },
+} as unknown as AuthClientLike;
+
+mount(
+  "auth-claim",
+  <ClaimForm
+    client={claimClient}
+    labels={authLabelsFor(query.get("claim") || "en")}
+    methods={{
+      password: true,
+      passkey: false,
+      twoFactor: false,
+      magicLink: false,
+      verifyEmail: true,
+      signin: false,
+      orangecat: false,
+      passwordReset: false,
+    }}
+    next="/account"
+    signInPath="/demo/index.html"
+    signInLink={<a href="#signin">Sign in</a>}
+    proof={{
+      kind: "code",
+      label: "Zugangscode",
+      placeholder: "AOZ-XXXXXX",
+      uppercase: true,
+      prefix: "code:",
+    }}
+  />,
+);
+
 const groups = [
   {
     id: "nav",
@@ -213,9 +304,16 @@ function mount(id: string, node: React.ReactNode) {
     (id === "auth-words" && wordsLocale === null) ||
     (id === "auth-code" && !codeMode) ||
     (id === "auth-lightning" && !lightningMode) ||
+    (id === "auth-door" && !doorMode) ||
+    (id === "auth-claim" && !claimMode) ||
     (id === "auth-recovery-adapter" && !adapterMode) ||
     (id === "auth-recovery" &&
-      (signupMode || adapterMode || codeMode || lightningMode)) ||
+      (signupMode ||
+        adapterMode ||
+        codeMode ||
+        lightningMode ||
+        doorMode ||
+        claimMode)) ||
     (id === "auth-signup" && (!signupMode || adapterMode))
   )
     return;
