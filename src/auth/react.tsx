@@ -737,6 +737,7 @@ export function AccountPanel({
   accountPath,
   homePath,
   deletion,
+  ownProfile = false,
 }: Common & {
   user: {
     name: string;
@@ -756,6 +757,12 @@ export function AccountPanel({
    * erasure request. Without it, the delete control.
    */
   deletion?: ReactNode;
+  /**
+   * True when the product shows and edits the person's name on its own page
+   * (its own row is the one every table reads): the panel then leaves its
+   * Profile section out, so one person never has two names that drift apart.
+   */
+  ownProfile?: boolean;
 }) {
   const c = merge(classes);
   const a = labels.account;
@@ -898,46 +905,48 @@ export function AccountPanel({
     <div className={c.stack}>
       <ErrorLine message={error} className={c.error} />
 
-      <Section title={a.profile} id="acct-profile" classes={c}>
-        <form onSubmit={saveName} className={c.stack}>
-          <div className={c.field}>
-            <label htmlFor="acct-display-name" className={c.label}>
-              {labels.displayName}
-            </label>
-            <input
-              id="acct-display-name"
-              className={c.input}
-              maxLength={80}
-              value={name}
-              onChange={(e) => {
-                setName(e.target.value);
-                setSaved(false);
-              }}
-            />
-          </div>
-          <dl className={c.hint}>
-            <div>
-              <dt style={{ display: "inline" }}>{labels.email}: </dt>
-              <dd style={{ display: "inline", margin: 0 }}>
-                {user.email ?? a.noEmail}
-                {user.email && !user.emailVerified && ` (${a.unverified})`}
-              </dd>
+      {!ownProfile && (
+        <Section title={a.profile} id="acct-profile" classes={c}>
+          <form onSubmit={saveName} className={c.stack}>
+            <div className={c.field}>
+              <label htmlFor="acct-display-name" className={c.label}>
+                {labels.displayName}
+              </label>
+              <input
+                id="acct-display-name"
+                className={c.input}
+                maxLength={80}
+                value={name}
+                onChange={(e) => {
+                  setName(e.target.value);
+                  setSaved(false);
+                }}
+              />
             </div>
+            <dl className={c.hint}>
+              <div>
+                <dt style={{ display: "inline" }}>{labels.email}: </dt>
+                <dd style={{ display: "inline", margin: 0 }}>
+                  {user.email ?? a.noEmail}
+                  {user.email && !user.emailVerified && ` (${a.unverified})`}
+                </dd>
+              </div>
+              <div>
+                <dt style={{ display: "inline" }}>{a.role}: </dt>
+                <dd style={{ display: "inline", margin: 0 }}>
+                  {a.roles[user.role] ?? user.role}
+                </dd>
+              </div>
+            </dl>
             <div>
-              <dt style={{ display: "inline" }}>{a.role}: </dt>
-              <dd style={{ display: "inline", margin: 0 }}>
-                {a.roles[user.role] ?? user.role}
-              </dd>
+              <button type="submit" className={c.button} disabled={busy}>
+                {unbroken(a.save)}
+              </button>{" "}
+              {saved && <span role="status">{a.saved}</span>}
             </div>
-          </dl>
-          <div>
-            <button type="submit" className={c.button} disabled={busy}>
-              {unbroken(a.save)}
-            </button>{" "}
-            {saved && <span role="status">{a.saved}</span>}
-          </div>
-        </form>
-      </Section>
+          </form>
+        </Section>
+      )}
 
       <Section title={a.methods} id="acct-methods" classes={c}>
         <ul className={c.hint}>

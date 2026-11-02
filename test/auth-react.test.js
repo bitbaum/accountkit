@@ -181,6 +181,33 @@ test("the account page shows a product's own way out in place of deletion", () =
   );
 });
 
+test("a product that owns the person's name keeps the panel out of it", () => {
+  const props = {
+    client,
+    methods: all,
+    user: {
+      name: "Ada",
+      email: "ada@example.invalid",
+      emailVerified: true,
+      role: "customer",
+      twoFactorEnabled: false,
+    },
+    linked: ["credential"],
+    accountPath: "/account",
+    homePath: "/",
+  };
+  assert.ok(
+    renderToString(h(AccountPanel, props)).includes("acct-display-name"),
+  );
+  const owned = renderToString(h(AccountPanel, { ...props, ownProfile: true }));
+  assert.ok(!owned.includes("acct-display-name"));
+  assert.ok(!owned.includes('id="acct-profile"'));
+  assert.ok(
+    owned.includes(DEFAULT_AUTH_LABELS.account.passkeys),
+    "the rest stays",
+  );
+});
+
 test("errors are sentences, never a provider's raw message", () => {
   assert.equal(
     authErrorText(DEFAULT_AUTH_LABELS, { code: "INVALID_EMAIL_OR_PASSWORD" }),
