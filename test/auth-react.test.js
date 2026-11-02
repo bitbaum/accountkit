@@ -32,15 +32,20 @@ const all = {
 };
 const none = { ...all, magicLink: false, signin: false, orangecat: false };
 
+// The words a person reads: a hyphenated word sits in its own nowrap span.
+const text = (html) => html.replace(/<[^>]+>/g, "");
+
 test("sign-in offers exactly the switched-on methods", () => {
-  const full = renderToString(
-    h(SignInForm, {
-      client,
-      methods: all,
-      next: "/a",
-      signInPath: "/s",
-      signUpLink: "x",
-    }),
+  const full = text(
+    renderToString(
+      h(SignInForm, {
+        client,
+        methods: all,
+        next: "/a",
+        signInPath: "/s",
+        signUpLink: "x",
+      }),
+    ),
   );
   for (const label of [
     DEFAULT_AUTH_LABELS.withSignin,

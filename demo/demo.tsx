@@ -8,10 +8,13 @@ import {
   type AuthClientLike,
   type PasswordRecoveryClient,
 } from "../src/auth/react.js";
+import { authLabelsFor } from "../src/auth/translations.js";
 
 const query = new URLSearchParams(window.location.search);
 const signupMode = query.has("signup");
 const adapterMode = query.has("adapter");
+// ?words=<locale>: the sign-in card alone, in that language, every button on.
+const wordsLocale = query.get("words");
 
 // An Auth.js product has no Better Auth client: it passes the two recovery
 // calls only. The first call of each kind fails like a dropped connection.
@@ -84,6 +87,26 @@ mount(
   />,
 );
 
+mount(
+  "auth-words",
+  <SignInForm
+    client={recoveryClient}
+    labels={authLabelsFor(wordsLocale ?? "en")}
+    methods={{
+      password: true,
+      passkey: true,
+      twoFactor: false,
+      magicLink: true,
+      verifyEmail: true,
+      signin: true,
+      orangecat: true,
+      passwordReset: true,
+    }}
+    signInPath="/demo/index.html"
+    next="/account"
+  />,
+);
+
 const groups = [
   {
     id: "nav",
@@ -95,7 +118,9 @@ const groups = [
 ];
 
 function mount(id: string, node: React.ReactNode) {
+  if (wordsLocale !== null && id !== "auth-words") return;
   if (
+    (id === "auth-words" && wordsLocale === null) ||
     (id === "auth-recovery-adapter" && !adapterMode) ||
     (id === "auth-recovery" && (signupMode || adapterMode)) ||
     (id === "auth-signup" && (!signupMode || adapterMode))

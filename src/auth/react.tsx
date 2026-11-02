@@ -9,6 +9,7 @@ import {
 } from "react";
 import type { SignInMethods } from "./methods.js";
 import { PasswordRecoveryForm } from "./recovery.js";
+import { unbroken } from "./unbroken.js";
 import {
   DEFAULT_AUTH_LABELS,
   authErrorText,
@@ -210,7 +211,7 @@ export function OidcButtons({
             }
           }}
         >
-          {provider.label}
+          {unbroken(provider.label)}
         </button>
       ))}
     </div>
@@ -400,7 +401,7 @@ export function SignInForm({
           className={c.buttonQuiet}
           onClick={() => setStep("start")}
         >
-          {labels.back}
+          {unbroken(labels.back)}
         </button>
       </div>
     );
@@ -436,14 +437,14 @@ export function SignInForm({
         </label>
         <ErrorLine message={error} className={c.error} />
         <button type="submit" className={c.button} disabled={busy}>
-          {labels.verify}
+          {unbroken(labels.verify)}
         </button>
         <button
           type="button"
           className={c.buttonQuiet}
           onClick={() => setUseBackup(!useBackup)}
         >
-          {useBackup ? labels.useTotp : labels.useBackup}
+          {unbroken(useBackup ? labels.useTotp : labels.useBackup)}
         </button>
       </form>
     );
@@ -467,7 +468,7 @@ export function SignInForm({
           onClick={withPasskey}
           disabled={busy}
         >
-          {labels.withPasskey}
+          {unbroken(labels.withPasskey)}
         </button>
       )}
       {(hasOidc(methods) || methods.passkey) && (
@@ -510,11 +511,11 @@ export function SignInForm({
             onClick={resendVerification}
             disabled={busy}
           >
-            {labels.resendVerification}
+            {unbroken(labels.resendVerification)}
           </button>
         )}
         <button type="submit" className={c.button} disabled={busy}>
-          {labels.signIn}
+          {unbroken(labels.signIn)}
         </button>
         {methods.magicLink && (
           <button
@@ -523,7 +524,7 @@ export function SignInForm({
             onClick={withLink}
             disabled={busy}
           >
-            {labels.withLink}
+            {unbroken(labels.withLink)}
           </button>
         )}
         {methods.passwordReset &&
@@ -535,7 +536,9 @@ export function SignInForm({
               disabled={busy}
               onClick={() => setRecovery({})}
             >
-              {(labels.recovery ?? DEFAULT_AUTH_LABELS.recovery)!.forgot}
+              {unbroken(
+                (labels.recovery ?? DEFAULT_AUTH_LABELS.recovery)!.forgot,
+              )}
             </button>
           )}
       </form>
@@ -676,7 +679,7 @@ export function SignUpForm({
         </div>
         <ErrorLine message={error} className={c.error} />
         <button type="submit" className={c.button} disabled={busy}>
-          {labels.createAccount}
+          {unbroken(labels.createAccount)}
         </button>
         {methods.magicLink && (
           <button
@@ -685,7 +688,7 @@ export function SignUpForm({
             onClick={withLink}
             disabled={busy}
           >
-            {labels.signUpWithLink}
+            {unbroken(labels.signUpWithLink)}
           </button>
         )}
       </form>
@@ -912,7 +915,7 @@ export function AccountPanel({
           </dl>
           <div>
             <button type="submit" className={c.button} disabled={busy}>
-              {a.save}
+              {unbroken(a.save)}
             </button>{" "}
             {saved && <span role="status">{a.saved}</span>}
           </div>
@@ -936,7 +939,7 @@ export function AccountPanel({
                 onClick={() => link(o.id)}
                 disabled={busy}
               >
-                {fill(a.link, { method: o.label })}
+                {unbroken(fill(a.link, { method: o.label }))}
               </button>
             ))}
         </div>
@@ -955,7 +958,7 @@ export function AccountPanel({
                   onClick={() => removePasskey(p.id)}
                   disabled={busy}
                 >
-                  {a.remove}
+                  {unbroken(a.remove)}
                 </button>
               </li>
             ))}
@@ -967,7 +970,7 @@ export function AccountPanel({
           onClick={addPasskey}
           disabled={busy}
         >
-          {a.addPasskey}
+          {unbroken(a.addPasskey)}
         </button>
       </Section>
 
@@ -1019,7 +1022,7 @@ export function AccountPanel({
               />
             </div>
             <button type="submit" className={c.button} disabled={busy}>
-              {a.turnOn}
+              {unbroken(a.turnOn)}
             </button>
           </form>
         ) : twoFactor ? (
@@ -1029,7 +1032,7 @@ export function AccountPanel({
             onClick={stopTwoFactor}
             disabled={busy}
           >
-            {a.turnOff}
+            {unbroken(a.turnOff)}
           </button>
         ) : (
           <button
@@ -1038,7 +1041,7 @@ export function AccountPanel({
             onClick={startTwoFactor}
             disabled={busy}
           >
-            {a.setUp}
+            {unbroken(a.setUp)}
           </button>
         )}
       </Section>
@@ -1046,7 +1049,7 @@ export function AccountPanel({
       <Section title={a.leave} id="acct-leave" classes={c}>
         <div className={c.stack}>
           <button type="button" className={c.buttonQuiet} onClick={signOut}>
-            {a.signOut}
+            {unbroken(a.signOut)}
           </button>
           <div className={c.field}>
             <label htmlFor="acct-confirm-delete" className={c.label}>
@@ -1068,7 +1071,7 @@ export function AccountPanel({
               confirmDelete.trim().toLowerCase() !== a.deleteWord.toLowerCase()
             }
           >
-            {a.delete}
+            {unbroken(a.delete)}
           </button>
         </div>
       </Section>

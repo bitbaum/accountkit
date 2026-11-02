@@ -6,6 +6,14 @@ records, not claims that this file existed at release time.
 
 ## Unreleased
 
+- Button labels never cut a hyphenated word across two lines. At 390px evig's
+  sign-in card read "per E- / Mail schicken": a browser may break after any
+  hyphen. Each hyphenated word in a button label ("E-Mail", "e-mail",
+  "pled-clav") is now kept whole, in every language and in a product's own
+  labels; spaces still wrap. The browser check lays out every button of the
+  sign-in card in every shipped language at 320 and 390px and fails on such a
+  cut.
+
 - A product's own GitHub OAuth app (`GITHUB_CLIENT_ID` and
   `GITHUB_CLIENT_SECRET`) signs people in on the shared runtime, at the
   callback such an app already has (`/api/auth/callback/github`), and through
