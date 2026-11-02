@@ -47,6 +47,17 @@ const de: AuthLabels = {
   codePrompt:
     "Auf einem anderen Gerät? Geben Sie hier den 6-stelligen Code aus derselben E-Mail ein.",
   signInWithCode: "Mit dem Code anmelden",
+  lightning: {
+    withLightning: "Mit einer Lightning-Wallet anmelden",
+    name: "Lightning-Wallet",
+    prompt:
+      "Scannen Sie dies mit Ihrer Lightning-Wallet oder öffnen Sie es in einer Wallet auf diesem Gerät. Es wird nichts bezahlt.",
+    qr: "QR-Code für Ihre Lightning-Wallet",
+    open: "In meiner Wallet öffnen",
+    expired: "Dieser Code ist abgelaufen.",
+    retry: "Neuen Code zeigen",
+    taken: "Mit dieser Wallet meldet sich bereits ein anderes Konto an.",
+  },
   confirmInbox:
     "Wir haben einen Link an {email} geschickt. Öffnen Sie ihn, um die Adresse zu bestätigen und das Konto fertig einzurichten.",
   back: "Zurück",
@@ -171,6 +182,17 @@ const fr: AuthLabels = {
   codePrompt:
     "Sur un autre appareil ? Saisissez ici le code à 6 chiffres du même e-mail.",
   signInWithCode: "Se connecter avec le code",
+  lightning: {
+    withLightning: "Se connecter avec un portefeuille Lightning",
+    name: "Portefeuille Lightning",
+    prompt:
+      "Scannez ceci avec votre portefeuille Lightning, ou ouvrez-le dans un portefeuille sur cet appareil. Rien n’est payé.",
+    qr: "Code QR pour votre portefeuille Lightning",
+    open: "Ouvrir dans mon portefeuille",
+    expired: "Ce code a expiré.",
+    retry: "Afficher un nouveau code",
+    taken: "Ce portefeuille se connecte déjà à un autre compte.",
+  },
   confirmInbox:
     "Nous avons envoyé un lien à {email}. Ouvrez-le pour confirmer votre adresse et terminer la création du compte.",
   back: "Retour",
@@ -291,6 +313,17 @@ const it: AuthLabels = {
   codePrompt:
     "Su un altro dispositivo? Inserisci qui il codice di 6 cifre della stessa e-mail.",
   signInWithCode: "Accedi con il codice",
+  lightning: {
+    withLightning: "Accedi con un portafoglio Lightning",
+    name: "Portafoglio Lightning",
+    prompt:
+      "Scansiona questo con il tuo portafoglio Lightning, oppure aprilo in un portafoglio su questo dispositivo. Non si paga nulla.",
+    qr: "Codice QR per il tuo portafoglio Lightning",
+    open: "Apri nel mio portafoglio",
+    expired: "Questo codice è scaduto.",
+    retry: "Mostra un nuovo codice",
+    taken: "Questo portafoglio accede già a un altro account.",
+  },
   confirmInbox:
     "Abbiamo inviato un link a {email}. Aprilo per confermare l'indirizzo e completare la creazione dell'account.",
   back: "Indietro",
@@ -414,6 +447,17 @@ const rm: AuthLabels = {
   codePrompt:
     "Sin in auter apparat? Endatai qua il code da 6 cifras da la medema e-mail.",
   signInWithCode: "S'annunziar cun il code",
+  lightning: {
+    withLightning: "S'annunziar cun in portafegl Lightning",
+    name: "Portafegl Lightning",
+    prompt:
+      "Scannai quai cun Voss portafegl Lightning, u l’avri en in portafegl sin quest apparat. I na vegn pajà nagut.",
+    qr: "Code QR per Voss portafegl Lightning",
+    open: "Avrir en mes portafegl",
+    expired: "Quest code è scadì.",
+    retry: "Mussar in nov code",
+    taken: "Cun quest portafegl s’annunzia gia in auter conto.",
+  },
   confirmInbox:
     "Nus avain tramess ina colliaziun a {email}. L'avri per confermar l'adressa e terminar il conto.",
   back: "Enavos",
@@ -532,6 +576,17 @@ const ru: AuthLabels = {
   codePrompt:
     "На другом устройстве? Введите здесь 6-значный код из того же письма.",
   signInWithCode: "Войти по коду",
+  lightning: {
+    withLightning: "Войти через Lightning-кошелёк",
+    name: "Lightning-кошелёк",
+    prompt:
+      "Отсканируйте это Lightning-кошельком или откройте в кошельке на этом устройстве. Платить ничего не нужно.",
+    qr: "QR-код для вашего Lightning-кошелька",
+    open: "Открыть в моём кошельке",
+    expired: "Срок действия кода истёк.",
+    retry: "Показать новый код",
+    taken: "Этот кошелёк уже используется для входа в другой аккаунт.",
+  },
   confirmInbox:
     "Мы отправили ссылку на {email}. Откройте её, чтобы подтвердить адрес и завершить создание аккаунта.",
   back: "Назад",
@@ -640,6 +695,17 @@ const es: AuthLabels = {
   codePrompt:
     "¿En otro dispositivo? Escriba aquí el código de 6 dígitos del mismo correo.",
   signInWithCode: "Iniciar sesión con el código",
+  lightning: {
+    withLightning: "Iniciar sesión con una billetera Lightning",
+    name: "Billetera Lightning",
+    prompt:
+      "Escanee esto con su billetera Lightning, o ábralo en una billetera de este dispositivo. No se paga nada.",
+    qr: "Código QR para su billetera Lightning",
+    open: "Abrir en mi billetera",
+    expired: "Este código ha caducado.",
+    retry: "Mostrar un código nuevo",
+    taken: "Esta billetera ya inicia sesión en otra cuenta.",
+  },
   confirmInbox:
     "Hemos enviado un enlace a {email}. Ábralo para confirmar su dirección y terminar de crear la cuenta.",
   back: "Atrás",

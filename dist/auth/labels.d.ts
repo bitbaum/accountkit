@@ -57,6 +57,19 @@ export interface AuthLabels {
     codePrompt?: string;
     /** The button that signs in with that code. Optional, as codePrompt. */
     signInWithCode?: string;
+    /** Lightning login (./lightning). Optional; English when absent. */
+    lightning?: {
+        /** The button on the sign-in and sign-up cards. */
+        withLightning: string;
+        /** The method's name in the account panel ("Add {method}"). */
+        name: string;
+        prompt: string;
+        qr: string;
+        open: string;
+        expired: string;
+        retry: string;
+        taken: string;
+    };
     confirmInbox: string;
     back: string;
     totpPrompt: string;

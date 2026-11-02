@@ -231,6 +231,18 @@ to every other way in. A product with its own mailer reads `extra.code` in
 changes. better-auth's other email-code endpoints (a code on its own, reset,
 verification, email change) answer 404.
 
+### Lightning login
+
+`ACCOUNTKIT_LIGHTNING=1` turns on LNURL-auth
+([LUD-04](https://github.com/lnurl/luds/blob/luds/04.md)): a QR code on the
+sign-in and sign-up cards, and "Add Lightning wallet" in the account panel. The
+person's wallet signs a one-time challenge with a key it derives for this site
+and calls `/api/auth/lightning/callback`; the page, polling
+`/api/auth/sign-in/lightning`, is signed in once the signature checks out. The
+key is the sign-in method (`providerId: "lightning"`), the person gets a
+placeholder address, and a second factor applies. Only the browser that showed
+the code can claim it. `authClientPlugins()` includes `lightningClient()`.
+
 ### The product's own mail template
 
 `createAuthMailer({ site, render, codes: true })` sends the product's own

@@ -481,6 +481,57 @@ try {
     check(errors.length === 0, `[code ${locale} ${width}] no runtime errors`);
     await page.close();
   }
+  for (const [locale, width] of [
+    ["en", 320],
+    ["en", 390],
+    ["de", 320],
+    ["de", 390],
+  ]) {
+    const page = await browser.newPage({ viewport: { width, height: 844 } });
+    const errors = [];
+    page.on("pageerror", (error) => errors.push(error.message));
+    await page.goto(`${base}?lightning=${locale}`);
+    const screen = page.locator("#auth-lightning");
+    const words = authLabelsFor(locale).lightning;
+    await screen.getByRole("button", { name: words.withLightning }).click();
+    const qr = screen.getByRole("img", { name: words.qr });
+    await qr.waitFor();
+    const qrBox = await qr.boundingBox();
+    check(
+      qrBox && qrBox.width >= 200,
+      `[lightning ${locale} ${width}] the QR code is large enough to scan (${Math.round(qrBox?.width ?? 0)}px)`,
+    );
+    const open = screen.getByRole("link", { name: words.open });
+    check(
+      (await open.getAttribute("href")).startsWith("lightning:LNURL1"),
+      `[lightning ${locale} ${width}] the wallet link is lightning:LNURL…`,
+    );
+    const box = await open.boundingBox();
+    check(
+      box && box.height >= 44,
+      `[lightning ${locale} ${width}] the wallet link is at least 44px`,
+    );
+    check(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+      `[lightning ${locale} ${width}] no sideways scroll`,
+    );
+    await page.screenshot({
+      path: `/tmp/accountkit-lightning-${locale}-${width}.png`,
+      fullPage: true,
+    });
+    await page.waitForURL(/#signed-in$/, { timeout: 8000 });
+    check(
+      true,
+      `[lightning ${locale} ${width}] signed in once the wallet answered`,
+    );
+    check(
+      errors.length === 0,
+      `[lightning ${locale} ${width}] no runtime errors`,
+    );
+    await page.close();
+  }
   for (const locale of AUTH_LABEL_LOCALES) {
     for (const width of [320, 390]) {
       const page = await browser.newPage({ viewport: { width, height: 844 } });

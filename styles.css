@@ -337,6 +337,10 @@
   border-radius: var(--acct-radius-sm);
   cursor: pointer;
 }
+a.acct-auth-button,
+a.acct-auth-button-quiet {
+  text-decoration: none;
+}
 .acct-auth-button {
   background: var(--acct-action);
   color: var(--acct-on-action);

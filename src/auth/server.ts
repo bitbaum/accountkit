@@ -24,6 +24,7 @@ import { DEFAULT_ROLE } from "./roles.js";
 import { authSchema } from "./schema.js";
 import { factorForAllMethods } from "./factor.js";
 import { mintSignInCode, signInCodePlugins } from "./sign-in-code.js";
+import { lightningPlugin } from "./lightning.js";
 import { createPasswordHasher, type BcryptLike } from "./hash.js";
 import {
   domainCredentialsPlugin,
@@ -651,6 +652,7 @@ export function createAuthInstance(options: CreateAuthOptions): Auth {
           ]
         : []),
       ...(providers.length > 0 ? [genericOAuth({ config: providers })] : []),
+      ...(methods.lightning ? [lightningPlugin(site)] : []),
       ...(options.plugins ?? []),
       // Lets server actions set cookies; keep it last.
       nextCookies(),
