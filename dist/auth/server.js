@@ -11,6 +11,7 @@ import { MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH } from "./password.js";
 import { DEFAULT_ROLE } from "./roles.js";
 import { authSchema } from "./schema.js";
 import { factorForAllMethods } from "./factor.js";
+import { mintSignInCode, signInCodePlugins } from "./sign-in-code.js";
 import { createPasswordHasher } from "./hash.js";
 import { domainCredentialsPlugin, } from "./domain-credentials.js";
 import { provisioningPlugin, } from "./provisioning.js";
@@ -385,8 +386,14 @@ export function createAuthInstance(options) {
                 ? [
                     magicLink({
                         expiresIn: 10 * 60,
-                        sendMagicLink: async ({ email, url }) => mail.send("magicLink", email, url),
+                        sendMagicLink: async ({ email, url }) => {
+                            const code = mail.codes
+                                ? await mintSignInCode(auth.api, email)
+                                : undefined;
+                            await mail.send("magicLink", email, url, code ? { code } : undefined);
+                        },
                     }),
+                    ...(mail.codes ? signInCodePlugins() : []),
                 ]
                 : []),
             ...(providers.length > 0 ? [genericOAuth({ config: providers })] : []),

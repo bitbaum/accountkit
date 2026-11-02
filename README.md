@@ -217,6 +217,20 @@ checking deployment readiness and lets framework rendering signals propagate.
 A build without account secrets must not cache a signed-out page or redirect for
 all future sessions. Calls outside a request are errors, not signed-out users.
 
+### A code in the sign-in link's email
+
+A sign-in link opens wherever the mail app opens it, often another browser or
+another device than the one where the person asked. When the product's mailer
+says it can carry a code (`codes: true` on the `AuthMailer`; `createAuthMailer`
+from `@bitbaum/accountkit/auth/mail` has it), the same email also carries a
+six-digit code, and `SignInForm` offers a field for it under "We sent a link".
+It is the same method, the address proven by mail: no third party and no key.
+Ten minutes, three tries, stored hashed, and a second factor applies to it as
+to every other way in. A product with its own mailer reads `extra.code` in
+`send(kind, to, url, extra)` and sets `codes: true`; until it does, nothing
+changes. better-auth's other email-code endpoints (a code on its own, reset,
+verification, email change) answer 404.
+
 ### Second-factor policy
 
 An enabled second factor applies to password, email-link, passkey and OIDC sign-in. The server reuses BetterAuth's native signed challenge, trusted-device validation, attempt limits and expiry. A primary credential alone does not leave an authenticated session while the challenge is pending.

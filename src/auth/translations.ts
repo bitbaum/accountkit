@@ -44,6 +44,9 @@ const de: AuthLabels = {
     "Freiwillig. Irgendetwas — es muss nicht Ihr echter Name sein.",
   checkInbox:
     "Wir haben einen Link an {email} geschickt. Öffnen Sie ihn auf diesem Gerät. Er gilt 10 Minuten.",
+  codePrompt:
+    "Auf einem anderen Gerät? Geben Sie hier den 6-stelligen Code aus derselben E-Mail ein.",
+  signInWithCode: "Mit dem Code anmelden",
   confirmInbox:
     "Wir haben einen Link an {email} geschickt. Öffnen Sie ihn, um die Adresse zu bestätigen und das Konto fertig einzurichten.",
   back: "Zurück",
@@ -165,6 +168,9 @@ const fr: AuthLabels = {
     "Facultatif. Ce que vous voulez — pas forcément votre vrai nom.",
   checkInbox:
     "Nous avons envoyé un lien à {email}. Ouvrez-le sur cet appareil pour continuer. Il est valable 10 minutes.",
+  codePrompt:
+    "Sur un autre appareil ? Saisissez ici le code à 6 chiffres du même e-mail.",
+  signInWithCode: "Se connecter avec le code",
   confirmInbox:
     "Nous avons envoyé un lien à {email}. Ouvrez-le pour confirmer votre adresse et terminer la création du compte.",
   back: "Retour",
@@ -282,6 +288,9 @@ const it: AuthLabels = {
     "Facoltativo. Quello che vuoi — non deve essere il tuo vero nome.",
   checkInbox:
     "Abbiamo inviato un link a {email}. Aprilo su questo dispositivo per continuare. Vale 10 minuti.",
+  codePrompt:
+    "Su un altro dispositivo? Inserisci qui il codice di 6 cifre della stessa e-mail.",
+  signInWithCode: "Accedi con il codice",
   confirmInbox:
     "Abbiamo inviato un link a {email}. Aprilo per confermare l'indirizzo e completare la creazione dell'account.",
   back: "Indietro",
@@ -402,6 +411,9 @@ const rm: AuthLabels = {
     "Facultativ. Tge che vus vulais — i na sto betg esser voss num vair.",
   checkInbox:
     "Nus avain tramess ina colliaziun a {email}. L'avri sin quest apparat per cuntinuar. Ella vala 10 minutas.",
+  codePrompt:
+    "Sin in auter apparat? Endatai qua il code da 6 cifras da la medema e-mail.",
+  signInWithCode: "S'annunziar cun il code",
   confirmInbox:
     "Nus avain tramess ina colliaziun a {email}. L'avri per confermar l'adressa e terminar il conto.",
   back: "Enavos",
@@ -517,6 +529,9 @@ const ru: AuthLabels = {
     "Необязательно. Что угодно — не обязательно ваше настоящее имя.",
   checkInbox:
     "Мы отправили ссылку на {email}. Откройте её на этом устройстве. Она действует 10 минут.",
+  codePrompt:
+    "На другом устройстве? Введите здесь 6-значный код из того же письма.",
+  signInWithCode: "Войти по коду",
   confirmInbox:
     "Мы отправили ссылку на {email}. Откройте её, чтобы подтвердить адрес и завершить создание аккаунта.",
   back: "Назад",
@@ -622,6 +637,9 @@ const es: AuthLabels = {
   displayNameHint: "Opcional. Lo que quiera: no tiene que ser su nombre real.",
   checkInbox:
     "Hemos enviado un enlace a {email}. Ábralo en este dispositivo para continuar. Vale 10 minutos.",
+  codePrompt:
+    "¿En otro dispositivo? Escriba aquí el código de 6 dígitos del mismo correo.",
+  signInWithCode: "Iniciar sesión con el código",
   confirmInbox:
     "Hemos enviado un enlace a {email}. Ábralo para confirmar su dirección y terminar de crear la cuenta.",
   back: "Atrás",

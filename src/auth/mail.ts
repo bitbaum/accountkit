@@ -5,6 +5,10 @@ import {
 } from "@bitbaum/mail-kit";
 import type { AuthMailer, AuthMailKind, AuthSite } from "./server.js";
 
+/** "123456" → "123 456": easier to read off one screen and type into another. */
+export const spacedCode = (code: string) =>
+  code.length === 6 ? `${code.slice(0, 3)} ${code.slice(3)}` : code;
+
 export interface AuthMailOptions {
   site: Pick<AuthSite, "title" | "url">;
   /** Read lazily so a build never captures deployment credentials. */
@@ -32,7 +36,9 @@ export function createAuthMailer(options: AuthMailOptions): AuthMailer {
     get configured() {
       return isMailConfigured(env());
     },
-    async send(kind, to, url) {
+    // The sign-in link's email also carries a code (./sign-in-code).
+    codes: true,
+    async send(kind, to, url, extra) {
       // Refuse unexpected origins before sending a bearer credential by email.
       let sameOrigin = false;
       try {
@@ -50,7 +56,10 @@ export function createAuthMailer(options: AuthMailOptions): AuthMailer {
         {
           to,
           subject: subjects[kind],
-          text: `${subjects[kind]}\n\n${url}\n\nIf you did not request this, you can ignore this email.`,
+          text:
+            kind === "magicLink" && extra?.code
+              ? `${subjects[kind]}\n\n${url}\n\nOn another device? Type this code on the page where you asked for the link: ${spacedCode(extra.code)}\nThe link and the code each work for 10 minutes.\n\nIf you did not request this, you can ignore this email.`
+              : `${subjects[kind]}\n\n${url}\n\nIf you did not request this, you can ignore this email.`,
         },
         { env: env() },
       );

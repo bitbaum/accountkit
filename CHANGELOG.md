@@ -6,6 +6,19 @@ records, not claims that this file existed at release time.
 
 ## Unreleased
 
+- The sign-in link's email also carries a six-digit code, typed on the page
+  that asked for the link. A link opens wherever the mail app opens it, often
+  another browser or another device; the code finishes the sign-in where the
+  person is. It needs nothing beyond the mail a product already sends and no
+  third party. Ten minutes, three tries, stored hashed; a second factor
+  applies as to every other way in. Only a mailer with `codes: true`
+  (`createAuthMailer` has it) gets one, and the link request then answers
+  `{ code: true }`, so `SignInForm` shows the field only when the email has the
+  code. better-auth's own code endpoints for sending, reset, verification and
+  email change stay closed (404): recovery keeps its one path. New labels
+  `codePrompt` and `signInWithCode` in all six languages;
+  `authClientPlugins()` adds `emailOTPClient()`.
+
 - `accountDeletion: false` (`createAuthRuntime` or `createAuthInstance`)
   turns off self-service deletion: `/delete-user` answers 404 and nothing is
   deleted. `AccountPanel` takes `deletion`, the product's own way out (such as

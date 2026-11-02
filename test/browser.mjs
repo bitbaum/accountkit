@@ -20,7 +20,10 @@ import { readFile } from "node:fs/promises";
 import { extname, join, normalize } from "node:path";
 import { fileURLToPath } from "node:url";
 import { chromium } from "playwright";
-import { AUTH_LABEL_LOCALES } from "../dist/auth/translations.js";
+import {
+  AUTH_LABEL_LOCALES,
+  authLabelsFor,
+} from "../dist/auth/translations.js";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 const types = {
@@ -424,6 +427,58 @@ try {
       ),
       `[${width}] registration has no horizontal overflow`,
     );
+    await page.close();
+  }
+  for (const [locale, width] of [
+    ["en", 320],
+    ["en", 390],
+    ["de", 320],
+    ["de", 390],
+  ]) {
+    const page = await browser.newPage({ viewport: { width, height: 844 } });
+    const errors = [];
+    page.on("pageerror", (error) => errors.push(error.message));
+    await page.goto(`${base}?code=${locale}`);
+    const screen = page.locator("#auth-code");
+    const words = authLabelsFor(locale);
+    await screen
+      .getByLabel(words.email, { exact: true })
+      .fill("ada@example.ch");
+    await screen.getByRole("button", { name: words.withLink }).click();
+    const field = screen.getByLabel(words.codePrompt, { exact: true });
+    await field.waitFor();
+    check(
+      (await field.getAttribute("autocomplete")) === "one-time-code" &&
+        (await field.getAttribute("inputmode")) === "numeric",
+      `[code ${locale} ${width}] the code field asks the phone for the code from the email`,
+    );
+    await field.fill("123 456");
+    const submit = screen.getByRole("button", { name: words.signInWithCode });
+    const box = await submit.boundingBox();
+    check(
+      box && box.height >= 44,
+      `[code ${locale} ${width}] the code button is at least 44px`,
+    );
+    await submit.click();
+    await screen.getByText(words.errors.INVALID_CODE).waitFor();
+    const sent = await page.evaluate(() =>
+      JSON.parse(document.body.dataset.signInCode),
+    );
+    check(
+      sent.email === "ada@example.ch" && sent.otp === "123456",
+      `[code ${locale} ${width}] the code is sent without its space, for the address asked`,
+    );
+    check(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+      `[code ${locale} ${width}] no sideways scroll`,
+    );
+    await page.screenshot({
+      path: `/tmp/accountkit-code-${locale}-${width}.png`,
+      fullPage: true,
+    });
+    check(errors.length === 0, `[code ${locale} ${width}] no runtime errors`);
     await page.close();
   }
   for (const locale of AUTH_LABEL_LOCALES) {

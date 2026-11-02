@@ -46,7 +46,12 @@ export interface AuthClientLike extends PasswordRecoveryClient {
             name?: string;
             callbackURL?: string;
             errorCallbackURL?: string;
-        }): Result;
+        }): Result<object>;
+        /** better-auth's emailOTPClient (in authClientPlugins): the code from the link's email. */
+        emailOtp?(input: {
+            email: string;
+            otp: string;
+        }): Result<object>;
         passkey(): Promise<{
             error?: AuthError;
         } | undefined | null>;

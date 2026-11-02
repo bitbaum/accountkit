@@ -23,6 +23,7 @@ import { MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH } from "./password.js";
 import { DEFAULT_ROLE } from "./roles.js";
 import { authSchema } from "./schema.js";
 import { factorForAllMethods } from "./factor.js";
+import { mintSignInCode, signInCodePlugins } from "./sign-in-code.js";
 import { createPasswordHasher, type BcryptLike } from "./hash.js";
 import {
   domainCredentialsPlugin,
@@ -59,11 +60,27 @@ export type {
 
 export type AuthMailKind = "verify" | "magicLink" | "reset";
 
+/** What an account mail carries besides its link. */
+export interface AuthMailExtra {
+  /** A sign-in code, only with a sign-in link and only to a mailer with `codes`. */
+  code?: string;
+}
+
 export interface AuthMailer {
   /** Whether mail can be sent at all. Without it the methods that need mail are hidden. */
   configured: boolean;
-  /** Send an account mail. Must not throw, and must not log the link. */
-  send(kind: AuthMailKind, to: string, url: string): Promise<void>;
+  /**
+   * Whether this mailer prints `extra.code` in the sign-in link's email. Only
+   * then is a sign-in code minted (./sign-in-code). `createAuthMailer` does.
+   */
+  codes?: boolean;
+  /** Send an account mail. Must not throw, and must not log the link or the code. */
+  send(
+    kind: AuthMailKind,
+    to: string,
+    url: string,
+    extra?: AuthMailExtra,
+  ): Promise<void>;
 }
 
 export interface AuthSite {
@@ -618,9 +635,19 @@ export function createAuthInstance(options: CreateAuthOptions): Auth {
         ? [
             magicLink({
               expiresIn: 10 * 60,
-              sendMagicLink: async ({ email, url }) =>
-                mail.send("magicLink", email, url),
+              sendMagicLink: async ({ email, url }) => {
+                const code = mail.codes
+                  ? await mintSignInCode(auth.api, email)
+                  : undefined;
+                await mail.send(
+                  "magicLink",
+                  email,
+                  url,
+                  code ? { code } : undefined,
+                );
+              },
             }),
+            ...(mail.codes ? signInCodePlugins() : []),
           ]
         : []),
       ...(providers.length > 0 ? [genericOAuth({ config: providers })] : []),

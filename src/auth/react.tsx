@@ -59,7 +59,9 @@ export interface AuthClientLike extends PasswordRecoveryClient {
       name?: string;
       callbackURL?: string;
       errorCallbackURL?: string;
-    }): Result;
+    }): Result<object>;
+    /** better-auth's emailOTPClient (in authClientPlugins): the code from the link's email. */
+    emailOtp?(input: { email: string; otp: string }): Result<object>;
     passkey(): Promise<{ error?: AuthError } | undefined | null>;
   };
   signUp: {
@@ -261,6 +263,9 @@ export function SignInForm({
     initialError ? labels.errors.generic : null,
   );
   const [unverified, setUnverified] = useState(false);
+  // The link's email also carries a code when the server says so (./sign-in-code).
+  const [codeSent, setCodeSent] = useState(false);
+  const [signInCode, setSignInCode] = useState("");
   const [recovery, setRecovery] = useState<{
     token?: string;
     invalid?: boolean;
@@ -332,14 +337,47 @@ export function SignInForm({
     if (!email) return setError(labels.errors.emailFirst);
     setBusy(true);
     setError(null);
-    const { error: e } = await client.signIn.magicLink({
+    const { data, error: e } = await client.signIn.magicLink({
       email,
       callbackURL: next,
       errorCallbackURL: `${signInPath}?method=magic-link&next=${encodeURIComponent(next)}`,
     });
     if (e) return fail(e);
+    setCodeSent(
+      Boolean(
+        client.signIn.emailOtp &&
+        data &&
+        typeof data === "object" &&
+        "code" in data &&
+        data.code === true,
+      ),
+    );
+    setSignInCode("");
     setStep("linkSent");
     setBusy(false);
+  }
+
+  async function withCode(event: FormEvent) {
+    event.preventDefault();
+    if (!client.signIn.emailOtp) return;
+    setBusy(true);
+    setError(null);
+    const { data, error: e } = await client.signIn.emailOtp({
+      email,
+      otp: signInCode.replace(/\s+/g, ""),
+    });
+    if (e) return fail(e);
+    if (
+      data &&
+      typeof data === "object" &&
+      "twoFactorRedirect" in data &&
+      data.twoFactorRedirect
+    ) {
+      setStep("twoFactor");
+      setBusy(false);
+      return;
+    }
+    done();
   }
 
   async function withPasskey() {
@@ -402,10 +440,39 @@ export function SignInForm({
         <p className={c.notice} role="status">
           {fill(labels.checkInbox, { email })}
         </p>
+        {codeSent && (
+          <form onSubmit={withCode} className={c.stack}>
+            <div className={c.field}>
+              <label htmlFor="acct-sign-in-code" className={c.label}>
+                {labels.codePrompt ?? DEFAULT_AUTH_LABELS.codePrompt}
+              </label>
+              <input
+                id="acct-sign-in-code"
+                className={c.input}
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                pattern="[0-9 ]*"
+                maxLength={7}
+                value={signInCode}
+                onChange={(e) => setSignInCode(e.target.value)}
+                required
+              />
+            </div>
+            <ErrorLine message={error} className={c.error} />
+            <button type="submit" className={c.button} disabled={busy}>
+              {unbroken(
+                labels.signInWithCode ?? DEFAULT_AUTH_LABELS.signInWithCode!,
+              )}
+            </button>
+          </form>
+        )}
         <button
           type="button"
           className={c.buttonQuiet}
-          onClick={() => setStep("start")}
+          onClick={() => {
+            setError(null);
+            setStep("start");
+          }}
         >
           {unbroken(labels.back)}
         </button>

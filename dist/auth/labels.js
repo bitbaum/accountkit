@@ -25,6 +25,8 @@ export const DEFAULT_AUTH_LABELS = {
     displayName: "Display name",
     displayNameHint: "Optional. Anything you like — it does not have to be your real name.",
     checkInbox: "We sent a link to {email}. Open it on this device to continue. It works for 10 minutes.",
+    codePrompt: "On another device? Type the 6-digit code from the same email here.",
+    signInWithCode: "Sign in with the code",
     confirmInbox: "We sent a link to {email}. Open it to confirm your address and finish creating your account.",
     back: "Back",
     totpPrompt: "Enter the 6-digit code from your authenticator app.",
@@ -99,6 +101,11 @@ export const DEFAULT_AUTH_LABELS = {
 export function fill(template, values) {
     return template.replace(/\{(\w+)\}/g, (whole, key) => values[key] ?? whole);
 }
+const CODE_ALIASES = new Set([
+    "INVALID_OTP",
+    "OTP_EXPIRED",
+    "TOO_MANY_ATTEMPTS",
+]);
 const KNOWN = new Set([
     "INVALID_EMAIL_OR_PASSWORD",
     "EMAIL_NOT_VERIFIED",
@@ -124,6 +131,9 @@ export function authErrorText(labels, error) {
         return labels.errors.rateLimited;
     if (error.status === 503)
         return labels.errors.unavailable;
+    // better-auth's email-code errors read as the code errors people already know.
+    if (error.code && CODE_ALIASES.has(error.code))
+        return labels.errors.INVALID_CODE;
     if (error.code && KNOWN.has(error.code)) {
         return labels.errors[error.code];
     }

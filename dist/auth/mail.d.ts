@@ -1,4 +1,6 @@
 import type { AuthMailer, AuthMailKind, AuthSite } from "./server.js";
+/** "123456" → "123 456": easier to read off one screen and type into another. */
+export declare const spacedCode: (code: string) => string;
 export interface AuthMailOptions {
     site: Pick<AuthSite, "title" | "url">;
     /** Read lazily so a build never captures deployment credentials. */

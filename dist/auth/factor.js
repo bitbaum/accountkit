@@ -37,6 +37,7 @@ export function factorForAllMethods(site) {
                 ...plugin.hooks.after,
                 {
                     matcher: ({ path }) => path === "/magic-link/verify" ||
+                        path === "/sign-in/email-otp" ||
                         path === "/verify-email" ||
                         path === "/passkey/verify-authentication" ||
                         /^\/(?:oauth2\/)?callback\/[^/]+$/.test(path ?? ""),
@@ -92,8 +93,11 @@ export function factorForAllMethods(site) {
                         }
                         for (const cookie of delegated.headers.getSetCookie())
                             ctx.responseHeaders.append("set-cookie", cookie);
+                        // Methods answered in the page's own request (fetch, not a
+                        // navigation) get the challenge as JSON, like a password.
                         if (ctx.context.newSession ||
-                            ctx.path === "/passkey/verify-authentication")
+                            ctx.path === "/passkey/verify-authentication" ||
+                            ctx.path === "/sign-in/email-otp")
                             return delegated.response;
                         const state = await getOAuthState();
                         const target = factorDestination(site.url, ctx.query?.errorCallbackURL ?? state?.errorURL, ctx.query?.callbackURL ?? state?.callbackURL);
