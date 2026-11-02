@@ -49,6 +49,8 @@ export interface AuthRuntimeOptions {
   legacyIdentityProvider?: string;
   /** See CreateAuthOptions.onAccountCreated. */
   onAccountCreated?: CreateAuthOptions["onAccountCreated"];
+  /** See CreateAuthOptions.onAccountDeleted. */
+  onAccountDeleted?: CreateAuthOptions["onAccountDeleted"];
 }
 
 type SessionUser = { id: string; actorId: string; role?: unknown };
@@ -81,6 +83,7 @@ export function createAuthRuntime(options: AuthRuntimeOptions) {
       plugins: options.plugins,
       env: options.env,
       onAccountCreated: options.onAccountCreated,
+      onAccountDeleted: options.onAccountDeleted,
       database: options.getDatabase(),
     });
     return instance;

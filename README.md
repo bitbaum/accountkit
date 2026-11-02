@@ -318,6 +318,25 @@ hosts are data. Their requests pass the origin check and keep their own
 host-only cookies; mail links and passkeys use `site.url`. A lookup that fails
 trusts only `site.url`.
 
+### A product's own row for each person
+
+`onAccountCreated` (both `createAuthRuntime` and `createAuthInstance`) is
+called for every new person, however they came in: password sign-up, an email
+sign-in link, OrangeCat or another OIDC provider. It runs as each sign-in
+method is attached; a person created without one (a first email sign-in link)
+is reported once, as soon as they exist, with `providerId: NO_SIGN_IN_METHOD`
+and `accountId` set to their user id. A product creates its own row there
+(idempotently) and needs no after-hook on `/magic-link/verify`.
+
+`onAccountDeleted({ userId, email })` is called once a person's account is
+deleted (the account panel, or any path that deletes the user), so the product
+removes or anonymises its own row. It runs only after the deletion. A product
+that must refuse a deletion refuses before it starts, with a plugin `before`
+hook on `/delete-user` (and `/delete-user/callback`); that stops it before
+anything is deleted, and `onAccountDeleted` is not called. A throw in either
+hook is logged and never blocks the sign-in or undoes the deletion, so a
+product whose row must go in the same transaction keeps a database trigger.
+
 ### Account tables beside a product's own
 
 A product whose tables already use the standard names (a NextAuth `users`,

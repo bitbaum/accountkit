@@ -99,8 +99,33 @@ export interface CreateAuthOptions {
      * A product whose mirror trigger records the same sign-in method in
      * AccountKit's table while this runs need not avoid it: that record, for
      * this person, gives way to AccountKit's own.
+     *
+     * A person created WITHOUT a sign-in method (a first email sign-in link) is
+     * reported too, exactly once, as soon as they exist: `providerId` is
+     * `NO_SIGN_IN_METHOD`, `accountId` their user id, `tokens` all null. So every
+     * new person reaches this hook however they came in.
      */
     onAccountCreated?: (account: CreatedAccount) => Promise<void>;
+    /**
+     * Called once a person's account is gone (AccountKit's account panel, or
+     * any other path that deletes the user), so the product removes or
+     * anonymises its own row. Runs only after the deletion, never for an account
+     * that still exists: a product that must refuse a deletion does so before it
+     * starts (a plugin `before` hook on `/delete-user`, which stops it before
+     * anything is deleted). A throw is logged and does not undo the deletion,
+     * so a product whose row must disappear atomically keeps a database trigger.
+     */
+    onAccountDeleted?: (account: DeletedAccount) => Promise<void>;
+}
+/**
+ * The `providerId` onAccountCreated receives for a person created without a
+ * sign-in method (an email sign-in link to a new address).
+ */
+export declare const NO_SIGN_IN_METHOD = "none";
+/** A person whose account was just deleted. */
+export interface DeletedAccount {
+    userId: string;
+    email: string;
 }
 /** A sign-in method as it is attached to a person. */
 export interface CreatedAccount {

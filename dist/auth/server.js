@@ -25,6 +25,11 @@ import { recordResetAddress, recoveryVerificationPlugin, } from "./recovery-veri
 const MIN_SECRET_LENGTH = 32;
 const DEV_SECRET = "development-only-secret-never-used-in-production-0000";
 /**
+ * The `providerId` onAccountCreated receives for a person created without a
+ * sign-in method (an email sign-in link to a new address).
+ */
+export const NO_SIGN_IN_METHOD = "none";
+/**
  * The session secret: BETTER_AUTH_SECRET, or the AUTH_SECRET a product moving
  * off next-auth already has on its server (better-auth reads the same pair).
  * Either way it must be 32+ characters in production.
@@ -189,6 +194,58 @@ export function createAuthInstance(options) {
             encryptOAuthTokens: true,
         },
         databaseHooks: {
+            user: {
+                create: {
+                    // Runs once the person's row exists (after the sign-up's own
+                    // transaction, which also stores its first sign-in method). A person
+                    // who already has one was reported as it was attached (below); one
+                    // created without any (an email sign-in link) is reported here, so
+                    // onAccountCreated reaches every new person exactly once.
+                    after: async (user, context) => {
+                        if (!options.onAccountCreated)
+                            return;
+                        const userId = String(user.id);
+                        try {
+                            const internal = context?.context.internalAdapter ??
+                                (await auth.$context).internalAdapter;
+                            if ((await internal.findAccounts(userId)).length > 0)
+                                return;
+                            await options.onAccountCreated({
+                                userId,
+                                providerId: NO_SIGN_IN_METHOD,
+                                accountId: userId,
+                                tokens: {
+                                    accessToken: null,
+                                    refreshToken: null,
+                                    idToken: null,
+                                    accessTokenExpiresAt: null,
+                                    scope: null,
+                                },
+                            });
+                        }
+                        catch (error) {
+                            console.error(`[auth] onAccountCreated failed: ${error.name}`);
+                        }
+                    },
+                },
+                delete: {
+                    // Queued until the deletion is done (sessions, sign-in methods and
+                    // the person), so a refusal before it never reaches the product.
+                    after: async (user) => {
+                        if (!options.onAccountDeleted)
+                            return;
+                        try {
+                            await options.onAccountDeleted({
+                                userId: String(user.id),
+                                email: String(user.email ?? ""),
+                            });
+                        }
+                        catch (error) {
+                            console.error(`[auth] onAccountDeleted failed: ${error.name}`);
+                        }
+                    },
+                },
+            },
             account: {
                 // The product needs to know WHO signed in, not to act at the provider
                 // on their behalf, so provider tokens are dropped before they are stored.

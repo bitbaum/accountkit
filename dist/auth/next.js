@@ -32,6 +32,7 @@ export function createAuthRuntime(options) {
             plugins: options.plugins,
             env: options.env,
             onAccountCreated: options.onAccountCreated,
+            onAccountDeleted: options.onAccountDeleted,
             database: options.getDatabase(),
         });
         return instance;
