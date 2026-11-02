@@ -169,7 +169,7 @@ export declare function SignUpForm({ client, methods, labels, classes, next, sig
     signInLink: ReactNode;
 }): import("react").JSX.Element;
 /** Everything about one's own account, and the way out of it. */
-export declare function AccountPanel({ client, methods, labels, classes, user, linked, accountPath, homePath, deletion, }: Common & {
+export declare function AccountPanel({ client, methods, labels, classes, user, linked, accountPath, homePath, deletion, ownProfile, }: Common & {
     user: {
         name: string;
         /** Null when the account has no address that can receive mail. */
@@ -188,6 +188,12 @@ export declare function AccountPanel({ client, methods, labels, classes, user, l
      * erasure request. Without it, the delete control.
      */
     deletion?: ReactNode;
+    /**
+     * True when the product shows and edits the person's name on its own page
+     * (its own row is the one every table reads): the panel then leaves its
+     * Profile section out, so one person never has two names that drift apart.
+     */
+    ownProfile?: boolean;
 }): import("react").JSX.Element;
 export { DEFAULT_AUTH_LABELS, authErrorText, fill, type AuthError, type AuthLabels, };
 //# sourceMappingURL=react.d.ts.map
