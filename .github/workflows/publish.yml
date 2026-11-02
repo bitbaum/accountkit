@@ -1,3 +1,4 @@
+# prettier-ignore
 name: Publish
 
 # The same file in every @bitbaum package. A merged version bump releases
@@ -13,8 +14,14 @@ name: Publish
 #   package that does not exist, so the first version needs the account once.
 #   Put a short-lived npm token in the org secret NPM_BOOTSTRAP_TOKEN (made on
 #   npmjs.com from a phone; see docs in bitbaum/fleet) and this job publishes
-#   the first version with it, then links itself as trusted publisher. Without
-#   the token it skips GREEN and says so, so a new package never paints CI red.
+#   the first version with it. Without the token it skips GREEN and says so, so
+#   a new package never paints CI red.
+#   NOTE (npm docs, `npm trust`): trust commands do NOT accept a granular token,
+#   not even one with "bypass 2FA" — they need the account's interactive 2FA.
+#   So the auto-link step below is best-effort and is EXPECTED to fall through
+#   to the printed fallback. The human step is then ONE form per package on
+#   npmjs.com (repo + "publish.yml"), or one local `npm trust` loop
+#   (bootstrap-local.sh, step 2). After that, every release is tokenless.
 #
 # Publishing is idempotent: a version already on the registry is a green
 # no-op, so re-runs and repeat merges are harmless.
@@ -24,7 +31,12 @@ on:
     branches: [main]
   # The auto-merge sweep re-arms this after a GITHUB_TOKEN merge, which
   # starts no push workflow on its own (rearm_workflows in auto-merge.yml).
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      diagnose_auth:
+        description: Test the npm trusted-publisher link without publishing anything.
+        type: boolean
+        default: false
 
 # Never two at once, never cancelled: a cancelled publish is a half-shipped
 # release.
@@ -57,8 +69,37 @@ jobs:
       # whatever the runner's Node happens to bundle.
       - run: npm install -g npm@11
 
+      # "Run workflow" with diagnose_auth ticked asks npm whether it trusts
+      # THIS workflow for this package, and publishes nothing. HTTP 200 =
+      # linked; 404 = the one form on npmjs.com is still to be filled in. The
+      # response body holds a short-lived token, so it is never printed.
+      - name: Is the npm trusted publisher linked? (no publish)
+        if: inputs.diagnose_auth == true
+        run: |
+          node --input-type=module <<'NODE'
+          const url = new URL(process.env.ACTIONS_ID_TOKEN_REQUEST_URL);
+          url.searchParams.set('audience', 'npm:registry.npmjs.org');
+          const identity = await fetch(url, {
+            headers: { authorization: `Bearer ${process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN}` },
+            signal: AbortSignal.timeout(30000),
+          });
+          if (!identity.ok) throw new Error(`GitHub OIDC request failed: HTTP ${identity.status}`);
+          const { value: jwt } = await identity.json();
+          const claims = JSON.parse(Buffer.from(jwt.split('.')[1], 'base64url'));
+          console.log('Publisher identity:', JSON.stringify({ repository: claims.repository, workflow_ref: claims.workflow_ref, ref: claims.ref }));
+          const name = JSON.parse(await (await import('node:fs/promises')).readFile('package.json', 'utf8')).name;
+          const exchange = await fetch(`https://registry.npmjs.org/-/npm/v1/oidc/token/exchange/package/${encodeURIComponent(name)}`, {
+            method: 'POST', headers: { authorization: `Bearer ${jwt}` },
+            signal: AbortSignal.timeout(30000),
+          });
+          console.log(`npm trust exchange for ${name}: HTTP ${exchange.status}`);
+          await exchange.body?.cancel();
+          if (!exchange.ok) throw new Error('npm does not trust this workflow for this package yet');
+          NODE
+
       - name: What does npm have?
         id: check
+        if: inputs.diagnose_auth != true
         env:
           BOOTSTRAP: ${{ secrets.NPM_BOOTSTRAP_TOKEN != '' }}
         run: |
@@ -136,13 +177,51 @@ jobs:
               echo "🔗 Linked \`$NAME\` to this workflow — later releases need no token." >> "$GITHUB_STEP_SUMMARY"
             else
               {
-                echo "⚠️ Published, but npm would not link the workflow with a token."
+                echo "⚠️ Published. npm does not let a token link the workflow (expected)."
                 echo "Link it once on https://www.npmjs.com/package/$NAME/access → Trusted Publisher → GitHub Actions:"
                 echo "repository \`$GITHUB_REPOSITORY\`, workflow \`publish.yml\`, tick *Allow npm publish*."
               } >> "$GITHUB_STEP_SUMMARY"
             fi
           fi
           rm -f "$RUNNER_TEMP/.npmrc"
+
+      - name: Wait for published registry metadata
+        if: steps.check.outputs.publish == 'true'
+        env:
+          NAME: ${{ steps.check.outputs.name }}
+          VERSION: ${{ steps.check.outputs.version }}
+        run: |
+          # npm accepts a release before its public metadata is readable. Keep
+          # this serialized job open until read-back succeeds, so the tag/main
+          # duplicate cannot try publishing a version still being processed.
+          node --input-type=module <<'NODE'
+          const { NAME: name, VERSION: version } = process.env;
+          const url = `https://registry.npmjs.org/${encodeURIComponent(name)}`;
+          let ready = false;
+          for (let attempt = 0; attempt < 60; attempt++) {
+            try {
+              const response = await fetch(url, {
+                headers: { 'cache-control': 'no-cache' },
+                signal: AbortSignal.timeout(10000),
+              });
+              if (response.ok) {
+                const metadata = await response.json();
+                const record = metadata.versions?.[version];
+                ready = record?.name === name && record.version === version &&
+                  Boolean(record.dist?.integrity && record.dist?.tarball);
+                if (ready) break;
+              }
+            } catch {
+              // Network errors and temporarily incomplete metadata can settle.
+            }
+            if (attempt < 59) {
+              console.log(`Waiting for ${name}@${version} registry read-back (${attempt + 1}/60)`);
+              await new Promise(resolve => setTimeout(resolve, 10000));
+            }
+          }
+          if (!ready) throw new Error(`Publication accepted, but ${name}@${version} registry read-back did not become ready`);
+          console.log(`Verified registry metadata and artifact coordinates for ${name}@${version}`);
+          NODE
 
       # A release from main gets its tag here, so every published version is
       # still traceable to a commit by name.
