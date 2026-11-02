@@ -31,7 +31,21 @@ export interface AuthLabels {
   recovery?: RecoveryLabels;
   signIn: string;
   createAccount: string;
+  /**
+   * The shared sign-in's button when no provider list is known (a capability
+   * object built before 0.24). `signInMethods` never shows the button without
+   * a list, so this is a fallback only.
+   */
   withSignin: string;
+  /**
+   * The shared sign-in's button: `{providers}` is the providers the service
+   * publishes, joined with `listOr` ("Google, GitHub or Facebook"). Optional
+   * for products that pass their own labels; without it the button reads in
+   * the words of `withSignin`'s own pattern, or English.
+   */
+  withSigninProviders?: string;
+  /** The word before the last name of a list of alternatives ("or"). */
+  listOr?: string;
   withOrangecat: string;
   withPasskey: string;
   withLink: string;
@@ -114,7 +128,9 @@ export const DEFAULT_AUTH_LABELS: AuthLabels = {
   recovery: DEFAULT_RECOVERY_LABELS,
   signIn: "Sign in",
   createAccount: "Create an account",
-  withSignin: "Continue with Google, Apple, GitHub, X or Facebook",
+  withSignin: "Continue with Google, GitHub or Facebook",
+  withSigninProviders: "Continue with {providers}",
+  listOr: "or",
   withOrangecat: "Continue with OrangeCat",
   withPasskey: "Sign in with a passkey",
   withLink: "Email me a sign-in link instead",
@@ -253,4 +269,32 @@ export function authErrorText(
     return labels.errors[error.code as keyof AuthLabels["errors"]];
   }
   return labels.errors.generic;
+}
+
+/**
+ * "Continue with Google, GitHub or Facebook" for exactly the providers the
+ * shared sign-in publishes, in its order. A product's own labels that predate
+ * `withSigninProviders` still read in their language: the template and the
+ * word for "or" are taken from their `withSignin` when it has the shape every
+ * shipped one had ("<words> Google, …, <or> <last>"); otherwise English.
+ */
+export function signinButtonLabel(
+  labels: AuthLabels,
+  providers: readonly string[] | undefined,
+): string {
+  if (!providers || providers.length === 0) return labels.withSignin;
+  let template = labels.withSigninProviders;
+  let or = labels.listOr;
+  if (!template || !or) {
+    const shape = /^(.*?)Google, .* (\S+) \S+$/u.exec(labels.withSignin);
+    template ??= shape
+      ? `${shape[1]}{providers}`
+      : DEFAULT_AUTH_LABELS.withSigninProviders!;
+    or ??= shape ? shape[2] : DEFAULT_AUTH_LABELS.listOr!;
+  }
+  const names =
+    providers.length === 1
+      ? providers[0]
+      : `${providers.slice(0, -1).join(", ")} ${or} ${providers[providers.length - 1]}`;
+  return fill(template, { providers: names });
 }
