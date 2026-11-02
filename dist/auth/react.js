@@ -34,7 +34,7 @@ function ErrorLine({ message, className, }) {
         return null;
     return (_jsx("p", { role: "alert", className: className, children: message }));
 }
-const hasOidc = (methods) => methods.signin || methods.orangecat;
+const hasOidc = (methods) => methods.signin || methods.orangecat || Boolean(methods.github);
 function Divider({ label, className }) {
     return (_jsx("div", { className: className, role: "separator", children: _jsx("span", { children: label }) }));
 }
@@ -50,6 +50,12 @@ export function OidcButtons({ client, methods, labels = DEFAULT_AUTH_LABELS, cla
             }
             : null,
         methods.orangecat ? { id: "orangecat", label: labels.withOrangecat } : null,
+        methods.github
+            ? {
+                id: "github",
+                label: labels.withGithub ?? DEFAULT_AUTH_LABELS.withGithub,
+            }
+            : null,
     ].filter((p) => p !== null);
     if (providers.length === 0)
         return null;
@@ -441,6 +447,11 @@ export function AccountPanel({ client, methods, labels = DEFAULT_AUTH_LABELS, cl
             on: methods.signin,
         },
         { id: "orangecat", label: labels.withOrangecat, on: methods.orangecat },
+        {
+            id: "github",
+            label: labels.withGithub ?? DEFAULT_AUTH_LABELS.withGithub,
+            on: Boolean(methods.github),
+        },
     ];
     const methodName = (id) => id === "credential"
         ? a.methodPassword

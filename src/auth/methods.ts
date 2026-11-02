@@ -162,6 +162,8 @@ export interface SignInMethods {
    * with ACCOUNTKIT_LIGHTNING=1 until it is on everywhere.
    */
   lightning?: boolean;
+  /** The product's own GitHub app signs people in (`githubSignIn: true`). */
+  github?: boolean;
 }
 
 /**
@@ -186,6 +188,11 @@ export interface SignInMethodOptions {
    * Without it, the last list read from the service is used.
    */
   signinProviders?: readonly string[];
+  /**
+   * Pass the same `githubSignIn` the server was created with: the product's
+   * own GitHub app then shows as "Continue with GitHub" (`methods.github`).
+   */
+  githubSignIn?: boolean;
 }
 
 /**
@@ -308,6 +315,7 @@ export function signInMethods(
     signinProviders: names ?? [],
     orangecat: orangecatOidc(env) !== null,
     lightning: lightningOn(env),
+    github: productGithubApp(env, options.githubSignIn) !== null,
   };
 }
 
