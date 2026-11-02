@@ -1,4 +1,5 @@
 import { conventionalFrom, isMailConfigured, sendMail, } from "@bitbaum/mail-kit";
+import { isDeliverable } from "./methods.js";
 /** "123456" → "123 456": easier to read off one screen and type into another. */
 export const spacedCode = (code) => code.length === 6 ? `${code.slice(0, 3)} ${code.slice(3)}` : code;
 /** Shared account-mail adapter; a no-op sender is never reported as configured. */
@@ -22,8 +23,11 @@ export function createAuthMailer(options) {
             return isMailConfigured(env());
         },
         // The sign-in link's email also carries a code (./sign-in-code).
-        codes: true,
-        async send(kind, to, url, extra) {
+        codes: options.render ? options.codes === true : options.codes !== false,
+        async send(kind, to, url, extra = {}) {
+            // A placeholder address (an OIDC person without email) can receive nothing.
+            if (!isDeliverable(to))
+                return;
             // Refuse unexpected origins before sending a bearer credential by email.
             let sameOrigin = false;
             try {
@@ -36,13 +40,25 @@ export function createAuthMailer(options) {
                 console.error("[auth] refusing account email with an unexpected origin");
                 return;
             }
-            const result = await sendMail({
-                to,
-                subject: subjects[kind],
-                text: kind === "magicLink" && extra?.code
-                    ? `${subjects[kind]}\n\n${url}\n\nOn another device? Type this code on the page where you asked for the link: ${spacedCode(extra.code)}\nThe link and the code each work for 10 minutes.\n\nIf you did not request this, you can ignore this email.`
-                    : `${subjects[kind]}\n\n${url}\n\nIf you did not request this, you can ignore this email.`,
-            }, { env: env() });
+            const own = options.own?.[kind];
+            if (own) {
+                try {
+                    if (await own(to, url, extra))
+                        return;
+                }
+                catch (error) {
+                    console.error(`[auth] the product's own ${kind} mail failed: ${error.name}`);
+                }
+            }
+            const mail = options.render
+                ? options.render(kind, url, extra)
+                : {
+                    subject: subjects[kind],
+                    text: kind === "magicLink" && extra.code
+                        ? `${subjects[kind]}\n\n${url}\n\nOn another device? Type this code on the page where you asked for the link: ${spacedCode(extra.code)}\nThe link and the code each work for 10 minutes.\n\nIf you did not request this, you can ignore this email.`
+                        : `${subjects[kind]}\n\n${url}\n\nIf you did not request this, you can ignore this email.`,
+                };
+            const result = await sendMail({ to, ...mail }, { env: env() });
             if (!result.sent)
                 console.error("[auth] account email delivery failed", result.status ?? "transport");
         },

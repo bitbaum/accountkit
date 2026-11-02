@@ -243,6 +243,14 @@ key is the sign-in method (`providerId: "lightning"`), the person gets a
 placeholder address, and a second factor applies. Only the browser that showed
 the code can claim it. `authClientPlugins()` includes `lightningClient()`.
 
+### The product's own mail template
+
+`createAuthMailer({ site, render, codes: true })` sends the product's own
+template (its languages, its HTML) through the shared transport, with the same
+origin check, and puts the sign-in code in `extra.code` for the template to
+print. `own: { verify: async (to, url) => sent }` replaces one kind of mail
+with the product's own; resolving `false` sends the shared one instead.
+
 ### Second-factor policy
 
 An enabled second factor applies to password, email-link, passkey and OIDC sign-in. The server reuses BetterAuth's native signed challenge, trusted-device validation, attempt limits and expiry. A primary credential alone does not leave an authenticated session while the challenge is pending.
