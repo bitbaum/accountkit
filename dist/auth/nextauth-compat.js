@@ -104,7 +104,7 @@ export function createNextAuthCompat(options) {
         for (const client of oidcClients(env())) {
             list[client.providerId] = entry(client.providerId, client.providerId === "orangecat" ? "OrangeCat" : "bitbaum", "oidc");
         }
-        if (productGithubApp(env())) {
+        if (productGithubApp(env(), options.runtime.githubSignIn)) {
             list[GITHUB_PROVIDER_ID] = entry(GITHUB_PROVIDER_ID, "GitHub", "oauth");
         }
         for (const [id, provider] of Object.entries(options.credentials)) {
@@ -114,7 +114,7 @@ export function createNextAuthCompat(options) {
     }
     function oidcProviderIds() {
         const ids = oidcClients(env()).map((client) => client.providerId);
-        if (productGithubApp(env()))
+        if (productGithubApp(env(), options.runtime.githubSignIn))
             ids.push(GITHUB_PROVIDER_ID);
         return new Set(ids);
     }

@@ -118,7 +118,7 @@ export function createAuthInstance(options) {
         emailConfirmation: options.emailConfirmation,
     });
     const providers = oidcClients(env).map(oidcProvider);
-    const github = productGithubApp(env);
+    const github = productGithubApp(env, options.githubSignIn);
     const origin = new URL(site.url);
     const schema = options.schema ?? authSchema;
     const legacyPasswords = options.legacyBcrypt

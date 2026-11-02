@@ -51,6 +51,8 @@ export interface AuthRuntimeOptions {
   onAccountCreated?: CreateAuthOptions["onAccountCreated"];
   /** See CreateAuthOptions.onAccountDeleted. */
   onAccountDeleted?: CreateAuthOptions["onAccountDeleted"];
+  /** See CreateAuthOptions.githubSignIn. */
+  githubSignIn?: CreateAuthOptions["githubSignIn"];
   /** See CreateAuthOptions.githubScopes. */
   githubScopes?: CreateAuthOptions["githubScopes"];
 }
@@ -86,6 +88,7 @@ export function createAuthRuntime(options: AuthRuntimeOptions) {
       env: options.env,
       onAccountCreated: options.onAccountCreated,
       onAccountDeleted: options.onAccountDeleted,
+      githubSignIn: options.githubSignIn,
       githubScopes: options.githubScopes,
       database: options.getDatabase(),
     });
@@ -206,6 +209,8 @@ export function createAuthRuntime(options: AuthRuntimeOptions) {
   return {
     getAuth,
     authStatus,
+    /** Whether the product asked for its own GitHub app to sign people in. */
+    githubSignIn: options.githubSignIn === true,
     getSession,
     sessionFor,
     requireUser,

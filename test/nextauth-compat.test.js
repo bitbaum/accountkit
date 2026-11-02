@@ -510,6 +510,7 @@ test("a product's own GitHub app signs in through next-auth/react's protocol, wi
       isDatabaseConfigured: () => true,
       getDatabase: () => db,
       schema: tables,
+      githubSignIn: true,
       githubScopes: ["repo", "workflow"],
       onAccountCreated: async (account) => {
         created.push(account);
@@ -562,6 +563,82 @@ test("a product's own GitHub app signs in through next-auth/react's protocol, wi
     );
     assert.equal(created[0].tokens.accessToken, "gh-token");
     assert.match(created[0].tokens.scope, /repo/);
+  } finally {
+    globalThis.fetch = realFetch;
+    await pg.close();
+  }
+});
+
+test("a GitHub app in the env signs nobody in unless the product asks for it", async () => {
+  // Loki's GITHUB_CLIENT_ID/SECRET are the app it acts on repositories with,
+  // not a way in: their presence alone must offer no GitHub sign-in.
+  const pg = new PGlite();
+  const realFetch = globalThis.fetch;
+  const github = [];
+  globalThis.fetch = async (input, init) => {
+    const url = new URL(input instanceof Request ? input.url : String(input));
+    if (url.hostname.endsWith("github.com")) github.push(url.href);
+    return realFetch(input, init);
+  };
+  try {
+    const tables = createAuthTables("auth_");
+    const db = drizzle(pg, { schema: tables });
+    await (await pushSchema(tables, db)).apply();
+    const env = {
+      NODE_ENV: "production",
+      BETTER_AUTH_SECRET: "synthetic-compat-runtime-secret-at-least-32-chars",
+      GITHUB_CLIENT_ID: "gh-client",
+      GITHUB_CLIENT_SECRET: "gh-secret",
+    };
+    const runtime = createAuthRuntime({
+      site: { url: SITE, title: "Compat", slug: "compat" },
+      mail: { configured: false, send: async () => {} },
+      env,
+      isDatabaseConfigured: () => true,
+      getDatabase: () => db,
+      schema: tables,
+      githubScopes: ["repo", "workflow"],
+    });
+    assert.equal(runtime.githubSignIn, false);
+    const compat = createNextAuthCompat({
+      runtime,
+      siteUrl: () => SITE,
+      signInPath: "/login",
+      landing: "/",
+      env: () => env,
+      toSession: async (shared) => ({ user: { id: shared.user.id } }),
+      credentials: {},
+    });
+    const client = createCompatClient({ compat, site: SITE });
+    assert.deepEqual(Object.keys(compat.providers()), []);
+    const posted = await client.call("/signin/github", {
+      csrfToken: "test",
+      callbackUrl: `${SITE}/projects`,
+    });
+    assert.notEqual(posted.status, 200, "no sign-in URL is handed out");
+    const started = await client.call("/signin/github");
+    assert.equal(started.status, 302);
+    assert.equal(
+      started.headers.get("location"),
+      `${SITE}/login?error=OAuthSignin`,
+    );
+    assert.equal(
+      (await client.call("/callback/github?code=x&state=y")).status,
+      404,
+    );
+    // Nor does AccountKit's own social endpoint know GitHub.
+    const social = await runtime.POST(
+      new Request(`${SITE}/api/auth/sign-in/social`, {
+        method: "POST",
+        headers: { "content-type": "application/json", origin: SITE },
+        body: JSON.stringify({ provider: "github", callbackURL: "/" }),
+      }),
+    );
+    assert.ok(
+      social.status >= 400,
+      `social sign-in refused (${social.status})`,
+    );
+    assert.deepEqual(github, [], "nothing was asked of GitHub");
   } finally {
     globalThis.fetch = realFetch;
     await pg.close();

@@ -6,6 +6,14 @@ records, not claims that this file existed at release time.
 
 ## Unreleased
 
+- A product's own GitHub sign-in is opt-in: `createAuthRuntime({ githubSignIn:
+  true })` (or `createAuthInstance`). Without it, `GITHUB_CLIENT_ID` and
+  `GITHUB_CLIENT_SECRET` offer no GitHub sign-in, neither on AccountKit's
+  endpoints nor in `nextauth-compat`'s provider list, which reads the choice
+  from the runtime. In 0.22 their presence alone switched GitHub on, so Loki,
+  whose GitHub app is for repository access, offered a sign-in it never chose.
+  `productGithubApp(env, signIn)` takes the choice as its second argument.
+
 - Button labels never cut a hyphenated word across two lines. At 390px evig's
   sign-in card read "per E- / Mail schicken": a browser may break after any
   hyphen. Each hyphenated word in a button label ("E-Mail", "e-mail",
@@ -15,7 +23,8 @@ records, not claims that this file existed at release time.
   cut.
 
 - A product's own GitHub OAuth app (`GITHUB_CLIENT_ID` and
-  `GITHUB_CLIENT_SECRET`) signs people in on the shared runtime, at the
+  `GITHUB_CLIENT_SECRET`) signs people in on the shared runtime (opt-in since
+  the entry above), at the
   callback such an app already has (`/api/auth/callback/github`), and through
   `nextauth-compat` (`signIn("github")`, or linking for a signed-in person).
   `githubScopes` adds the scopes the product acts with (Loki: `repo` and

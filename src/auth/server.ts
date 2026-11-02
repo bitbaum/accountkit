@@ -159,9 +159,16 @@ export interface CreateAuthOptions {
    */
   onAccountCreated?: (account: CreatedAccount) => Promise<void>;
   /**
+   * Whether the product's own GitHub app (GITHUB_CLIENT_ID and
+   * GITHUB_CLIENT_SECRET, see productGithubApp) signs people in. Default: no.
+   * Without it those variables offer no GitHub sign-in, whatever they hold.
+   */
+  githubSignIn?: boolean;
+  /**
    * Extra GitHub scopes for a product's own GitHub app (see productGithubApp),
-   * beyond the identity ones: Loki asks for `repo` and `workflow`, which it
-   * acts with. The token reaches onAccountCreated, never AccountKit's table.
+   * beyond the identity ones, for a product that acts with the grant. Only
+   * read with `githubSignIn: true`. The token reaches onAccountCreated, never
+   * AccountKit's table.
    */
   githubScopes?: string[];
   /**
@@ -320,7 +327,7 @@ export function createAuthInstance(options: CreateAuthOptions): Auth {
     emailConfirmation: options.emailConfirmation,
   });
   const providers = oidcClients(env).map(oidcProvider);
-  const github = productGithubApp(env);
+  const github = productGithubApp(env, options.githubSignIn);
   const origin = new URL(site.url);
   const schema = options.schema ?? authSchema;
   const legacyPasswords = options.legacyBcrypt

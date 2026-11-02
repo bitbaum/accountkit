@@ -29,6 +29,11 @@ export interface CompatRuntime {
     POST: (request: Request) => Promise<Response>;
     sessionFor: (headers: Headers) => Promise<AuthSession | null>;
     getSession: () => Promise<AuthSession | null>;
+    /**
+     * Whether the product's own GitHub app signs people in
+     * (`createAuthRuntime({ githubSignIn: true })`). Absent means no.
+     */
+    githubSignIn?: boolean;
 }
 /** Why a sign-in was refused; the product maps each to the code its login page reads. */
 export type RefusalReason = "missing" | "credentials" | "rate_limited" | "unavailable" | "email_unverified";

@@ -33,6 +33,7 @@ export function createAuthRuntime(options) {
             env: options.env,
             onAccountCreated: options.onAccountCreated,
             onAccountDeleted: options.onAccountDeleted,
+            githubSignIn: options.githubSignIn,
             githubScopes: options.githubScopes,
             database: options.getDatabase(),
         });
@@ -132,6 +133,8 @@ export function createAuthRuntime(options) {
     return {
         getAuth,
         authStatus,
+        /** Whether the product asked for its own GitHub app to sign people in. */
+        githubSignIn: options.githubSignIn === true,
         getSession,
         sessionFor,
         requireUser,
