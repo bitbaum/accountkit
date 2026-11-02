@@ -35,6 +35,8 @@ export interface AuthRuntimeOptions {
     legacyIdentityProvider?: string;
     /** See CreateAuthOptions.onAccountCreated. */
     onAccountCreated?: CreateAuthOptions["onAccountCreated"];
+    /** See CreateAuthOptions.onAccountDeleted. */
+    onAccountDeleted?: CreateAuthOptions["onAccountDeleted"];
 }
 type SessionUser = {
     id: string;

@@ -6,6 +6,17 @@ records, not claims that this file existed at release time.
 
 ## Unreleased
 
+- `onAccountCreated` now reaches every new person. A first email sign-in link
+  creates the person without a sign-in method, so the hook (which ran as a
+  method was attached) never ran for them and the product had no row for that
+  person. They are now reported once, as soon as they exist, with `providerId:
+  NO_SIGN_IN_METHOD` (`"none"`). Password, OIDC and OrangeCat sign-ups are
+  still reported once, as their method.
+- Add `onAccountDeleted({ userId, email })`, called once a person's account is
+  deleted, so a product removes or anonymises its own row. A product's refusal
+  before `/delete-user` still stops the deletion before anything is deleted,
+  and the hook is not called then.
+
 - `createNextAuthCompat({ screens: "accountkit" })` opens every AccountKit
   endpoint (sign-up, magic link, passkeys, two-factor, recovery, password
   change) beside the `next-auth/react` session protocol. A product moving off
