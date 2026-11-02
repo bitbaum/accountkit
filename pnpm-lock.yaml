@@ -22,8 +22,8 @@ importers:
         specifier: ^1.7.10
         version: 1.7.14(@better-auth/core@1.7.14(@better-auth/utils@0.5.1)(@better-fetch/fetch@1.3.3)(better-call@1.4.4(zod@4.6.7))(jose@6.2.12)(kysely@0.29.6)(nanostores@1.5.5))(@better-auth/utils@0.5.1)(@better-fetch/fetch@1.3.3)(better-auth@1.7.14(drizzle-kit@0.31.11)(drizzle-orm@0.45.4(@electric-sql/pglite@0.5.13)(@types/pg@8.23.1)(kysely@0.29.6)(pg@8.23.1))(next@16.4.3(@types/node@26.6.6)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(pg@8.23.1)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(better-call@1.4.4(zod@4.6.7))(nanostores@1.5.5)
       '@bitbaum/design-tokens':
-        specifier: ^1.2.0
-        version: 1.2.0
+        specifier: github:bitbaum/design-tokens#2b440563754018ba4e9d5273ca56cf1f9d0bde11
+        version: https://codeload.github.com/bitbaum/design-tokens/tar.gz/2b440563754018ba4e9d5273ca56cf1f9d0bde11
       '@bitbaum/mail-kit':
         specifier: 0.2.0
         version: 0.2.0
@@ -193,9 +193,11 @@ packages:
   '@better-fetch/fetch@1.3.3':
     resolution: {integrity: sha512-U6SlDt/GUWtK2JAxS/NhdoYTEim+EL1G5byz2TUj83KjLZBUpYzb5SmX0aXaCnbGkAjFKnV/o/0+cyXMbEcqqg==}
 
-  '@bitbaum/design-tokens@1.2.0':
-    resolution: {integrity: sha512-13TSrgYbEzSqt5FNfW3HSJIFcenUto8nKlk4J4IUsepL0gsTBoZ0YDMiJTaJKmR8sPPmcCS94Z/xgUBQW43itw==}
+  '@bitbaum/design-tokens@https://codeload.github.com/bitbaum/design-tokens/tar.gz/2b440563754018ba4e9d5273ca56cf1f9d0bde11':
+    resolution: {gitHosted: true, integrity: sha512-gpRSiKv53UjyPHTmvECkkUWShx8gBebS6YSZyxmsoSLYXM19ORLpG0VrVu/fN29XRXrDKpHCbSc00QAKLw7LJA==, tarball: https://codeload.github.com/bitbaum/design-tokens/tar.gz/2b440563754018ba4e9d5273ca56cf1f9d0bde11}
+    version: 1.3.0
     engines: {node: '>=20'}
+    hasBin: true
 
   '@bitbaum/mail-kit@0.2.0':
     resolution: {integrity: sha512-YkgMFRQ6HuzIB0q/Ao4FB4zb/YxVc0iKyVdRkFe2psJ4CQJvGxBfDlURomZMkgQfpBQox4QiT/iN9IGRz6SeTg==}
@@ -1904,7 +1906,7 @@ snapshots:
 
   '@better-fetch/fetch@1.3.3': {}
 
-  '@bitbaum/design-tokens@1.2.0': {}
+  '@bitbaum/design-tokens@https://codeload.github.com/bitbaum/design-tokens/tar.gz/2b440563754018ba4e9d5273ca56cf1f9d0bde11': {}
 
   '@bitbaum/mail-kit@0.2.0': {}
 
