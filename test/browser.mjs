@@ -471,6 +471,56 @@ try {
         cut.length === 0,
         `[${locale} ${width}] no hyphenated word is cut across lines${cut.length ? `: ${cut.join("; ")}` : ""}`,
       );
+      // The label still reads as one sentence: every word starts on the same
+      // line as the word before it, to its right, or on a later line. A flex
+      // button lays each text node and span out as its own item, side by side,
+      // so evig's "Stattdessen einen / Anmeldelink per | E-Mail | schicken"
+      // read in three columns while no word was cut.
+      const outOfOrder = await page.evaluate(() => {
+        const found = [];
+        for (const button of document.querySelectorAll("#auth-words button")) {
+          const words = [];
+          const walker = document.createTreeWalker(
+            button,
+            NodeFilter.SHOW_TEXT,
+          );
+          for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+            for (const match of node.textContent.matchAll(/\S+/g)) {
+              const range = document.createRange();
+              range.setStart(node, match.index);
+              range.setEnd(node, match.index + match[0].length);
+              const rects = [...range.getClientRects()].filter(
+                (r) => r.width > 0,
+              );
+              if (rects.length)
+                words.push({
+                  word: match[0],
+                  first: rects[0],
+                  last: rects.at(-1),
+                });
+            }
+          }
+          for (let i = 1; i < words.length; i++) {
+            const prev = words[i - 1].last;
+            const next = words[i].first;
+            const sameLine = Math.abs(next.top - prev.top) < 2;
+            const inOrder = sameLine
+              ? next.left >= prev.right - 1
+              : next.top >= prev.bottom - 2;
+            if (!inOrder) {
+              found.push(
+                `"${words[i].word}" after "${words[i - 1].word}" in "${button.textContent}"`,
+              );
+              break;
+            }
+          }
+        }
+        return found;
+      });
+      check(
+        outOfOrder.length === 0,
+        `[${locale} ${width}] every button label reads as one sentence${outOfOrder.length ? `: ${outOfOrder.join("; ")}` : ""}`,
+      );
       await page.close();
     }
   }

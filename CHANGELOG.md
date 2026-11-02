@@ -6,6 +6,14 @@ records, not claims that this file existed at release time.
 
 ## Unreleased
 
+- A button label that keeps a hyphenated word whole now reads as one sentence
+  again. 0.22.1 put the parts beside each other, and a flex button (AccountKit's
+  own stylesheet, and evig's) laid each one out as its own item: evig's sign-in
+  card read "Stattdessen einen / Anmeldelink per | E-Mail | schicken" in three
+  columns. The parts now sit in one span. The browser check also lays out every
+  word of every button label in every language at 320 and 390px and fails when
+  a word starts above or left of the word before it.
+
 - A product's own GitHub sign-in is opt-in: `createAuthRuntime({ githubSignIn:
   true })` (or `createAuthInstance`). Without it, `GITHUB_CLIENT_ID` and
   `GITHUB_CLIENT_SECRET` offer no GitHub sign-in, neither on AccountKit's
