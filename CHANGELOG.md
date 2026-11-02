@@ -6,6 +6,13 @@ records, not claims that this file existed at release time.
 
 ## Unreleased
 
+- Fix: 0.26.0's `lightningClient()` wrote better-auth's `BetterFetch` type
+  into the published declaration, so a product whose better-auth resolved
+  another `@better-fetch/fetch` could not pass `authClientPlugins()` to
+  `createAuthClient` (BiasLens's typecheck failed). The plugin now types its
+  one call by shape; a test keeps better-fetch names out of the declaration,
+  and `test/types/client.ts` compiles the product's own wiring.
+
 - A product's own GitHub app (`githubSignIn: true`) now shows on the shared
   screens: `signInMethods(env, mail, { githubSignIn: true }).github`, a
   "Continue with GitHub" button beside OrangeCat on sign-in and sign-up, and

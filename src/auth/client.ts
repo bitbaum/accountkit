@@ -4,7 +4,16 @@ import {
   magicLinkClient,
   twoFactorClient,
 } from "better-auth/client/plugins";
-import type { BetterAuthClientPlugin } from "better-auth/client";
+/**
+ * The one call the plugin makes, typed by shape. Naming better-auth's own
+ * fetch type here wrote it into the published declaration, and a
+ * product whose better-auth resolved another copy of better-auth's fetch could no
+ * longer pass authClientPlugins() to createAuthClient (0.26.0).
+ */
+type PluginFetch = (
+  path: string,
+  options: { method: "POST"; body: object },
+) => Promise<unknown>;
 
 type Fetched<T> = Promise<{
   data: T | null;
@@ -15,7 +24,7 @@ type Fetched<T> = Promise<{
 export function lightningClient() {
   return {
     id: "accountkit-lightning",
-    getActions: ($fetch) => ({
+    getActions: ($fetch: PluginFetch) => ({
       lightning: {
         start: (purpose: "sign-in" | "link" = "sign-in") =>
           $fetch("/lightning/start", {
@@ -36,7 +45,7 @@ export function lightningClient() {
           }>,
       },
     }),
-  } satisfies BetterAuthClientPlugin;
+  };
 }
 
 /**
