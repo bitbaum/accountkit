@@ -1,6 +1,7 @@
 import { type ReactNode } from "react";
 import type { SignInMethods } from "./methods.js";
 import { DEFAULT_AUTH_LABELS, authErrorText, fill, type AuthError, type AuthLabels } from "./labels.js";
+import { type LightningClient } from "./lightning-login.js";
 /**
  * The account screens every product shows: sign in, create an account, and
  * the account page. Logic and words here, look in the product: pass `classes`
@@ -95,6 +96,8 @@ export interface AuthClientLike extends PasswordRecoveryClient {
             password?: string;
         }): Result;
     };
+    /** lightningClient() from ./client (in authClientPlugins). */
+    lightning?: LightningClient;
     passkey: {
         addPasskey(input: {
             name?: string;

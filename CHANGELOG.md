@@ -6,6 +6,18 @@ records, not claims that this file existed at release time.
 
 ## Unreleased
 
+- Lightning login (LNURL-auth, LUD-04): the person's own Lightning wallet
+  signs a one-time challenge shown as a QR code (or opened by a `lightning:`
+  link on the same device). Free, no key, no third party, nothing paid; the
+  signed key is a sign-in method (`providerId: "lightning"`), never an email.
+  Opt-in per deployment with `ACCOUNTKIT_LIGHTNING=1` (`signInMethods(...)
+  .lightning`); `SignInForm` and `SignUpForm` offer "Sign in with a Lightning
+  wallet", `AccountPanel` adds one to an account. Only the browser that showed
+  the code can finish the sign-in; a challenge lives five minutes and is used
+  once; a second factor applies. Verified against LUD-01's example and a
+  signature made by OpenSSL. New dependencies: `@noble/curves`, `@scure/base`
+  (audited, by the same author), `uqr` (the QR code, drawn as one SVG path).
+
 - The sign-in link's email also carries a six-digit code, typed on the page
   that asked for the link. A link opens wherever the mail app opens it, often
   another browser or another device; the code finishes the sign-in where the

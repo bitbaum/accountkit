@@ -38,6 +38,7 @@ export function factorForAllMethods(site) {
                 {
                     matcher: ({ path }) => path === "/magic-link/verify" ||
                         path === "/sign-in/email-otp" ||
+                        path === "/sign-in/lightning" ||
                         path === "/verify-email" ||
                         path === "/passkey/verify-authentication" ||
                         /^\/(?:oauth2\/)?callback\/[^/]+$/.test(path ?? ""),
@@ -97,7 +98,8 @@ export function factorForAllMethods(site) {
                         // navigation) get the challenge as JSON, like a password.
                         if (ctx.context.newSession ||
                             ctx.path === "/passkey/verify-authentication" ||
-                            ctx.path === "/sign-in/email-otp")
+                            ctx.path === "/sign-in/email-otp" ||
+                            ctx.path === "/sign-in/lightning")
                             return delegated.response;
                         const state = await getOAuthState();
                         const target = factorDestination(site.url, ctx.query?.errorCallbackURL ?? state?.errorURL, ctx.query?.callbackURL ?? state?.callbackURL);

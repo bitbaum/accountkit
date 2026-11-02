@@ -19,6 +19,11 @@ import {
   type AuthLabels,
 } from "./labels.js";
 import { PasswordField } from "./password-field.js";
+import {
+  LightningLogin,
+  lightningWords,
+  type LightningClient,
+} from "./lightning-login.js";
 
 /**
  * The account screens every product shows: sign in, create an account, and
@@ -83,6 +88,8 @@ export interface AuthClientLike extends PasswordRecoveryClient {
     enable(input: { password?: string }): Result<object>;
     disable(input: { password?: string }): Result;
   };
+  /** lightningClient() from ./client (in authClientPlugins). */
+  lightning?: LightningClient;
   passkey: {
     addPasskey(input: {
       name?: string;
@@ -226,7 +233,7 @@ export function OidcButtons({
   );
 }
 
-type Step = "start" | "twoFactor" | "linkSent";
+type Step = "start" | "twoFactor" | "linkSent" | "lightning";
 
 /**
  * Every way in, on one screen: password, passkey, a link by email, and the
@@ -434,6 +441,20 @@ export function SignInForm({
     );
   }
 
+  if (step === "lightning" && client.lightning) {
+    return (
+      <LightningLogin
+        client={client.lightning}
+        labels={labels}
+        classes={c}
+        purpose="sign-in"
+        onDone={done}
+        onTwoFactor={() => setStep("twoFactor")}
+        onBack={() => setStep("start")}
+      />
+    );
+  }
+
   if (step === "linkSent") {
     return (
       <div className={c.stack}>
@@ -544,7 +565,20 @@ export function SignInForm({
           {unbroken(labels.withPasskey)}
         </button>
       )}
-      {(hasOidc(methods) || methods.passkey) && (
+      {methods.lightning && client.lightning && (
+        <button
+          type="button"
+          className={c.buttonQuiet}
+          onClick={() => {
+            setError(null);
+            setStep("lightning");
+          }}
+          disabled={busy}
+        >
+          {unbroken(lightningWords(labels).withLightning)}
+        </button>
+      )}
+      {(hasOidc(methods) || methods.passkey || methods.lightning) && (
         <Divider label={labels.orEmail} className={c.divider} />
       )}
       <form onSubmit={withPassword} className={c.stack}>
@@ -654,6 +688,7 @@ export function SignUpForm({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sent, setSent] = useState<"verify" | "link" | null>(null);
+  const [lightning, setLightning] = useState(false);
 
   const fail = (e: AuthError) => {
     setError(authErrorText(labels, e));
@@ -705,6 +740,25 @@ export function SignUpForm({
     );
   }
 
+  if (lightning && client.lightning) {
+    return (
+      <LightningLogin
+        client={client.lightning}
+        labels={labels}
+        classes={c}
+        purpose="sign-in"
+        onDone={() => window.location.assign(next)}
+        // An existing account with a second factor finishes on sign-in.
+        onTwoFactor={() =>
+          window.location.assign(
+            `${signInPath}?twoFactor=1&next=${encodeURIComponent(next)}`,
+          )
+        }
+        onBack={() => setLightning(false)}
+      />
+    );
+  }
+
   return (
     <div className={c.stack}>
       <OidcButtons
@@ -716,7 +770,17 @@ export function SignUpForm({
         errorCallbackURL={`${signInPath}?error=oidc&next=${encodeURIComponent(next)}`}
         onError={fail}
       />
-      {hasOidc(methods) && (
+      {methods.lightning && client.lightning && (
+        <button
+          type="button"
+          className={c.buttonQuiet}
+          onClick={() => setLightning(true)}
+          disabled={busy}
+        >
+          {unbroken(lightningWords(labels).withLightning)}
+        </button>
+      )}
+      {(hasOidc(methods) || methods.lightning) && (
         <Divider label={labels.orEmail} className={c.divider} />
       )}
       <form onSubmit={submit} className={c.stack}>
@@ -966,7 +1030,10 @@ export function AccountPanel({
   const methodName = (id: string) =>
     id === "credential"
       ? a.methodPassword
-      : (oidc.find((o) => o.id === id)?.label ?? id);
+      : id === "lightning"
+        ? lightningWords(labels).name
+        : (oidc.find((o) => o.id === id)?.label ?? id);
+  const [linkingLightning, setLinkingLightning] = useState(false);
 
   return (
     <div className={c.stack}>
@@ -1033,6 +1100,30 @@ export function AccountPanel({
                 disabled={busy}
               >
                 {unbroken(fill(a.link, { method: o.label }))}
+              </button>
+            ))}
+          {methods.lightning &&
+            client.lightning &&
+            !linked.includes("lightning") &&
+            (linkingLightning ? (
+              <LightningLogin
+                client={client.lightning}
+                labels={labels}
+                classes={c}
+                purpose="link"
+                onDone={() => window.location.reload()}
+                onBack={() => setLinkingLightning(false)}
+              />
+            ) : (
+              <button
+                type="button"
+                className={c.buttonQuiet}
+                onClick={() => setLinkingLightning(true)}
+                disabled={busy}
+              >
+                {unbroken(
+                  fill(a.link, { method: lightningWords(labels).name }),
+                )}
               </button>
             ))}
         </div>

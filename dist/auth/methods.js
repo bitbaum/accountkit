@@ -71,6 +71,10 @@ export function productGithubApp(env, signIn) {
 export function oidcClients(env) {
     return [signinBroker(env), orangecatOidc(env)].filter((c) => c !== null);
 }
+/** ACCOUNTKIT_LIGHTNING=1 (or true) turns Lightning login on for a deployment. */
+export function lightningOn(env) {
+    return /^(1|true|on|yes)$/i.test(text(env.ACCOUNTKIT_LIGHTNING));
+}
 /**
  * The providers the shared sign-in publishes, read from the service itself
  * (<issuer>/api/providers) and kept per issuer for a minute. `signInMethods`
@@ -176,6 +180,7 @@ export function signInMethods(env, mailConfigured, options = {}) {
         signin: (names?.length ?? 0) > 0,
         signinProviders: names ?? [],
         orangecat: orangecatOidc(env) !== null,
+        lightning: lightningOn(env),
     };
 }
 /**

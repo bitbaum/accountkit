@@ -60,6 +60,8 @@ export declare function productGithubApp(env: Env, signIn: boolean | undefined):
     clientSecret: string;
 } | null;
 export declare function oidcClients(env: Env): OidcClient[];
+/** ACCOUNTKIT_LIGHTNING=1 (or true) turns Lightning login on for a deployment. */
+export declare function lightningOn(env: Env): boolean;
 export interface SignInMethods {
     /** Recovery needs a real sender; absent on older capability objects. */
     passwordReset?: boolean;
@@ -81,6 +83,12 @@ export interface SignInMethods {
      */
     signinProviders?: string[];
     orangecat: boolean;
+    /**
+     * Lightning login (LNURL-auth, ./lightning): the person's own wallet signs
+     * a one-time challenge. Free, no key, no third party. Opt-in per deployment
+     * with ACCOUNTKIT_LIGHTNING=1 until it is on everywhere.
+     */
+    lightning?: boolean;
 }
 /**
  * When a password account must have confirmed its address.

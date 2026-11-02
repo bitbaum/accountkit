@@ -65,6 +65,19 @@ export interface AuthLabels {
   codePrompt?: string;
   /** The button that signs in with that code. Optional, as codePrompt. */
   signInWithCode?: string;
+  /** Lightning login (./lightning). Optional; English when absent. */
+  lightning?: {
+    /** The button on the sign-in and sign-up cards. */
+    withLightning: string;
+    /** The method's name in the account panel ("Add {method}"). */
+    name: string;
+    prompt: string;
+    qr: string;
+    open: string;
+    expired: string;
+    retry: string;
+    taken: string;
+  };
   confirmInbox: string;
   back: string;
   totpPrompt: string;
@@ -153,6 +166,17 @@ export const DEFAULT_AUTH_LABELS: AuthLabels = {
   codePrompt:
     "On another device? Type the 6-digit code from the same email here.",
   signInWithCode: "Sign in with the code",
+  lightning: {
+    withLightning: "Sign in with a Lightning wallet",
+    name: "Lightning wallet",
+    prompt:
+      "Scan this with your Lightning wallet, or open it in a wallet on this device. Nothing is paid.",
+    qr: "QR code for your Lightning wallet",
+    open: "Open in my wallet",
+    expired: "This code has expired.",
+    retry: "Show a new code",
+    taken: "This wallet already signs in to another account.",
+  },
   confirmInbox:
     "We sent a link to {email}. Open it to confirm your address and finish creating your account.",
   back: "Back",

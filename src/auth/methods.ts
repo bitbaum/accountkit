@@ -130,6 +130,11 @@ export function oidcClients(env: Env): OidcClient[] {
   );
 }
 
+/** ACCOUNTKIT_LIGHTNING=1 (or true) turns Lightning login on for a deployment. */
+export function lightningOn(env: Env): boolean {
+  return /^(1|true|on|yes)$/i.test(text(env.ACCOUNTKIT_LIGHTNING));
+}
+
 export interface SignInMethods {
   /** Recovery needs a real sender; absent on older capability objects. */
   passwordReset?: boolean;
@@ -151,6 +156,12 @@ export interface SignInMethods {
    */
   signinProviders?: string[];
   orangecat: boolean;
+  /**
+   * Lightning login (LNURL-auth, ./lightning): the person's own wallet signs
+   * a one-time challenge. Free, no key, no third party. Opt-in per deployment
+   * with ACCOUNTKIT_LIGHTNING=1 until it is on everywhere.
+   */
+  lightning?: boolean;
 }
 
 /**
@@ -296,6 +307,7 @@ export function signInMethods(
     signin: (names?.length ?? 0) > 0,
     signinProviders: names ?? [],
     orangecat: orangecatOidc(env) !== null,
+    lightning: lightningOn(env),
   };
 }
 

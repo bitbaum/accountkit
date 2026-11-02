@@ -17,6 +17,8 @@ const adapterMode = query.has("adapter");
 const wordsLocale = query.get("words");
 // ?code: the sign-in link step with the code from the same email.
 const codeMode = query.has("code");
+// ?lightning: Lightning login, the wallet answering on the second poll.
+const lightningMode = query.has("lightning");
 
 // An Auth.js product has no Better Auth client: it passes the two recovery
 // calls only. The first call of each kind fails like a dropped connection.
@@ -154,6 +156,47 @@ mount(
   />,
 );
 
+let polls = 0;
+const lightningClient = {
+  signIn: {},
+  lightning: {
+    start: async () => ({
+      data: {
+        k1: "00".repeat(32),
+        // LUD-01's example: any LNURL draws the same way.
+        lnurl:
+          "LNURL1DP68GURN8GHJ7UM9WFMXJCM99E3K7MF0V9CXJ0M385EKVCENXC6R2C35XVUKXEFCV5MKVV34X5EKZD3EV56NYD3HXQURZEPEXEJXXEPNXSCRVWFNV9NXZCN9XQ6XYEFHVGCXXCMYXYMNSERXFQ5FNS",
+      },
+    }),
+    signIn: async () => ({
+      data: { status: ++polls >= 2 ? "signed-in" : "pending" },
+    }),
+    link: async () => ({ data: { status: "pending" } }),
+  },
+} as unknown as AuthClientLike;
+
+mount(
+  "auth-lightning",
+  <SignInForm
+    client={lightningClient}
+    labels={authLabelsFor(query.get("lightning") || "en")}
+    methods={{
+      password: true,
+      passkey: false,
+      twoFactor: false,
+      magicLink: false,
+      verifyEmail: false,
+      signin: false,
+      orangecat: false,
+      passwordReset: false,
+      lightning: true,
+    }}
+    signInPath="/demo/index.html"
+    next="#signed-in"
+    signUpLink={<a href="#signup">Create an account</a>}
+  />,
+);
+
 const groups = [
   {
     id: "nav",
@@ -169,8 +212,10 @@ function mount(id: string, node: React.ReactNode) {
   if (
     (id === "auth-words" && wordsLocale === null) ||
     (id === "auth-code" && !codeMode) ||
+    (id === "auth-lightning" && !lightningMode) ||
     (id === "auth-recovery-adapter" && !adapterMode) ||
-    (id === "auth-recovery" && (signupMode || adapterMode || codeMode)) ||
+    (id === "auth-recovery" &&
+      (signupMode || adapterMode || codeMode || lightningMode)) ||
     (id === "auth-signup" && (!signupMode || adapterMode))
   )
     return;

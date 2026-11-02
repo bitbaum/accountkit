@@ -42,6 +42,11 @@ const CREDENTIAL_PREFIXES = [
   "/passkey/verify-authentication",
   "/passkey/generate-authenticate-options",
   "/magic-link/verify",
+  // Lightning login: minting a challenge and a wallet's signature. Claiming
+  // (/sign-in/lightning, /lightning/link) is polled by the page and bound to
+  // the browser's own cookie, so it spends the ordinary bucket.
+  "/lightning/start",
+  "/lightning/callback",
   "/delete-user",
 ];
 

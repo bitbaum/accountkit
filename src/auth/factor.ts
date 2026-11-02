@@ -53,6 +53,7 @@ export function factorForAllMethods(site: {
           matcher: ({ path }) =>
             path === "/magic-link/verify" ||
             path === "/sign-in/email-otp" ||
+            path === "/sign-in/lightning" ||
             path === "/verify-email" ||
             path === "/passkey/verify-authentication" ||
             /^\/(?:oauth2\/)?callback\/[^/]+$/.test(path ?? ""),
@@ -130,7 +131,8 @@ export function factorForAllMethods(site: {
             if (
               ctx.context.newSession ||
               ctx.path === "/passkey/verify-authentication" ||
-              ctx.path === "/sign-in/email-otp"
+              ctx.path === "/sign-in/email-otp" ||
+              ctx.path === "/sign-in/lightning"
             )
               return delegated.response;
             const state = await getOAuthState();
