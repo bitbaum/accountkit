@@ -37,6 +37,8 @@ export interface AuthRuntimeOptions {
     onAccountCreated?: CreateAuthOptions["onAccountCreated"];
     /** See CreateAuthOptions.onAccountDeleted. */
     onAccountDeleted?: CreateAuthOptions["onAccountDeleted"];
+    /** See CreateAuthOptions.githubScopes. */
+    githubScopes?: CreateAuthOptions["githubScopes"];
 }
 type SessionUser = {
     id: string;

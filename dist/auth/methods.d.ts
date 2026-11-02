@@ -20,6 +20,7 @@ type Env = Record<string, string | undefined>;
 export declare const SIGNIN_PROVIDER_ID = "bitbaum-signin";
 export declare const ORANGECAT_PROVIDER_ID = "orangecat";
 export declare const ORANGECAT_DEFAULT_ISSUER = "https://orangecat.ch";
+export declare const GITHUB_PROVIDER_ID = "github";
 export type OidcProviderId = typeof SIGNIN_PROVIDER_ID | typeof ORANGECAT_PROVIDER_ID;
 export interface OidcClient {
     providerId: OidcProviderId;
@@ -38,6 +39,18 @@ export declare function usableIssuer(value: string): string | null;
 export declare function signinBroker(env: Env): OidcClient | null;
 /** OrangeCat, under the env names every fleet app already uses. */
 export declare function orangecatOidc(env: Env): OidcClient | null;
+/**
+ * A product's own registered GitHub OAuth app (GITHUB_CLIENT_ID and
+ * GITHUB_CLIENT_SECRET), for a product that had one before AccountKit and
+ * keeps its callback, <site>/api/auth/callback/github. It brings that
+ * product's GitHub sign-in, and the repository grant it acts with, across
+ * unchanged. A product without its own app reaches GitHub through the bitbaum
+ * sign-in instead. Both variables, or nothing.
+ */
+export declare function productGithubApp(env: Env): {
+    clientId: string;
+    clientSecret: string;
+} | null;
 export declare function oidcClients(env: Env): OidcClient[];
 export interface SignInMethods {
     /** Recovery needs a real sender; absent on older capability objects. */

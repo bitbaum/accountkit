@@ -13,6 +13,7 @@ import { genericOAuth, magicLink } from "better-auth/plugins";
 import type { GenericOAuthConfig } from "better-auth/plugins";
 import {
   oidcClients,
+  productGithubApp,
   placeholderEmail,
   signInMethods,
   type EmailConfirmation,
@@ -157,6 +158,12 @@ export interface CreateAuthOptions {
    * new person reaches this hook however they came in.
    */
   onAccountCreated?: (account: CreatedAccount) => Promise<void>;
+  /**
+   * Extra GitHub scopes for a product's own GitHub app (see productGithubApp),
+   * beyond the identity ones: Loki asks for `repo` and `workflow`, which it
+   * acts with. The token reaches onAccountCreated, never AccountKit's table.
+   */
+  githubScopes?: string[];
   /**
    * Called once a person's account is gone (AccountKit's account panel, or
    * any other path that deletes the user), so the product removes or
@@ -313,6 +320,7 @@ export function createAuthInstance(options: CreateAuthOptions): Auth {
     emailConfirmation: options.emailConfirmation,
   });
   const providers = oidcClients(env).map(oidcProvider);
+  const github = productGithubApp(env);
   const origin = new URL(site.url);
   const schema = options.schema ?? authSchema;
   const legacyPasswords = options.legacyBcrypt
@@ -382,6 +390,17 @@ export function createAuthInstance(options: CreateAuthOptions): Auth {
       deleteUser: { enabled: true },
       changeEmail: { enabled: mail.configured },
     },
+    ...(github
+      ? {
+          socialProviders: {
+            github: {
+              clientId: github.clientId,
+              clientSecret: github.clientSecret,
+              scope: options.githubScopes ?? [],
+            },
+          },
+        }
+      : {}),
     account: {
       accountLinking: {
         enabled: true,

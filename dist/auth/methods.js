@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 export const SIGNIN_PROVIDER_ID = "bitbaum-signin";
 export const ORANGECAT_PROVIDER_ID = "orangecat";
 export const ORANGECAT_DEFAULT_ISSUER = "https://orangecat.ch";
+export const GITHUB_PROVIDER_ID = "github";
 const text = (value) => value?.trim() || "";
 /**
  * An issuer we are willing to send people to: https, or http on localhost for
@@ -46,6 +47,19 @@ export function signinBroker(env) {
 /** OrangeCat, under the env names every fleet app already uses. */
 export function orangecatOidc(env) {
     return oidcClient(ORANGECAT_PROVIDER_ID, text(env.ORANGECAT_OAUTH_ISSUER) || ORANGECAT_DEFAULT_ISSUER, text(env.ORANGECAT_OAUTH_CLIENT_ID), text(env.ORANGECAT_OAUTH_CLIENT_SECRET));
+}
+/**
+ * A product's own registered GitHub OAuth app (GITHUB_CLIENT_ID and
+ * GITHUB_CLIENT_SECRET), for a product that had one before AccountKit and
+ * keeps its callback, <site>/api/auth/callback/github. It brings that
+ * product's GitHub sign-in, and the repository grant it acts with, across
+ * unchanged. A product without its own app reaches GitHub through the bitbaum
+ * sign-in instead. Both variables, or nothing.
+ */
+export function productGithubApp(env) {
+    const clientId = text(env.GITHUB_CLIENT_ID);
+    const clientSecret = text(env.GITHUB_CLIENT_SECRET);
+    return clientId && clientSecret ? { clientId, clientSecret } : null;
 }
 export function oidcClients(env) {
     return [signinBroker(env), orangecatOidc(env)].filter((c) => c !== null);

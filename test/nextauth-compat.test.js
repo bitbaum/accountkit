@@ -458,6 +458,116 @@ test("an OrangeCat sign-in round-trips through next-auth/react's protocol; a cro
   }
 });
 
+test("a product's own GitHub app signs in through next-auth/react's protocol, with its repository grant handed to the product", async () => {
+  const pg = new PGlite();
+  const realFetch = globalThis.fetch;
+  let authorization;
+  globalThis.fetch = async (input, init) => {
+    const url = new URL(input instanceof Request ? input.url : String(input));
+    if (url.href.startsWith("https://github.com/login/oauth/access_token")) {
+      const body = new URLSearchParams(
+        init?.body ?? (input instanceof Request ? await input.text() : ""),
+      );
+      assert.equal(body.get("client_id"), "gh-client");
+      assert.equal(
+        body.get("redirect_uri"),
+        authorization.searchParams.get("redirect_uri"),
+      );
+      return Response.json({
+        access_token: "gh-token",
+        token_type: "bearer",
+        scope: "read:user,user:email,repo,workflow",
+      });
+    }
+    if (url.href === "https://api.github.com/user")
+      return Response.json({
+        id: 4242,
+        login: "octo",
+        name: "Octo",
+        email: null,
+      });
+    if (url.href === "https://api.github.com/user/emails")
+      return Response.json([
+        { email: "octo@example.test", primary: true, verified: true },
+      ]);
+    return realFetch(input, init);
+  };
+  try {
+    const tables = createAuthTables("auth_");
+    const db = drizzle(pg, { schema: tables });
+    await (await pushSchema(tables, db)).apply();
+    const env = {
+      NODE_ENV: "production",
+      BETTER_AUTH_SECRET: "synthetic-compat-runtime-secret-at-least-32-chars",
+      GITHUB_CLIENT_ID: "gh-client",
+      GITHUB_CLIENT_SECRET: "gh-secret",
+    };
+    const created = [];
+    const runtime = createAuthRuntime({
+      site: { url: SITE, title: "Compat", slug: "compat" },
+      mail: { configured: false, send: async () => {} },
+      env,
+      isDatabaseConfigured: () => true,
+      getDatabase: () => db,
+      schema: tables,
+      githubScopes: ["repo", "workflow"],
+      onAccountCreated: async (account) => {
+        created.push(account);
+      },
+    });
+    const compat = createNextAuthCompat({
+      runtime,
+      siteUrl: () => SITE,
+      signInPath: "/login",
+      landing: "/",
+      env: () => env,
+      toSession: async (shared) => ({ user: { id: shared.user.id } }),
+      credentials: {},
+    });
+    const client = createCompatClient({ compat, site: SITE });
+    assert.deepEqual(Object.keys(compat.providers()), ["github"]);
+
+    const started = await client.call("/signin/github", {
+      csrfToken: "test",
+      callbackUrl: `${SITE}/projects`,
+    });
+    assert.equal(started.status, 200);
+    authorization = new URL((await started.json()).url);
+    assert.equal(authorization.origin, "https://github.com");
+    assert.equal(
+      authorization.searchParams.get("redirect_uri"),
+      `${SITE}/api/auth/callback/github`,
+      "the callback a product's GitHub app already has",
+    );
+    const scopes = authorization.searchParams.get("scope").split(" ");
+    for (const scope of ["read:user", "user:email", "repo", "workflow"]) {
+      assert.ok(scopes.includes(scope), `asks for ${scope}`);
+    }
+    const back = new URL(`${SITE}/api/auth/callback/github`);
+    back.searchParams.set("code", "gh-code");
+    back.searchParams.set("state", authorization.searchParams.get("state"));
+    const landed = await client.call(
+      back.pathname.replace(/^\/api\/auth/, "") + back.search,
+    );
+    assert.equal(landed.status, 302);
+    assert.equal(landed.headers.get("location"), `${SITE}/projects`);
+    assert.ok((await client.session())?.user?.id, "signed in");
+    const { rows } = await pg.query(
+      `SELECT account_id, access_token FROM auth_accounts WHERE provider_id = 'github'`,
+    );
+    assert.deepEqual(
+      rows.map((row) => [row.account_id, row.access_token]),
+      [["4242", null]],
+      "AccountKit records who, never the token",
+    );
+    assert.equal(created[0].tokens.accessToken, "gh-token");
+    assert.match(created[0].tokens.scope, /repo/);
+  } finally {
+    globalThis.fetch = realFetch;
+    await pg.close();
+  }
+});
+
 test("sameOriginPath keeps only same-origin paths", () => {
   assert.equal(sameOriginPath(`${SITE}/a?b=1`, SITE, "/"), "/a?b=1");
   assert.equal(sameOriginPath("/relative", SITE, "/"), "/relative");

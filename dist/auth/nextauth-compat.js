@@ -1,5 +1,5 @@
 import * as React from "react";
-import { oidcClients } from "./methods.js";
+import { GITHUB_PROVIDER_ID, oidcClients, productGithubApp, } from "./methods.js";
 const OPEN_PATHS = new Set([
     "/get-session",
     "/sign-in/email",
@@ -104,13 +104,19 @@ export function createNextAuthCompat(options) {
         for (const client of oidcClients(env())) {
             list[client.providerId] = entry(client.providerId, client.providerId === "orangecat" ? "OrangeCat" : "bitbaum", "oidc");
         }
+        if (productGithubApp(env())) {
+            list[GITHUB_PROVIDER_ID] = entry(GITHUB_PROVIDER_ID, "GitHub", "oauth");
+        }
         for (const [id, provider] of Object.entries(options.credentials)) {
             list[id] = entry(id, provider.name, "credentials");
         }
         return list;
     }
     function oidcProviderIds() {
-        return new Set(oidcClients(env()).map((client) => client.providerId));
+        const ids = oidcClients(env()).map((client) => client.providerId);
+        if (productGithubApp(env()))
+            ids.push(GITHUB_PROVIDER_ID);
+        return new Set(ids);
     }
     /**
      * Start an OIDC round-trip: a sign-in, or — for a person already signed in
