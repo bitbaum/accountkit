@@ -31,8 +31,8 @@ importers:
         specifier: ^1.7.10
         version: 1.7.14(@better-auth/core@1.7.14(@better-auth/utils@0.5.1)(@better-fetch/fetch@1.3.3)(better-call@1.4.4(zod@4.6.7))(jose@6.2.12)(kysely@0.29.6)(nanostores@1.5.5))(@better-auth/utils@0.5.1)(@better-fetch/fetch@1.3.3)(better-auth@1.7.14(drizzle-kit@0.31.11)(drizzle-orm@0.45.4(@electric-sql/pglite@0.5.13)(@types/pg@8.23.1)(kysely@0.29.6)(pg@8.23.1))(next@16.4.3(@types/node@26.6.6)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(pg@8.23.1)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(better-call@1.4.4(zod@4.6.7))(nanostores@1.5.5)
       '@bitbaum/design-tokens':
-        specifier: ^1.4.0
-        version: 1.4.0
+        specifier: github:bitbaum/design-tokens#07a4380e8cf076db3906732a7aa39aaee8d47ccb
+        version: https://codeload.github.com/bitbaum/design-tokens/tar.gz/07a4380e8cf076db3906732a7aa39aaee8d47ccb
       '@bitbaum/mail-kit':
         specifier: 0.2.0
         version: 0.2.0
@@ -202,8 +202,9 @@ packages:
   '@better-fetch/fetch@1.3.3':
     resolution: {integrity: sha512-U6SlDt/GUWtK2JAxS/NhdoYTEim+EL1G5byz2TUj83KjLZBUpYzb5SmX0aXaCnbGkAjFKnV/o/0+cyXMbEcqqg==}
 
-  '@bitbaum/design-tokens@1.4.0':
-    resolution: {integrity: sha512-ltw8j2Q1GM78O7Y+YxGRAVOrvAtLPwL9LR+F1u1uX7PIuYFNaqGDW4XRe3yL+f7aGcAgGVGuWV7OxHRuFkKRKg==}
+  '@bitbaum/design-tokens@https://codeload.github.com/bitbaum/design-tokens/tar.gz/07a4380e8cf076db3906732a7aa39aaee8d47ccb':
+    resolution: {gitHosted: true, integrity: sha512-rKas3yKyHBIa0mGNQj9rSDl1pVD4OVc1NoHav4mGYTZgf3YO0flfLPxyjJ6yCpAPMfhWEXtD0B3OyNHMvK/zTg==, tarball: https://codeload.github.com/bitbaum/design-tokens/tar.gz/07a4380e8cf076db3906732a7aa39aaee8d47ccb}
+    version: 1.5.0
     engines: {node: '>=20'}
     hasBin: true
 
@@ -1924,7 +1925,7 @@ snapshots:
 
   '@better-fetch/fetch@1.3.3': {}
 
-  '@bitbaum/design-tokens@1.4.0': {}
+  '@bitbaum/design-tokens@https://codeload.github.com/bitbaum/design-tokens/tar.gz/07a4380e8cf076db3906732a7aa39aaee8d47ccb': {}
 
   '@bitbaum/mail-kit@0.2.0': {}
 
