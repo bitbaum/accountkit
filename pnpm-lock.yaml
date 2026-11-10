@@ -34,8 +34,8 @@ importers:
         specifier: ^1.5.2
         version: 1.5.2
       '@bitbaum/mail-kit':
-        specifier: 0.2.0
-        version: 0.2.0
+        specifier: 0.3.0
+        version: 0.3.0
       '@electric-sql/pglite':
         specifier: ^0.5.10
         version: 0.5.15
@@ -207,8 +207,8 @@ packages:
     engines: {node: '>=20'}
     hasBin: true
 
-  '@bitbaum/mail-kit@0.2.0':
-    resolution: {integrity: sha512-YkgMFRQ6HuzIB0q/Ao4FB4zb/YxVc0iKyVdRkFe2psJ4CQJvGxBfDlURomZMkgQfpBQox4QiT/iN9IGRz6SeTg==}
+  '@bitbaum/mail-kit@0.3.0':
+    resolution: {integrity: sha512-ULeLkCY7m9gN1TduT4x3a6PV5MI9oyHJvh0ZKJoUEBI05xVXdvssHGcIDOrXFpCFFB5s2sXBYXuDQFZgYacfPA==}
     engines: {node: '>=20'}
 
   '@cacheable/memory@2.2.0':
@@ -1926,7 +1926,7 @@ snapshots:
 
   '@bitbaum/design-tokens@1.5.2': {}
 
-  '@bitbaum/mail-kit@0.2.0': {}
+  '@bitbaum/mail-kit@0.3.0': {}
 
   '@cacheable/memory@2.2.0':
     dependencies:
