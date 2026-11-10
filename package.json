@@ -120,7 +120,7 @@
   },
   "peerDependencies": {
     "@better-auth/passkey": "^1.7.10",
-    "@bitbaum/mail-kit": "^0.2.0",
+    "@bitbaum/mail-kit": "^0.2.0 || ^0.3.0 || ^0.4.0",
     "better-auth": "^1.7.10",
     "drizzle-orm": "^0.45.4",
     "next": "^16.4.0",

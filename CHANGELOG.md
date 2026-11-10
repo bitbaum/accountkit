@@ -6,6 +6,12 @@ records, not claims that this file existed at release time.
 
 ## Unreleased
 
+- The optional `@bitbaum/mail-kit` peer accepts 0.3 and 0.4 as well as 0.2.
+  Both added only new exports (`renderMail`, unsubscribe signing, the SMTP
+  transport); the three AccountKit calls (`conventionalFrom`,
+  `isMailConfigured`, `sendMail`) are unchanged, and AccountKit's own tests
+  already run against 0.3.0. Apps on mail-kit 0.3 or 0.4 no longer get a
+  peer conflict.
 - Screens for a product's own codes (#67). `SignInForm` takes `codeDoor`: a
   quiet button opens one field in the product's words (AOZ: "Zugangscode"),
   sent to the server's `/sign-in/domain` (`domainCredentials`). A personal
