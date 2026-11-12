@@ -198,6 +198,31 @@ try {
       !(await panel.innerText()).includes("x@y.z"),
       "another account's email is never shown",
     );
+    const dot = sw.locator("#switching .acct-trigger-dot");
+    const dotBox = await dot.boundingBox();
+    const trigBox = await trigger.boundingBox();
+    check(
+      dotBox &&
+        trigBox &&
+        dotBox.width >= 8 &&
+        dotBox.x + dotBox.width <= trigBox.x + trigBox.width + 1 &&
+        dotBox.y >= trigBox.y - 1,
+      "a dot on the trigger says something waits in another account, unclipped",
+    );
+    const counts = await sw.locator("#switching .acct-waiting").allInnerTexts();
+    check(
+      counts.join(",") === "3,99+",
+      `each account shows its count, capped (${counts.join(",")})`,
+    );
+    const countBoxes = await sw
+      .locator("#switching .acct-waiting")
+      .evaluateAll((els) => els.map((e) => e.getBoundingClientRect().right));
+    const panelRight =
+      (await panel.boundingBox()).x + (await panel.boundingBox()).width;
+    check(
+      countBoxes.every((r) => r <= panelRight),
+      "a count stays inside the panel beside a long name",
+    );
     check(
       (await accounts.nth(2).locator(".acct-glyph").count()) === 1 &&
         (await accounts.nth(2).locator(".acct-account-line").count()) === 0,

@@ -205,7 +205,41 @@
 .acct-account-text {
   display: flex;
   flex-direction: column;
+  /* Takes the row, so a count sits at its end and a long name truncates
+     before it instead of pushing it off. */
+  flex: 1 1 auto;
   min-inline-size: 0;
+}
+/*
+ * Something waits in another account. The count sits at the end of its row;
+ * the dot on the trigger says so before the menu is opened. Both are the text
+ * colour, inverted: the strongest contrast the menu has, and not the accent,
+ * which the fleet keeps for Bitcoin and for the action that brings someone in.
+ */
+.acct-waiting {
+  flex-shrink: 0;
+  min-inline-size: 1.375rem;
+  padding: 0.0625rem 0.375rem;
+  border-radius: 999px;
+  background: var(--acct-fg);
+  color: var(--acct-panel);
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.25rem;
+  text-align: center;
+  box-sizing: border-box;
+}
+.acct-trigger-dot {
+  position: absolute;
+  pointer-events: none;
+  inset-block-start: 0;
+  inset-inline-end: 0;
+  inline-size: 0.625rem;
+  block-size: 0.625rem;
+  border: 2px solid var(--acct-panel);
+  border-radius: 999px;
+  background: var(--acct-fg);
+  box-sizing: border-box;
 }
 .acct-account-name,
 .acct-account-line {

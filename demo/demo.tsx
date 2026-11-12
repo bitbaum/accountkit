@@ -368,10 +368,12 @@ mount(
       {
         id: "main",
         note: "Main account",
+        waiting: 3,
         user: { name: "George Botsmann", handle: "cato", email: "x@y.z" },
       },
       {
         id: "failing",
+        waiting: 250,
         user: {
           name: "Ricardo Reis de Almeida e Vasconcelos",
           handle: "a_very_long_handle_indeed_1234567890",

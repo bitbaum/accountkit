@@ -51,6 +51,13 @@ export type AccountSwitchTarget = {
    * Leads the second line, so it is what survives a long handle.
    */
   note?: string;
+  /**
+   * How many things wait for the person in this account (unread messages,
+   * notifications). Shown as a count on its row, and as a dot on the trigger
+   * so it is known without opening the menu. Zero, absent or not a positive
+   * number: nothing is shown.
+   */
+  waiting?: number;
 };
 
 export type AccountMenuLabels = {
@@ -64,6 +71,10 @@ export type AccountMenuLabels = {
   switchAccount: string;
   switching: string;
   switchFailed: string;
+  /** Read out for an account's count; "{count}" is replaced. */
+  waiting: string;
+  /** Added to the trigger's name when another account has something waiting. */
+  waitingElsewhere: string;
 };
 
 const DEFAULT_LABELS: AccountMenuLabels = {
@@ -75,6 +86,8 @@ const DEFAULT_LABELS: AccountMenuLabels = {
   switchAccount: "Switch account",
   switching: "Switching…",
   switchFailed: "The switch did not complete. Try again.",
+  waiting: "{count} waiting",
+  waitingElsewhere: "something is waiting in another account",
 };
 
 export type RenderLinkProps = {
@@ -159,6 +172,19 @@ function switchLineFor(target: AccountSwitchTarget): string | null {
     handle && displayNameFor(target.user) !== `@${handle}` ? `@${handle}` : "";
   const parts = [target.note?.trim(), shownHandle].filter(Boolean);
   return parts.length > 0 ? parts.join(" · ") : null;
+}
+
+/** A whole positive count, or 0 for anything else an app might pass. */
+function waitingCount(target: AccountSwitchTarget): number {
+  const n = target.waiting;
+  return typeof n === "number" && Number.isFinite(n) && n >= 1
+    ? Math.floor(n)
+    : 0;
+}
+
+/** What the count shows: the number, capped so the row never grows with it. */
+function waitingText(count: number): string {
+  return count > 99 ? "99+" : String(count);
 }
 
 /** The small face on an account row: photo, else initials, else a glyph. */
@@ -340,6 +366,8 @@ export function AccountMenu({
   }
 
   const switchable = onSwitchAccount ? accounts : [];
+  const waitingElsewhere = switchable.some((t) => waitingCount(t) > 0);
+  const triggerName = labels.trigger.replace("{name}", name);
 
   return (
     <div
@@ -354,7 +382,11 @@ export function AccountMenu({
         aria-haspopup="menu"
         aria-expanded={open}
         aria-controls={open ? panelId : undefined}
-        aria-label={labels.trigger.replace("{name}", name)}
+        aria-label={
+          waitingElsewhere
+            ? `${triggerName}, ${labels.waitingElsewhere}`
+            : triggerName
+        }
         title={name}
         onClick={() => {
           setOpen((v) => !v);
@@ -378,6 +410,11 @@ export function AccountMenu({
           <PersonGlyph />
         )}
       </button>
+      {/* Beside the trigger, not in it: the trigger clips to keep a photo
+          round, and would clip the dot with it. */}
+      {waitingElsewhere && (
+        <span className="acct-trigger-dot" aria-hidden="true" />
+      )}
 
       {open && (
         <div
@@ -425,6 +462,17 @@ export function AccountMenu({
                         <span className="acct-account-line">{line}</span>
                       )}
                     </span>
+                    {waitingCount(target) > 0 && (
+                      <span
+                        className="acct-waiting"
+                        aria-label={labels.waiting.replace(
+                          "{count}",
+                          String(waitingCount(target)),
+                        )}
+                      >
+                        {waitingText(waitingCount(target))}
+                      </span>
+                    )}
                   </button>
                 );
               })}

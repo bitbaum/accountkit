@@ -142,3 +142,48 @@ test("the stylesheet keeps an account row to one line each for name and handle",
   );
   assert.match(css, /\.acct-account-text\s*\{[^}]*min-inline-size:\s*0/);
 });
+
+test("something waiting in another account is said on the trigger, before it is opened", () => {
+  const html = renderToStaticMarkup(
+    h(AccountMenu, {
+      user: { name: "Cato" },
+      onSignOut: noop,
+      accounts: [
+        { id: "a", user: { name: "Alberto Caeiro" }, waiting: 2 },
+        { id: "b", user: { name: "Ricardo Reis" } },
+      ],
+      onSwitchAccount: noop,
+    }),
+  );
+  assert.match(html, /class="acct-trigger-dot"/);
+  assert.match(
+    html,
+    /aria-label="Account: Cato, something is waiting in another account"/,
+  );
+});
+
+test("nothing waiting, or a count that is not one, shows no dot", () => {
+  for (const waiting of [undefined, 0, -3, Number.NaN, 0.4]) {
+    const html = renderToStaticMarkup(
+      h(AccountMenu, {
+        user: { name: "Cato" },
+        onSignOut: noop,
+        accounts: [{ id: "a", user: { name: "Alberto Caeiro" }, waiting }],
+        onSwitchAccount: noop,
+      }),
+    );
+    assert.ok(!/acct-trigger-dot/.test(html), `no dot for ${waiting}`);
+    assert.match(html, /aria-label="Account: Cato"/);
+  }
+});
+
+test("a count without a way to switch shows nothing: there is nowhere to go", () => {
+  const html = renderToStaticMarkup(
+    h(AccountMenu, {
+      user: { name: "Cato" },
+      onSignOut: noop,
+      accounts: [{ id: "a", user: { name: "Alberto Caeiro" }, waiting: 5 }],
+    }),
+  );
+  assert.ok(!/acct-trigger-dot/.test(html));
+});
