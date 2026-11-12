@@ -178,7 +178,13 @@ export interface CodeDoor {
     /** Open the code first, for a product whose people mostly hold one. */
     first?: boolean;
 }
-/** "Continue with …" for each OIDC method this deployment has switched on. */
+/**
+ * "Continue with …" for each OIDC method this deployment has switched on.
+ * OrangeCat, the fleet's own account, comes first; the shared sign-in
+ * ("Continue with Google or GitHub") follows it. In the other order the
+ * shared button read as a heading over the OrangeCat one (BiasLens sign-in,
+ * 2026-11-12).
+ */
 export declare function OidcButtons({ client, methods, labels, classes, callbackURL, errorCallbackURL, onError, locale, }: Common & {
     callbackURL: string;
     errorCallbackURL: string;

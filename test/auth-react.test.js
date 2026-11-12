@@ -74,6 +74,24 @@ test("sign-in offers exactly the switched-on methods", () => {
   assert.ok(bare.includes('type="password"'));
 });
 
+test("OrangeCat comes before the shared sign-in, so neither reads as the other's heading", () => {
+  const html = text(
+    renderToString(
+      h(SignInForm, {
+        client,
+        methods: all,
+        next: "/a",
+        signInPath: "/s",
+        signUpLink: "x",
+      }),
+    ),
+  );
+  const orangecat = html.indexOf(DEFAULT_AUTH_LABELS.withOrangecat);
+  const shared = html.indexOf(DEFAULT_AUTH_LABELS.withSignin);
+  assert.ok(orangecat >= 0 && shared >= 0);
+  assert.ok(orangecat < shared, "OrangeCat first");
+});
+
 test("the product's own words and classes are used", () => {
   const labels = {
     ...DEFAULT_AUTH_LABELS,

@@ -99,18 +99,24 @@ function CodeSignIn({ client, door, labels, classes: c, onDone, onBack, initialC
             void submit(code);
         }, className: c.stack, children: [_jsxs("div", { className: c.field, children: [_jsx("label", { htmlFor: "acct-domain-code", className: c.label, children: door.label }), _jsx("input", { id: "acct-domain-code", className: c.input, autoComplete: "off", autoCapitalize: door.uppercase ? "characters" : undefined, spellCheck: false, placeholder: door.placeholder, value: code, onChange: (e) => setCode(door.uppercase ? e.target.value.toUpperCase() : e.target.value), required: true }), door.hint && _jsx("p", { className: c.hint, children: door.hint })] }), _jsx(ErrorLine, { message: error, className: c.error }), _jsx("button", { type: "submit", className: c.button, disabled: busy, children: unbroken(labels.signIn) }), _jsx("button", { type: "button", className: c.buttonQuiet, onClick: onBack, disabled: busy, children: unbroken(w.useEmail) })] }));
 }
-/** "Continue with …" for each OIDC method this deployment has switched on. */
+/**
+ * "Continue with …" for each OIDC method this deployment has switched on.
+ * OrangeCat, the fleet's own account, comes first; the shared sign-in
+ * ("Continue with Google or GitHub") follows it. In the other order the
+ * shared button read as a heading over the OrangeCat one (BiasLens sign-in,
+ * 2026-11-12).
+ */
 export function OidcButtons({ client, methods, labels = DEFAULT_AUTH_LABELS, classes, callbackURL, errorCallbackURL, onError, locale, }) {
     const c = merge(classes);
     const [busy, setBusy] = useState(null);
     const providers = [
+        methods.orangecat ? { id: "orangecat", label: labels.withOrangecat } : null,
         methods.signin
             ? {
                 id: "bitbaum-signin",
                 label: signinButtonLabel(labels, methods.signinProviders),
             }
             : null,
-        methods.orangecat ? { id: "orangecat", label: labels.withOrangecat } : null,
         methods.github
             ? {
                 id: "github",

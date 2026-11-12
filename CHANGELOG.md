@@ -6,6 +6,16 @@ records, not claims that this file existed at release time.
 
 ## Unreleased
 
+### 2026-11-12: OrangeCat first among the "Continue with …" buttons
+
+- Fix: on a product with both OrangeCat and the shared sign-in switched on,
+  "Continue with Google or GitHub" stood directly above "Continue with
+  OrangeCat", and read as that button's heading (found on BiasLens's sign-in
+  at 1920px, 2026-11-12). `OidcButtons` now lists OrangeCat, the fleet's own
+  account, first, then the shared sign-in, then a product's own GitHub app.
+  The render test fails on the old order. Nothing else about the buttons,
+  their words or their classes changes.
+
 ### 2026-11-12: AccountControl, fetchAccountSummary, the panel kept on screen
 
 These entries are this change alone; the ones under "Earlier unreleased
