@@ -25,6 +25,17 @@
         padding: 12px 16px;
         border-bottom: 1px solid hsl(var(--border-subtle, 0 0% 90%));
       }
+      /* A 44px control beside the account trigger, as a header's menu
+         button sits. */
+      .demo-control {
+        inline-size: 44px;
+        block-size: 44px;
+        flex-shrink: 0;
+        border: 1px solid hsl(var(--border-subtle, 0 0% 90%));
+        border-radius: 8px;
+        background: transparent;
+        color: inherit;
+      }
       h2 {
         margin: 0 auto 0 0;
         font-size: 14px;
@@ -49,6 +60,32 @@
     <header>
       <h2>Other accounts to switch to</h2>
       <div id="switching"></div>
+    </header>
+    <header>
+      <h2>Followed by a control, end</h2>
+      <div id="row-followed-end"></div>
+      <button type="button" class="demo-control" aria-label="Menu">≡</button>
+    </header>
+    <header>
+      <h2>Followed by a control, start</h2>
+      <div id="row-followed-start"></div>
+      <button type="button" class="demo-control" aria-label="Menu">≡</button>
+    </header>
+    <header>
+      <h2>Preceded by a control, end</h2>
+      <button type="button" class="demo-control" aria-label="Search">⌕</button>
+      <div id="row-preceded-end"></div>
+    </header>
+    <header>
+      <h2>Preceded by a control, start</h2>
+      <button type="button" class="demo-control" aria-label="Search">⌕</button>
+      <div id="row-preceded-start"></div>
+    </header>
+    <header>
+      <h2>Loading, signed out, signed in</h2>
+      <div id="control-loading"></div>
+      <div id="control-signed-out"></div>
+      <div id="control-signed-in"></div>
     </header>
     <div id="signin-error"></div>
     <main

@@ -1,6 +1,6 @@
 // The visual check: three menus as an app would mount them.
 import { createRoot } from "react-dom/client";
-import { AccountMenu, SignInError } from "../src/index.js";
+import { AccountControl, AccountMenu, SignInError } from "../src/index.js";
 import {
   PasswordRecoveryForm,
   SignInForm,
@@ -385,6 +385,50 @@ mount(
       if (id === "failing") return Promise.reject(new Error("network"));
       document.body.dataset.switchedTo = id;
     }}
+    onSignOut={() => undefined}
+  />,
+);
+
+// The trigger is not always the last control in its row: a header's menu
+// button may follow it, a search button may precede it. The panel must stay
+// on screen wherever it sits, aligned to either edge.
+for (const id of [
+  "row-followed-end",
+  "row-followed-start",
+  "row-preceded-end",
+  "row-preceded-start",
+]) {
+  mount(
+    id,
+    <AccountMenu
+      user={{ name: "George Botsmann", handle: "cato" }}
+      groups={groups}
+      align={id.endsWith("start") ? "start" : "end"}
+      onSignOut={() => undefined}
+    />,
+  );
+}
+
+// The three states of one control, side by side: same slot, same box.
+const signIn = { href: "/sign-in?from=%2F" };
+mount(
+  "control-loading",
+  <AccountControl
+    state="loading"
+    signIn={signIn}
+    onSignOut={() => undefined}
+  />,
+);
+mount(
+  "control-signed-out",
+  <AccountControl state={null} signIn={signIn} onSignOut={() => undefined} />,
+);
+mount(
+  "control-signed-in",
+  <AccountControl
+    state={{ name: "George Botsmann", handle: "cato" }}
+    signIn={signIn}
+    groups={groups}
     onSignOut={() => undefined}
   />,
 );

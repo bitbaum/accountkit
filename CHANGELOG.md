@@ -6,6 +6,69 @@ records, not claims that this file existed at release time.
 
 ## Unreleased
 
+### 2026-11-12: AccountControl, fetchAccountSummary, the panel kept on screen
+
+These entries are this change alone; the ones under "Earlier unreleased
+entries" below predate it (some of them shipped in 0.29.0).
+
+- Fix: the open `AccountMenu` panel ran off the screen when the trigger was
+  not the last control in its row. Found 2026-11-12 in Bitbaum's header,
+  where a menu button follows the trigger: at 390px the panel's left edge was
+  at -112px and its text was cut off. The panel was pinned to the trigger's
+  edge, which fits only when nothing follows it. The menu now measures the
+  open panel and, only if it crosses an edge, moves it back inside the screen
+  (`--acct-shift`); a panel that already fits is not moved, so a trigger that
+  is last looks exactly as before. The browser check opens four new demo rows
+  (a 44px control before or after the trigger, `align` end and start) at 320
+  and 390px, light and dark: the panel's left is at least 0, its right at most
+  the viewport, nothing scrolls sideways, and arrows, End and Escape still
+  work. It failed on the old stylesheet (left -54px at 320). It also checks
+  that a last trigger's panel still ends on the trigger's edge.
+- `AccountControl`: one header control for all three states, so a product
+  stops writing its own signed-out corner (Loki and Heidi each did).
+  `state="loading"` is an empty box the trigger's exact size, hidden from
+  assistive technology and not focusable, so nothing moves when the session
+  answer arrives; `state={null}` is one "Sign in" link (`.acct-signin`), the
+  trigger's height, to `signIn.href`; a person renders `AccountMenu`
+  unchanged. The link's text is `signIn.label`, else the new optional label
+  `signIn`, else "Sign in". `accountSignInHtml({ href, label })` returns the
+  same signed-out markup byte for byte, escaped, for a static page to print
+  without React. Render tests compare the two, check the escaping of hostile
+  input and that a `javascript:` href becomes `#`; the browser check measures
+  the loading box against the signed-in trigger and "Sign in" at 44px.
+- `fetchAccountSummary(url, { signal?, fetch? })`: reads a session held on
+  another origin. A GET with `credentials: "include"` and `cache: "no-store"`
+  that resolves the body when it is 2xx JSON with a boolean `signedIn`, and
+  `null` on a network or CORS failure, a non-2xx status, a body that is not
+  JSON or one without `signedIn`, or an injected `fetch` that resolves to
+  something that is not a response; the promise never rejects. No retries,
+  nothing stored. `timeoutMs` (default 8000; 0, less or `Infinity` turns it off) bounds
+  the whole read, body included, and is combined with the caller's `signal`
+  (`AbortSignal.any` where the runtime has it, by hand otherwise): whichever
+  fires first aborts the request and the promise resolves `null`, so a server
+  that stalls cannot leave a header loading for ever. Unit tests with an
+  injected fetch cover each case, the request's method, credentials and
+  cache, a fetch and a body that never settle, the default of 8000ms, the
+  caller's abort with a timeout armed, and the hand-made combination.
+- The open panel is placed again while it stays open when the header row
+  changes without a window resize: a `ResizeObserver` (where the runtime has
+  one) on the panel, the row the menu sits in (the nearest flex or grid
+  ancestor) and that row's controls, and a `MutationObserver` for controls
+  added to or removed from the row; both are disconnected when the menu
+  closes or unmounts. The browser check opens the menu in the "followed"
+  rows, then adds another 44px control after the trigger, and separately
+  widens the one already there, without resizing the window: the panel stays
+  inside 320 and 390px. Before, its left edge was at -47px at 320.
+- `returnPath` is exported from the browser-safe `.` entry too. It was only
+  reachable through `./orangecat`, which imports `node:crypto`, so a static
+  page could not use it. It is the same function; new tests check that
+  protocol-relative paths, backslashes, control characters and absolute URLs
+  fall back, and that no `node:` import reaches the `.` entry.
+- The browser check honours `CHROMIUM_PATH`, for a machine whose Chromium is
+  not the one this Playwright version downloads.
+
+### Earlier unreleased entries
+
 - `AccountMenu` shows what waits in another account. An account in
   `accounts` may carry `waiting`, a count (unread messages, notifications).
   It is shown at the end of that account's row, capped at 99+, and as a dot
