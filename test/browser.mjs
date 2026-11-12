@@ -169,6 +169,93 @@ try {
   await page.keyboard.press("Escape");
 
   // Broken photo falls back to initials.
+
+  // Other accounts: listed under who is signed in, reachable by keyboard,
+  // switching says so, and a failed switch keeps the menu open.
+  {
+    const sw = await browser.newPage({ viewport: { width: 390, height: 844 } });
+    await sw.goto(base);
+    const trigger = sw.locator("#switching .acct-trigger");
+    await trigger.waitFor();
+    await trigger.click();
+    const panel = sw.locator("#switching .acct-panel");
+    const accounts = sw.locator("#switching .acct-account");
+    check((await accounts.count()) === 3, "the other accounts are listed");
+    check(
+      (await sw.locator("#switching .acct-heading").innerText()) ===
+        "Switch account",
+      "under a heading that says what a tap does",
+    );
+    const firstLine = await accounts
+      .nth(0)
+      .locator(".acct-account-line")
+      .innerText();
+    check(
+      firstLine === "Main account · @cato",
+      `the note leads the second line ("${firstLine}")`,
+    );
+    check(
+      !(await panel.innerText()).includes("x@y.z"),
+      "another account's email is never shown",
+    );
+    check(
+      (await accounts.nth(2).locator(".acct-glyph").count()) === 1 &&
+        (await accounts.nth(2).locator(".acct-account-line").count()) === 0,
+      "no name and no photo: a glyph, and the handle is not said twice",
+    );
+    const heights = await accounts.evaluateAll((els) =>
+      els.map((e) => e.getBoundingClientRect().height),
+    );
+    check(
+      heights.every((h) => h >= 44),
+      `account rows are at least 44px (${heights.join(", ")})`,
+    );
+    const overflow = await sw.evaluate(
+      () => document.documentElement.scrollWidth - window.innerWidth,
+    );
+    const box = await panel.boundingBox();
+    check(
+      overflow <= 0 && box && box.x >= 0 && box.x + box.width <= 390,
+      `a long name and handle keep the panel on a 390px screen (${overflow}px)`,
+    );
+    for (const width of [320]) {
+      await sw.setViewportSize({ width, height: 700 });
+      const o = await sw.evaluate(
+        () => document.documentElement.scrollWidth - window.innerWidth,
+      );
+      const b = await panel.boundingBox();
+      check(
+        o <= 0 && b && b.x >= 0 && b.x + b.width <= width,
+        `and on a ${width}px screen (${o}px)`,
+      );
+    }
+    await sw.setViewportSize({ width: 390, height: 844 });
+
+    await sw.keyboard.press("Escape");
+    await trigger.focus();
+    await sw.keyboard.press("ArrowDown");
+    await sw.waitForTimeout(50);
+    const focused = await sw.evaluate(() =>
+      document.activeElement?.classList.contains("acct-account"),
+    );
+    check(focused, "ArrowDown lands on the first account: arrows reach them");
+
+    await accounts.nth(1).click();
+    const alert = sw.locator("#switching .acct-accounts .acct-error");
+    await alert.waitFor();
+    check(
+      (await alert.innerText()).includes("did not complete"),
+      "a switch that fails says so",
+    );
+    check(await panel.isVisible(), "and the menu stays open to try again");
+
+    await accounts.nth(0).click();
+    await sw.waitForFunction(() => document.body.dataset.switchedTo === "main");
+    check(true, "a tap calls the app's switch with that account");
+    check(!(await panel.isVisible()), "and the menu closes when it completes");
+    await sw.close();
+  }
+
   const failing = page.locator("#failing .acct-trigger");
   await page.waitForTimeout(200);
   check(

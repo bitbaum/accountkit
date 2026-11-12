@@ -167,6 +167,60 @@
   color: var(--acct-fg-2);
 }
 
+/*
+ * The other accounts a person can become. A row is a face, a name and one
+ * line under it; the name and the line each keep to one line, so a long
+ * handle never pushes the panel wider than a phone.
+ */
+.acct-heading {
+  margin: 0;
+  padding: 0.375rem 0.75rem 0.125rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--acct-fg-3);
+}
+.acct-account {
+  padding-block: 0.375rem;
+}
+.acct-face {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  inline-size: 2rem;
+  block-size: 2rem;
+  overflow: hidden;
+  border: 1px solid var(--acct-line);
+  border-radius: 999px;
+  background: var(--acct-trigger-bg);
+  color: var(--acct-fg-2);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.acct-face img {
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+}
+.acct-account-text {
+  display: flex;
+  flex-direction: column;
+  min-inline-size: 0;
+}
+.acct-account-name,
+.acct-account-line {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.acct-account-name {
+  font-weight: 600;
+}
+.acct-account-line {
+  font-size: 0.8125rem;
+  color: var(--acct-fg-3);
+}
+
 .acct-extra {
   padding-inline: 0.75rem;
   font-size: 0.9375rem;

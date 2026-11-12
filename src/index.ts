@@ -14,6 +14,7 @@ export {
   type AccountLinkItem,
   type AccountMenuLabels,
   type AccountMenuProps,
+  type AccountSwitchTarget,
   type RenderLinkProps,
 } from "./AccountMenu.js";
 export {

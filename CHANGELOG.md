@@ -6,6 +6,16 @@ records, not claims that this file existed at release time.
 
 ## Unreleased
 
+- `AccountMenu` switches accounts. New optional `accounts` (each
+  `{ id, user, note? }`) and `onSwitchAccount(id)`: the other accounts a
+  person can become are listed under who is signed in, each a face (photo,
+  initials from the name, or a glyph), a name and one line with the note and
+  the handle, never the email. A tap switches; while the promise is pending
+  the row says so, and a switch that rejects keeps the menu open and says it
+  did not complete. Arrow keys reach the rows. Three new labels
+  (`switchAccount`, `switching`, `switchFailed`). Without the new props the
+  menu renders exactly as before. Built for OrangeCat's identities, where one
+  person holds several accounts.
 - The optional `@bitbaum/mail-kit` peer accepts 0.3 and 0.4 as well as 0.2.
   Both added only new exports (`renderMail`, unsubscribe signing, the SMTP
   transport); the three AccountKit calls (`conventionalFrom`,

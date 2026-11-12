@@ -8,6 +8,9 @@ const DEFAULT_LABELS = {
     signOut: "Sign out",
     signingOut: "Signing out…",
     signOutFailed: "Sign-out did not complete. Try again.",
+    switchAccount: "Switch account",
+    switching: "Switching…",
+    switchFailed: "The switch did not complete. Try again.",
 };
 function defaultLink(props) {
     return _jsx("a", { ...props });
@@ -18,6 +21,20 @@ function isLink(item) {
 /** A person outline — drawn when there is neither a photo nor a name. */
 function PersonGlyph() {
     return (_jsxs("svg", { className: "acct-glyph", viewBox: "0 0 24 24", width: "18", height: "18", "aria-hidden": "true", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", children: [_jsx("circle", { cx: "12", cy: "8", r: "4" }), _jsx("path", { d: "M4 21a8 8 0 0 1 16 0" })] }));
+}
+/** The second line of another account: its note, then its handle. Never its email. */
+function switchLineFor(target) {
+    const handle = target.user.handle?.trim().replace(/^@/, "");
+    // A handle that is already the display name is not said twice.
+    const shownHandle = handle && displayNameFor(target.user) !== `@${handle}` ? `@${handle}` : "";
+    const parts = [target.note?.trim(), shownHandle].filter(Boolean);
+    return parts.length > 0 ? parts.join(" · ") : null;
+}
+/** The small face on an account row: photo, else initials, else a glyph. */
+function AccountFace({ user }) {
+    const [failed, setFailed] = useState(false);
+    const initials = initialsFor(user);
+    return (_jsx("span", { className: "acct-face", "aria-hidden": "true", children: user.image && !failed ? (_jsx("img", { src: user.image, alt: "", onError: () => setFailed(true) })) : initials ? (initials) : (_jsx(PersonGlyph, {})) }));
 }
 /**
  * The account menu: who is signed in, where to go, how to sign out.
@@ -33,12 +50,14 @@ function PersonGlyph() {
  *    move between items; a click outside closes;
  *  - sign-out shows that it is happening, and says so when it fails.
  */
-export function AccountMenu({ user, onSignOut, groups = [], extra, renderLink = defaultLink, labels: labelOverrides, align = "end", className, }) {
+export function AccountMenu({ user, onSignOut, groups = [], accounts = [], onSwitchAccount, extra, renderLink = defaultLink, labels: labelOverrides, align = "end", className, }) {
     const labels = { ...DEFAULT_LABELS, ...labelOverrides };
     const [open, setOpen] = useState(false);
     const [imageFailed, setImageFailed] = useState(false);
     const [signingOut, setSigningOut] = useState(false);
     const [signOutError, setSignOutError] = useState(false);
+    const [switchingTo, setSwitchingTo] = useState(null);
+    const [switchError, setSwitchError] = useState(false);
     const rootRef = useRef(null);
     const triggerRef = useRef(null);
     const panelRef = useRef(null);
@@ -88,6 +107,7 @@ export function AccountMenu({ user, onSignOut, groups = [], extra, renderLink = 
     function openWithFocus(index) {
         setOpen(true);
         setSignOutError(false);
+        setSwitchError(false);
         // After render: the panel does not exist yet.
         requestAnimationFrame(() => {
             const list = items();
@@ -136,10 +156,34 @@ export function AccountMenu({ user, onSignOut, groups = [], extra, renderLink = 
             setSigningOut(false);
         }
     }
+    async function switchTo(id) {
+        if (!onSwitchAccount)
+            return;
+        setSwitchingTo(id);
+        setSwitchError(false);
+        try {
+            await onSwitchAccount(id);
+            // On success the app usually reloads; closing covers when it does not.
+            setOpen(false);
+        }
+        catch {
+            setSwitchError(true);
+        }
+        finally {
+            setSwitchingTo(null);
+        }
+    }
+    const switchable = onSwitchAccount ? accounts : [];
     return (_jsxs("div", { ref: rootRef, className: ["acct", className].filter(Boolean).join(" "), "data-align": align, children: [_jsx("button", { ref: triggerRef, type: "button", className: "acct-trigger", "aria-haspopup": "menu", "aria-expanded": open, "aria-controls": open ? panelId : undefined, "aria-label": labels.trigger.replace("{name}", name), title: name, onClick: () => {
                     setOpen((v) => !v);
                     setSignOutError(false);
-                }, onKeyDown: onTriggerKeyDown, children: showImage ? (_jsx("img", { className: "acct-avatar", src: user.image ?? undefined, alt: "", onError: () => setImageFailed(true) })) : initials ? (_jsx("span", { className: "acct-initials", "aria-hidden": "true", children: initials })) : (_jsx(PersonGlyph, {})) }), open && (_jsxs("div", { ref: panelRef, id: panelId, className: "acct-panel", role: "menu", "aria-label": labels.menu, onKeyDown: onPanelKeyDown, children: [_jsxs("div", { className: "acct-identity", children: [_jsx("p", { className: "acct-name", children: name }), secondary && _jsx("p", { className: "acct-secondary", children: secondary })] }), groups
+                    setSwitchError(false);
+                }, onKeyDown: onTriggerKeyDown, children: showImage ? (_jsx("img", { className: "acct-avatar", src: user.image ?? undefined, alt: "", onError: () => setImageFailed(true) })) : initials ? (_jsx("span", { className: "acct-initials", "aria-hidden": "true", children: initials })) : (_jsx(PersonGlyph, {})) }), open && (_jsxs("div", { ref: panelRef, id: panelId, className: "acct-panel", role: "menu", "aria-label": labels.menu, onKeyDown: onPanelKeyDown, children: [_jsxs("div", { className: "acct-identity", children: [_jsx("p", { className: "acct-name", children: name }), secondary && _jsx("p", { className: "acct-secondary", children: secondary })] }), switchable.length > 0 && (_jsxs("div", { className: "acct-group acct-accounts", role: "group", "aria-label": labels.switchAccount, children: [_jsx("p", { className: "acct-heading", children: labels.switchAccount }), switchable.map((target) => {
+                                const line = switchingTo === target.id
+                                    ? labels.switching
+                                    : switchLineFor(target);
+                                return (_jsxs("button", { type: "button", className: "acct-row acct-account", role: "menuitem", tabIndex: -1, disabled: switchingTo !== null, "aria-busy": switchingTo === target.id, onClick: () => void switchTo(target.id), children: [_jsx(AccountFace, { user: target.user }), _jsxs("span", { className: "acct-account-text", children: [_jsx("span", { className: "acct-account-name", children: displayNameFor(target.user) }), line && (_jsx("span", { className: "acct-account-line", children: line }))] })] }, target.id));
+                            }), switchError && (_jsx("p", { className: "acct-error", role: "alert", children: labels.switchFailed }))] })), groups
                         .filter((g) => g.items.length > 0)
                         .map((group) => (_jsx("div", { className: "acct-group", role: "group", children: group.items.map((item) => isLink(item) ? (_jsx(Fragment, { children: renderLink({
                                 href: item.href,
