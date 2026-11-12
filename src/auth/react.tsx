@@ -11,6 +11,7 @@ import {
 import type { SignInMethods } from "./methods.js";
 import { PasswordRecoveryForm } from "./recovery.js";
 import { unbroken } from "./unbroken.js";
+import { UI_LOCALES_PROVIDERS, uiLocalesFor } from "./ui-locales.js";
 import {
   DEFAULT_AUTH_LABELS,
   authErrorText,
@@ -59,6 +60,8 @@ export interface AuthClientLike extends PasswordRecoveryClient {
       provider: string;
       callbackURL?: string;
       errorCallbackURL?: string;
+      /** Extra authorize parameters; AccountKit sends OIDC `ui_locales`. */
+      additionalParams?: Record<string, string>;
     }): Result;
     magicLink(input: {
       email: string;
@@ -156,6 +159,12 @@ interface Common {
   methods: SignInMethods;
   labels?: AuthLabels;
   classes?: Partial<AuthClasses>;
+  /**
+   * The page's language (`de`, `de-CH`), sent to the shared sign-in and
+   * OrangeCat as OIDC `ui_locales` so their page speaks it too. Defaults to
+   * `<html lang>`.
+   */
+  locale?: string;
 }
 
 const merge = (c?: Partial<AuthClasses>): AuthClasses => ({
@@ -353,6 +362,7 @@ export function OidcButtons({
   callbackURL,
   errorCallbackURL,
   onError,
+  locale,
 }: Common & {
   callbackURL: string;
   errorCallbackURL: string;
@@ -386,10 +396,16 @@ export function OidcButtons({
           disabled={busy !== null}
           onClick={async () => {
             setBusy(provider.id);
+            const uiLocales = UI_LOCALES_PROVIDERS.includes(provider.id)
+              ? uiLocalesFor(locale)
+              : undefined;
             const { error } = await client.signIn.social({
               provider: provider.id,
               callbackURL,
               errorCallbackURL,
+              ...(uiLocales
+                ? { additionalParams: { ui_locales: uiLocales } }
+                : {}),
             });
             if (error) {
               onError(error);
@@ -416,6 +432,7 @@ export function SignInForm({
   methods,
   labels = DEFAULT_AUTH_LABELS,
   classes,
+  locale,
   next,
   signInPath,
   signUpLink,
@@ -762,6 +779,7 @@ export function SignInForm({
         callbackURL={next}
         errorCallbackURL={`${signInPath}?error=oidc&next=${encodeURIComponent(next)}`}
         onError={fail}
+        locale={locale}
       />
       {methods.passkey && (
         <button
@@ -878,6 +896,7 @@ export function SignInForm({
 }
 
 export { PasswordRecoveryForm } from "./recovery.js";
+export { uiLocalesFor } from "./ui-locales.js";
 
 /**
  * A new account in one step. No real name is asked for — a display name is
@@ -889,6 +908,7 @@ export function SignUpForm({
   methods,
   labels = DEFAULT_AUTH_LABELS,
   classes,
+  locale,
   next,
   signUpPath,
   signInPath = signUpPath.endsWith("/sign-up")
@@ -990,6 +1010,7 @@ export function SignUpForm({
         callbackURL={next}
         errorCallbackURL={`${signInPath}?error=oidc&next=${encodeURIComponent(next)}`}
         onError={fail}
+        locale={locale}
       />
       {methods.lightning && client.lightning && (
         <button

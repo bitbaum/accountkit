@@ -41,6 +41,8 @@ export interface AuthClientLike extends PasswordRecoveryClient {
             provider: string;
             callbackURL?: string;
             errorCallbackURL?: string;
+            /** Extra authorize parameters; AccountKit sends OIDC `ui_locales`. */
+            additionalParams?: Record<string, string>;
         }): Result;
         magicLink(input: {
             email: string;
@@ -149,6 +151,12 @@ interface Common {
     methods: SignInMethods;
     labels?: AuthLabels;
     classes?: Partial<AuthClasses>;
+    /**
+     * The page's language (`de`, `de-CH`), sent to the shared sign-in and
+     * OrangeCat as OIDC `ui_locales` so their page speaks it too. Defaults to
+     * `<html lang>`.
+     */
+    locale?: string;
 }
 /**
  * A product's own code as a way in: what it is called is the product's word
@@ -171,7 +179,7 @@ export interface CodeDoor {
     first?: boolean;
 }
 /** "Continue with …" for each OIDC method this deployment has switched on. */
-export declare function OidcButtons({ client, methods, labels, classes, callbackURL, errorCallbackURL, onError, }: Common & {
+export declare function OidcButtons({ client, methods, labels, classes, callbackURL, errorCallbackURL, onError, locale, }: Common & {
     callbackURL: string;
     errorCallbackURL: string;
     onError: (error: AuthError) => void;
@@ -181,7 +189,7 @@ export declare function OidcButtons({ client, methods, labels, classes, callback
  * OIDC buttons this deployment has switched on. A second factor, when the
  * account has one, is asked for on the same card.
  */
-export declare function SignInForm({ client, methods, labels, classes, next, signInPath, signUpLink, initialError, codeDoor, }: Common & {
+export declare function SignInForm({ client, methods, labels, classes, locale, next, signInPath, signUpLink, initialError, codeDoor, }: Common & {
     /** Where to land, already localised (`/de/account`). */
     next: string;
     /** This page, localised: where a failed OIDC round trip comes back to. */
@@ -193,12 +201,13 @@ export declare function SignInForm({ client, methods, labels, classes, next, sig
     codeDoor?: CodeDoor;
 }): import("react").JSX.Element;
 export { PasswordRecoveryForm } from "./recovery.js";
+export { uiLocalesFor } from "./ui-locales.js";
 /**
  * A new account in one step. No real name is asked for — a display name is
  * optional and may be anything. A passkey is added from the account page once
  * the account exists.
  */
-export declare function SignUpForm({ client, methods, labels, classes, next, signUpPath, signInPath, signInLink, }: Common & {
+export declare function SignUpForm({ client, methods, labels, classes, locale, next, signUpPath, signInPath, signInLink, }: Common & {
     next: string;
     signUpPath: string;
     /** Where an existing account completes a second factor after passwordless signup. */

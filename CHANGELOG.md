@@ -6,6 +6,13 @@ records, not claims that this file existed at release time.
 
 ## Unreleased
 
+- The shared sign-in (Morulia) and OrangeCat are told the page's language.
+  `OidcButtons`, `SignInForm` and `SignUpForm` send OIDC `ui_locales` on
+  their authorize request: the new optional `locale` prop, or else the
+  page's `<html lang>`, so an app that passes nothing still sends the right
+  language. A sign-in started on Heidi's German pages from an English
+  browser used to land on an English provider page. GitHub is not sent it.
+  `uiLocalesFor` is exported.
 - `AccountMenu` switches accounts. New optional `accounts` (each
   `{ id, user, note? }`) and `onSwitchAccount(id)`: the other accounts a
   person can become are listed under who is signed in, each a face (photo,

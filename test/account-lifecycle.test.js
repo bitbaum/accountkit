@@ -167,12 +167,17 @@ test("a first OIDC sign-in reports the new person once, as that provider", async
     },
   });
   try {
+    // The page's language travels to the provider as OIDC ui_locales, the
+    // way OidcButtons sends it.
     const started = await h.post("/sign-in/social", {
       provider: "orangecat",
       callbackURL: "/account",
+      additionalParams: { ui_locales: "de-CH" },
     });
     assert.equal(started.status, 200);
-    const target = fixture.approve(new URL((await started.json()).url));
+    const authorize = new URL((await started.json()).url);
+    assert.equal(authorize.searchParams.get("ui_locales"), "de-CH");
+    const target = fixture.approve(authorize);
     assert.equal((await h.call(target.href)).status, 302);
     const person = (await h.session()).user;
     assert.ok(person?.id);

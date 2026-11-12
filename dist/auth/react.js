@@ -3,6 +3,7 @@ import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-run
 import { useCallback, useEffect, useRef, useState, } from "react";
 import { PasswordRecoveryForm } from "./recovery.js";
 import { unbroken } from "./unbroken.js";
+import { UI_LOCALES_PROVIDERS, uiLocalesFor } from "./ui-locales.js";
 import { DEFAULT_AUTH_LABELS, authErrorText, fill, signinButtonLabel, } from "./labels.js";
 import { PasswordField } from "./password-field.js";
 import { LightningLogin, lightningWords, } from "./lightning-login.js";
@@ -99,7 +100,7 @@ function CodeSignIn({ client, door, labels, classes: c, onDone, onBack, initialC
         }, className: c.stack, children: [_jsxs("div", { className: c.field, children: [_jsx("label", { htmlFor: "acct-domain-code", className: c.label, children: door.label }), _jsx("input", { id: "acct-domain-code", className: c.input, autoComplete: "off", autoCapitalize: door.uppercase ? "characters" : undefined, spellCheck: false, placeholder: door.placeholder, value: code, onChange: (e) => setCode(door.uppercase ? e.target.value.toUpperCase() : e.target.value), required: true }), door.hint && _jsx("p", { className: c.hint, children: door.hint })] }), _jsx(ErrorLine, { message: error, className: c.error }), _jsx("button", { type: "submit", className: c.button, disabled: busy, children: unbroken(labels.signIn) }), _jsx("button", { type: "button", className: c.buttonQuiet, onClick: onBack, disabled: busy, children: unbroken(w.useEmail) })] }));
 }
 /** "Continue with …" for each OIDC method this deployment has switched on. */
-export function OidcButtons({ client, methods, labels = DEFAULT_AUTH_LABELS, classes, callbackURL, errorCallbackURL, onError, }) {
+export function OidcButtons({ client, methods, labels = DEFAULT_AUTH_LABELS, classes, callbackURL, errorCallbackURL, onError, locale, }) {
     const c = merge(classes);
     const [busy, setBusy] = useState(null);
     const providers = [
@@ -121,10 +122,16 @@ export function OidcButtons({ client, methods, labels = DEFAULT_AUTH_LABELS, cla
         return null;
     return (_jsx("div", { className: c.stack, children: providers.map((provider) => (_jsx("button", { type: "button", className: c.buttonQuiet, disabled: busy !== null, onClick: async () => {
                 setBusy(provider.id);
+                const uiLocales = UI_LOCALES_PROVIDERS.includes(provider.id)
+                    ? uiLocalesFor(locale)
+                    : undefined;
                 const { error } = await client.signIn.social({
                     provider: provider.id,
                     callbackURL,
                     errorCallbackURL,
+                    ...(uiLocales
+                        ? { additionalParams: { ui_locales: uiLocales } }
+                        : {}),
                 });
                 if (error) {
                     onError(error);
@@ -137,7 +144,7 @@ export function OidcButtons({ client, methods, labels = DEFAULT_AUTH_LABELS, cla
  * OIDC buttons this deployment has switched on. A second factor, when the
  * account has one, is asked for on the same card.
  */
-export function SignInForm({ client, methods, labels = DEFAULT_AUTH_LABELS, classes, next, signInPath, signUpLink, initialError = false, codeDoor, }) {
+export function SignInForm({ client, methods, labels = DEFAULT_AUTH_LABELS, classes, locale, next, signInPath, signUpLink, initialError = false, codeDoor, }) {
     const c = merge(classes);
     const [step, setStep] = useState(codeDoor?.first ? "code" : "start");
     const [linkedCode, setLinkedCode] = useState();
@@ -318,7 +325,7 @@ export function SignInForm({ client, methods, labels = DEFAULT_AUTH_LABELS, clas
     if (step === "twoFactor") {
         return (_jsxs("form", { onSubmit: withSecondFactor, className: c.stack, children: [_jsx("p", { className: c.hint, children: useBackup ? labels.backupPrompt : labels.totpPrompt }), _jsxs("div", { className: c.field, children: [_jsx("label", { htmlFor: "acct-code", className: c.label, children: useBackup ? labels.backupCode : labels.totpCode }), _jsx("input", { id: "acct-code", className: c.input, inputMode: useBackup ? "text" : "numeric", autoComplete: "one-time-code", value: code, onChange: (e) => setCode(e.target.value), required: true })] }), _jsxs("label", { className: c.check, children: [_jsx("input", { type: "checkbox", checked: trustDevice, onChange: (e) => setTrustDevice(e.target.checked) }), labels.trustDevice] }), _jsx(ErrorLine, { message: error, className: c.error }), _jsx("button", { type: "submit", className: c.button, disabled: busy, children: unbroken(labels.verify) }), _jsx("button", { type: "button", className: c.buttonQuiet, onClick: () => setUseBackup(!useBackup), children: unbroken(useBackup ? labels.useTotp : labels.useBackup) })] }));
     }
-    return (_jsxs("div", { className: c.stack, children: [_jsx(OidcButtons, { client: client, methods: methods, labels: labels, classes: classes, callbackURL: next, errorCallbackURL: `${signInPath}?error=oidc&next=${encodeURIComponent(next)}`, onError: fail }), methods.passkey && (_jsx("button", { type: "button", className: c.buttonQuiet, onClick: withPasskey, disabled: busy, children: unbroken(labels.withPasskey) })), methods.lightning && client.lightning && (_jsx("button", { type: "button", className: c.buttonQuiet, onClick: () => {
+    return (_jsxs("div", { className: c.stack, children: [_jsx(OidcButtons, { client: client, methods: methods, labels: labels, classes: classes, callbackURL: next, errorCallbackURL: `${signInPath}?error=oidc&next=${encodeURIComponent(next)}`, onError: fail, locale: locale }), methods.passkey && (_jsx("button", { type: "button", className: c.buttonQuiet, onClick: withPasskey, disabled: busy, children: unbroken(labels.withPasskey) })), methods.lightning && client.lightning && (_jsx("button", { type: "button", className: c.buttonQuiet, onClick: () => {
                     setError(null);
                     setStep("lightning");
                 }, disabled: busy, children: unbroken(lightningWords(labels).withLightning) })), (hasOidc(methods) || methods.passkey || methods.lightning) && (_jsx(Divider, { label: labels.orEmail, className: c.divider })), _jsxs("form", { onSubmit: withPassword, className: c.stack, children: [_jsxs("div", { className: c.field, children: [_jsx("label", { htmlFor: "acct-email", className: c.label, children: labels.email }), _jsx("input", { id: "acct-email", type: "email", className: c.input, autoComplete: "username webauthn", value: email, onChange: (e) => setEmail(e.target.value), required: true })] }), _jsxs("div", { className: c.field, children: [_jsx("label", { htmlFor: "acct-password", className: c.label, children: labels.password }), _jsx("input", { id: "acct-password", type: "password", className: c.input, autoComplete: "current-password", value: password, onChange: (e) => setPassword(e.target.value), required: true })] }), _jsx(ErrorLine, { message: error, className: c.error }), unverified && methods.verifyEmail && (_jsx("button", { type: "button", className: c.buttonQuiet, onClick: resendVerification, disabled: busy, children: unbroken(labels.resendVerification) })), _jsx("button", { type: "submit", className: c.button, disabled: busy, children: unbroken(labels.signIn) }), methods.magicLink && (_jsx("button", { type: "button", className: c.buttonQuiet, onClick: withLink, disabled: busy, children: unbroken(labels.withLink) })), methods.passwordReset &&
@@ -329,12 +336,13 @@ export function SignInForm({ client, methods, labels = DEFAULT_AUTH_LABELS, clas
                 }, disabled: busy, children: unbroken(codeDoor.open) })), _jsxs("p", { className: c.hint, children: [labels.noAccount, " ", signUpLink] })] }));
 }
 export { PasswordRecoveryForm } from "./recovery.js";
+export { uiLocalesFor } from "./ui-locales.js";
 /**
  * A new account in one step. No real name is asked for — a display name is
  * optional and may be anything. A passkey is added from the account page once
  * the account exists.
  */
-export function SignUpForm({ client, methods, labels = DEFAULT_AUTH_LABELS, classes, next, signUpPath, signInPath = signUpPath.endsWith("/sign-up")
+export function SignUpForm({ client, methods, labels = DEFAULT_AUTH_LABELS, classes, locale, next, signUpPath, signInPath = signUpPath.endsWith("/sign-up")
     ? signUpPath.replace(/sign-up$/, "sign-in")
     : "/sign-in", signInLink, }) {
     const c = merge(classes);
@@ -394,7 +402,7 @@ export function SignUpForm({ client, methods, labels = DEFAULT_AUTH_LABELS, clas
             // An existing account with a second factor finishes on sign-in.
             onTwoFactor: () => window.location.assign(`${signInPath}?twoFactor=1&next=${encodeURIComponent(next)}`), onBack: () => setLightning(false) }));
     }
-    return (_jsxs("div", { className: c.stack, children: [_jsx(OidcButtons, { client: client, methods: methods, labels: labels, classes: classes, callbackURL: next, errorCallbackURL: `${signInPath}?error=oidc&next=${encodeURIComponent(next)}`, onError: fail }), methods.lightning && client.lightning && (_jsx("button", { type: "button", className: c.buttonQuiet, onClick: () => setLightning(true), disabled: busy, children: unbroken(lightningWords(labels).withLightning) })), (hasOidc(methods) || methods.lightning) && (_jsx(Divider, { label: labels.orEmail, className: c.divider })), _jsxs("form", { onSubmit: submit, className: c.stack, children: [_jsxs("div", { className: c.field, children: [_jsx("label", { htmlFor: "acct-email", className: c.label, children: labels.email }), _jsx("input", { id: "acct-email", type: "email", className: c.input, autoComplete: "email", value: email, onChange: (e) => setEmail(e.target.value), required: true })] }), _jsxs("div", { className: c.field, children: [_jsx("label", { htmlFor: "acct-password", className: c.label, children: labels.password }), _jsx(PasswordField, { id: "acct-password", value: password, onChange: setPassword, classes: c, labels: labels })] }), _jsx(ErrorLine, { message: error, className: c.error }), _jsx("button", { type: "submit", className: c.button, disabled: busy, children: unbroken(labels.createAccount) }), methods.magicLink && (_jsx("button", { type: "button", className: c.buttonQuiet, onClick: withLink, disabled: busy, children: unbroken(labels.signUpWithLink) }))] }), _jsxs("p", { className: c.hint, children: [labels.haveAccount, " ", signInLink] })] }));
+    return (_jsxs("div", { className: c.stack, children: [_jsx(OidcButtons, { client: client, methods: methods, labels: labels, classes: classes, callbackURL: next, errorCallbackURL: `${signInPath}?error=oidc&next=${encodeURIComponent(next)}`, onError: fail, locale: locale }), methods.lightning && client.lightning && (_jsx("button", { type: "button", className: c.buttonQuiet, onClick: () => setLightning(true), disabled: busy, children: unbroken(lightningWords(labels).withLightning) })), (hasOidc(methods) || methods.lightning) && (_jsx(Divider, { label: labels.orEmail, className: c.divider })), _jsxs("form", { onSubmit: submit, className: c.stack, children: [_jsxs("div", { className: c.field, children: [_jsx("label", { htmlFor: "acct-email", className: c.label, children: labels.email }), _jsx("input", { id: "acct-email", type: "email", className: c.input, autoComplete: "email", value: email, onChange: (e) => setEmail(e.target.value), required: true })] }), _jsxs("div", { className: c.field, children: [_jsx("label", { htmlFor: "acct-password", className: c.label, children: labels.password }), _jsx(PasswordField, { id: "acct-password", value: password, onChange: setPassword, classes: c, labels: labels })] }), _jsx(ErrorLine, { message: error, className: c.error }), _jsx("button", { type: "submit", className: c.button, disabled: busy, children: unbroken(labels.createAccount) }), methods.magicLink && (_jsx("button", { type: "button", className: c.buttonQuiet, onClick: withLink, disabled: busy, children: unbroken(labels.signUpWithLink) }))] }), _jsxs("p", { className: c.hint, children: [labels.haveAccount, " ", signInLink] })] }));
 }
 function Section({ title, id, classes, children, }) {
     return (_jsxs("section", { className: classes.section, "aria-labelledby": id, children: [_jsx("h2", { id: id, className: classes.sectionTitle, children: title }), children] }));
