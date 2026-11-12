@@ -91,12 +91,53 @@ import { AccountMenu } from "@bitbaum/accountkit";
 - **`accounts`** and **`onSwitchAccount`** list the other accounts this person can become (a second identity, a work account) under who is signed in, and switch on a tap. Each is `{ id, user, note? }`; `note` says what the account is to the person ("Main account") and leads its second line. Their email is never shown. `onSwitchAccount(id)` may return a promise: the row says it is switching, and if it rejects the menu stays open and says the switch did not complete, as sign-out does. With no accounts, or no `onSwitchAccount`, the menu is unchanged. An account may carry `waiting`, a count of what waits there (unread messages, notifications): it is shown at the end of its row, capped at 99+, and as a dot on the trigger so it is known before the menu is opened.
 - **`labels`** translates every string: `labels={{ trigger: "Konto: {name}", signOut: "Abmelden" }}`.
 
+## A static site, or a session on another origin
+
+A site with no accounts of its own (static files) shows the account of the product that holds it. That product answers a small JSON summary with credentialed CORS for the site's origin, at least `{ "signedIn": false }` or `{ "signedIn": true, "user": { "name", "handle", "image" } }`. Three pieces, all from the browser-safe `.` entry:
+
+- **`AccountControl`** is the header control in all three states: `state="loading"` is an empty box the trigger's exact size (hidden from assistive technology, not focusable), so nothing moves when the answer arrives; `state={null}` is one "Sign in" link, the trigger's height, in the same slot; a person is `AccountMenu`, unchanged, with the rest of the props. The link's text is `signIn.label`, else `labels.signIn`, else "Sign in". A `javascript:` href becomes `#`.
+- **`accountSignInHtml({ href, label })`** returns byte for byte what `AccountControl` renders signed out, with `href` and `label` escaped, so a page can print the signed-out state without React and mount the control over it later.
+- **`fetchAccountSummary(url, { signal?, fetch?, timeoutMs? })`** is a GET with `credentials: "include"` and `cache: "no-store"`. It resolves the parsed body when the answer is 2xx JSON with a boolean `signedIn`, and `null` on a network or CORS failure, an abort, a timeout, a non-2xx status, a body that is not JSON or one without `signedIn`, or an injected `fetch` that resolves to something that is not a response. The promise never rejects, never retries and stores nothing, so the header fails closed to "Sign in". `timeoutMs` (default 8000; 0, a negative number or `Infinity` turns it off) bounds the whole read, body included, so a stalled server cannot leave the header loading for ever; it is combined with your `signal` (`AbortSignal.any` where the runtime has it, by hand otherwise), and whichever fires first resolves `null`.
+
+```tsx
+import { useEffect, useState } from "react";
+import { AccountControl, accountSignInHtml, fetchAccountSummary } from "@bitbaum/accountkit";
+
+type Summary =
+  | { signedIn: false; links: { signIn: string } }
+  | { signedIn: true; user: { name: string; handle: string; image: string | null }; links: { signIn: string; signOut: string } };
+
+// Printed into the header by the build, before any script runs:
+//   accountSignInHtml({ href: "https://accounts.example/sign-in" })
+
+function Account() {
+  const [summary, setSummary] = useState<Summary | null | "loading">("loading");
+  useEffect(() => {
+    const controller = new AbortController();
+    fetchAccountSummary<Summary>("https://accounts.example/api/session", { signal: controller.signal }).then(setSummary);
+    return () => controller.abort();
+  }, []);
+  const state = summary === "loading" ? "loading" : summary?.signedIn ? summary.user : null;
+  return (
+    <AccountControl
+      state={state}
+      signIn={{ href: summary && summary !== "loading" ? summary.links.signIn : "https://accounts.example/sign-in" }}
+      onSignOut={() => {
+        if (summary !== "loading" && summary?.signedIn) location.assign(summary.links.signOut);
+      }}
+    />
+  );
+}
+```
+
+`returnPath(from, fallback = "/")` is exported from `.` as well (it is the same function `./orangecat` exports): it accepts only a same-origin path and refuses protocol-relative paths, backslashes, control characters and absolute URLs.
+
 ## What is shared, and not configurable
 
 - **The name is never built from the email.** No name: `@handle`. No handle: "Account".
 - **Initials come from the name only.** No name and no photo: a person glyph.
 - **A photo that fails to load** falls back to initials, then the glyph.
-- **44px** trigger and rows. The panel never runs off a 320–390px screen.
+- **44px** trigger and rows. The panel's width is capped by the screen and it aligns to the trigger's inside edge. Where the trigger is not the last control in its row (a menu button after it), the open panel is measured and moved back inside the screen; where it already fits, it is not moved. It is measured again while open when the window resizes and, without a window resize, when the panel or the row it sits in changes size or a control is added to or removed from that row (a `ResizeObserver` and a `MutationObserver`, where the runtime has them). The browser check holds it inside 320 and 390px with a 44px control before or after the trigger, for both `align` values.
 - **Escape** closes and returns focus to the trigger, wherever focus was. **Arrows**, **Home** and **End** move between items. A click outside closes.
 
 ## Theming

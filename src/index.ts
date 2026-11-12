@@ -24,3 +24,11 @@ export {
   type SignInErrorLabels,
   type SignInErrorProps,
 } from "./SignInError.js";
+export {
+  AccountControl,
+  accountSignInHtml,
+  type AccountControlProps,
+  type AccountSignIn,
+} from "./AccountControl.js";
+export { fetchAccountSummary } from "./accountSummary.js";
+export { returnPath } from "./paths.js";

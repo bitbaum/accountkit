@@ -55,7 +55,13 @@ export type AccountMenuLabels = {
     waiting: string;
     /** Added to the trigger's name when another account has something waiting. */
     waitingElsewhere: string;
+    /**
+     * The signed-out link of `AccountControl`. Optional, so a full set of
+     * labels written before it existed still type-checks.
+     */
+    signIn?: string;
 };
+export declare const DEFAULT_LABELS: Required<AccountMenuLabels>;
 export type RenderLinkProps = {
     href: string;
     className: string;

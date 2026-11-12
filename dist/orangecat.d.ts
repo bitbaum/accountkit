@@ -69,7 +69,7 @@ export declare function orangecatProvider(options: OrangecatProviderOptions): {
     client: {
         token_endpoint_auth_method: "client_secret_post";
     };
-    checks: ("pkce" | "state")[];
+    checks: ("state" | "pkce")[];
     authorization: {
         params: {
             scope: string;
@@ -91,7 +91,7 @@ export declare function orangecatProviderV4(options: OrangecatProviderOptions): 
     client: {
         token_endpoint_auth_method: "client_secret_post";
     };
-    checks: ("pkce" | "state")[];
+    checks: ("state" | "pkce")[];
     authorization: {
         params: {
             scope: string;

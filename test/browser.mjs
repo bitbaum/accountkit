@@ -56,7 +56,13 @@ const check = (ok, what) => {
   if (!ok) failures++;
 };
 
-const browser = await chromium.launch();
+// CHROMIUM_PATH: a machine whose Chromium is not the one this Playwright
+// version downloads (a sandbox with a pre-installed browser) points at it.
+const browser = await chromium.launch(
+  process.env.CHROMIUM_PATH
+    ? { executablePath: process.env.CHROMIUM_PATH }
+    : {},
+);
 try {
   for (const scheme of ["light", "dark"]) {
     const page = await browser.newPage({
@@ -114,6 +120,257 @@ try {
     );
     check(focusedTrigger, `[${scheme}] focus returns to the trigger`);
 
+    await page.close();
+  }
+
+  // The trigger is not always last in its row. Bitbaum's header puts its
+  // menu button after it, and at 390px the panel ran 112px off the left
+  // edge: pinned to the trigger's edge, it only fits while nothing follows.
+  // Off the LEFT edge is invisible to a scrollWidth check (nothing scrolls to
+  // negative x), so the panel's own box is measured.
+  for (const width of [320, 390]) {
+    for (const scheme of ["light", "dark"]) {
+      const page = await browser.newPage({
+        viewport: { width, height: 844 },
+        colorScheme: scheme,
+      });
+      await page.goto(base);
+      for (const id of [
+        "row-followed-end",
+        "row-followed-start",
+        "row-preceded-end",
+        "row-preceded-start",
+      ]) {
+        const trigger = page.locator(`#${id} .acct-trigger`);
+        await trigger.waitFor();
+        await trigger.click();
+        const panel = page.locator(`#${id} .acct-panel`);
+        await panel.waitFor();
+        const placed = await panel.evaluate((el) => {
+          const r = el.getBoundingClientRect();
+          return {
+            left: Math.round(r.left * 10) / 10,
+            right: Math.round(r.right * 10) / 10,
+            inner: window.innerWidth,
+            scroll: document.documentElement.scrollWidth - window.innerWidth,
+          };
+        });
+        check(
+          placed.left >= 0 && placed.right <= placed.inner,
+          `[${width} ${scheme}] #${id}: the open panel is inside the viewport (left ${placed.left}, right ${placed.right}, width ${placed.inner})`,
+        );
+        check(
+          placed.scroll <= 0,
+          `[${width} ${scheme}] #${id}: nothing scrolls sideways with the panel open (${placed.scroll}px)`,
+        );
+        await page.keyboard.press("Escape");
+        check(
+          !(await panel.isVisible()),
+          `[${width} ${scheme}] #${id}: Escape closes the menu`,
+        );
+      }
+
+      // The same rows read right to left. The panel is moved on the edge it
+      // is pinned by, and in a right-to-left page that edge is the other one:
+      // a move with the wrong sign pushes the panel further off the screen.
+      await page.evaluate(() =>
+        document.documentElement.setAttribute("dir", "rtl"),
+      );
+      for (const id of [
+        "row-followed-end",
+        "row-followed-start",
+        "row-preceded-end",
+        "row-preceded-start",
+      ]) {
+        const trigger = page.locator(`#${id} .acct-trigger`);
+        await trigger.click();
+        const panel = page.locator(`#${id} .acct-panel`);
+        await panel.waitFor();
+        const placed = await panel.evaluate((el) => {
+          const r = el.getBoundingClientRect();
+          return {
+            left: Math.round(r.left * 10) / 10,
+            right: Math.round(r.right * 10) / 10,
+            inner: window.innerWidth,
+            wide: document.documentElement.scrollWidth - window.innerWidth,
+          };
+        });
+        check(
+          placed.left >= 0 && placed.right <= placed.inner && placed.wide <= 0,
+          `[${width} ${scheme} rtl] #${id}: the open panel is inside the viewport and nothing scrolls sideways (left ${placed.left}, right ${placed.right}, width ${placed.inner}, ${placed.wide}px over)`,
+        );
+        await page.keyboard.press("Escape");
+      }
+      await page.evaluate(() =>
+        document.documentElement.removeAttribute("dir"),
+      );
+
+      // Where the trigger IS last, the panel looks exactly as it always did:
+      // its end edge on the trigger's end edge, not moved.
+      for (const id of ["named", "row-preceded-end"]) {
+        const trigger = page.locator(`#${id} .acct-trigger`);
+        await trigger.click();
+        const panel = page.locator(`#${id} .acct-panel`);
+        await panel.waitFor();
+        const t = await trigger.boundingBox();
+        const p = await panel.boundingBox();
+        check(
+          t && p && Math.abs(t.x + t.width - (p.x + p.width)) < 0.5,
+          `[${width} ${scheme}] #${id}: trigger last, the panel still ends on the trigger's edge (${t && t.x + t.width} vs ${p && p.x + p.width})`,
+        );
+        await page.keyboard.press("Escape");
+      }
+
+      // The keyboard is unchanged where the panel had to move.
+      const moved = page.locator("#row-followed-end .acct-trigger");
+      await moved.focus();
+      await page.keyboard.press("ArrowDown");
+      await page.waitForTimeout(50);
+      const firstItem = await page.evaluate(() =>
+        document.activeElement?.textContent?.trim(),
+      );
+      check(
+        firstItem === "Settings",
+        `[${width} ${scheme}] a moved panel: ArrowDown opens on the first item (${firstItem})`,
+      );
+      await page.keyboard.press("End");
+      const lastItem = await page.evaluate(() =>
+        document.activeElement?.textContent?.trim(),
+      );
+      check(
+        lastItem === "Sign out",
+        `[${width} ${scheme}] a moved panel: End reaches Sign out (${lastItem})`,
+      );
+      await page.keyboard.press("Escape");
+      const backOnTrigger = await page.evaluate(
+        () =>
+          document.activeElement?.closest("#row-followed-end") !== null &&
+          document.activeElement?.classList.contains("acct-trigger"),
+      );
+      check(
+        backOnTrigger,
+        `[${width} ${scheme}] a moved panel: Escape gives focus back to the trigger`,
+      );
+
+      // The row changes while the menu is open, with no window resize: one
+      // more 44px control lands after the trigger (a font loading, a button
+      // appearing). The trigger moves; the panel must follow it back inside.
+      for (const id of ["row-followed-end", "row-followed-start"]) {
+        const trigger = page.locator(`#${id} .acct-trigger`);
+        await trigger.click();
+        const panel = page.locator(`#${id} .acct-panel`);
+        await panel.waitFor();
+        const placed = await page.evaluate(async (rowId) => {
+          const header = document.getElementById(rowId).parentElement;
+          const extra = document.createElement("button");
+          extra.type = "button";
+          extra.className = "demo-control demo-added";
+          extra.setAttribute("aria-label", "Added");
+          extra.textContent = "+";
+          header.append(extra);
+          const frame = () =>
+            new Promise((r) => requestAnimationFrame(() => r()));
+          await frame();
+          await frame();
+          const p = document.querySelector(`#${rowId} .acct-panel`);
+          const r = p.getBoundingClientRect();
+          const t = document
+            .querySelector(`#${rowId} .acct-trigger`)
+            .getBoundingClientRect();
+          const out = {
+            left: Math.round(r.left * 10) / 10,
+            right: Math.round(r.right * 10) / 10,
+            inner: window.innerWidth,
+            triggerRight: Math.round(t.right),
+          };
+          extra.remove();
+          return out;
+        }, id);
+        check(
+          placed.left >= 0 && placed.right <= placed.inner,
+          `[${width} ${scheme}] #${id}: a control added while open, the panel is still inside the viewport (left ${placed.left}, right ${placed.right}, width ${placed.inner}, trigger right ${placed.triggerRight})`,
+        );
+        await page.keyboard.press("Escape");
+      }
+
+      // A control already in the row grows (a label appears, a font loads):
+      // no node is added and the window does not resize; only a
+      // ResizeObserver sees it.
+      {
+        const id = "row-followed-end";
+        await page.locator(`#${id} .acct-trigger`).click();
+        await page.locator(`#${id} .acct-panel`).waitFor();
+        const placed = await page.evaluate(async (rowId) => {
+          const control = document
+            .getElementById(rowId)
+            .parentElement.querySelector(".demo-control");
+          control.style.inlineSize = "100px";
+          const frame = () =>
+            new Promise((r) => requestAnimationFrame(() => r()));
+          await frame();
+          await frame();
+          const r = document
+            .querySelector(`#${rowId} .acct-panel`)
+            .getBoundingClientRect();
+          control.style.removeProperty("inline-size");
+          return {
+            left: Math.round(r.left * 10) / 10,
+            right: Math.round(r.right * 10) / 10,
+            inner: window.innerWidth,
+          };
+        }, id);
+        check(
+          placed.left >= 0 && placed.right <= placed.inner,
+          `[${width} ${scheme}] #${id}: a control in the row grows while open, the panel is still inside the viewport (left ${placed.left}, right ${placed.right}, width ${placed.inner})`,
+        );
+        await page.keyboard.press("Escape");
+      }
+      await page.close();
+    }
+  }
+
+  // One control, three states, one box: nothing shifts when the session
+  // answer arrives, and "Sign in" is a full touch target.
+  for (const scheme of ["light", "dark"]) {
+    const page = await browser.newPage({
+      viewport: { width: 390, height: 844 },
+      colorScheme: scheme,
+    });
+    await page.goto(base);
+    const signedIn = page.locator("#control-signed-in .acct-trigger");
+    await signedIn.waitFor();
+    const loading = page.locator("#control-loading > *");
+    const signInLink = page.locator("#control-signed-out a.acct-signin");
+    const a = await loading.boundingBox();
+    const b = await signedIn.boundingBox();
+    const outer = await page
+      .locator("#control-signed-in > .acct")
+      .boundingBox();
+    check(
+      a &&
+        b &&
+        outer &&
+        a.width === b.width &&
+        a.height === b.height &&
+        a.width === outer.width &&
+        a.height === outer.height,
+      `[${scheme}] the loading box is the signed-in trigger's box (${a?.width}×${a?.height} vs ${b?.width}×${b?.height})`,
+    );
+    const link = await signInLink.boundingBox();
+    check(
+      link && link.height >= 44 && b && link.height === b.height,
+      `[${scheme}] "Sign in" is at least 44px tall, the trigger's height (${link?.height})`,
+    );
+    const focusable = await page.evaluate(
+      () =>
+        document.querySelectorAll(
+          "#control-loading a, #control-loading button, #control-loading [tabindex]",
+        ).length,
+    );
+    check(
+      focusable === 0,
+      `[${scheme}] nothing in the loading box takes focus`,
+    );
     await page.close();
   }
 

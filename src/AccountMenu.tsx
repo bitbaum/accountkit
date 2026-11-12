@@ -5,6 +5,7 @@ import {
   useCallback,
   useEffect,
   useId,
+  useLayoutEffect,
   useRef,
   useState,
   type KeyboardEvent,
@@ -75,9 +76,14 @@ export type AccountMenuLabels = {
   waiting: string;
   /** Added to the trigger's name when another account has something waiting. */
   waitingElsewhere: string;
+  /**
+   * The signed-out link of `AccountControl`. Optional, so a full set of
+   * labels written before it existed still type-checks.
+   */
+  signIn?: string;
 };
 
-const DEFAULT_LABELS: AccountMenuLabels = {
+export const DEFAULT_LABELS: Required<AccountMenuLabels> = {
   trigger: "Account: {name}",
   menu: "Account",
   signOut: "Sign out",
@@ -88,6 +94,7 @@ const DEFAULT_LABELS: AccountMenuLabels = {
   switchFailed: "The switch did not complete. Try again.",
   waiting: "{count} waiting",
   waitingElsewhere: "something is waiting in another account",
+  signIn: "Sign in",
 };
 
 export type RenderLinkProps = {
@@ -134,6 +141,61 @@ export type AccountMenuProps = {
   align?: "end" | "start";
   className?: string;
 };
+
+// A layout effect places the panel before it is painted; on the server there
+// is nothing to place, and React 18 warns about useLayoutEffect there.
+const useIsomorphicLayoutEffect =
+  typeof window === "undefined" ? useEffect : useLayoutEffect;
+
+/** How far an open panel keeps from the screen's edge when it has to move. */
+const EDGE_GAP = 16;
+
+/**
+ * Keep an open panel on screen. CSS pins it to the trigger's edge, which only
+ * fits while the trigger is the last control in its row; where it is not (a
+ * menu button after it), the panel ran off the screen. CSS cannot know where
+ * the trigger sits in its row, so the panel is measured and, only if it
+ * crosses an edge, moved back inside by `--acct-shift`. A panel that already
+ * fits is not touched, so it looks exactly as it always did.
+ *
+ * The move is made in layout, on the edge the panel is pinned by, not with a
+ * transform. Moved by `translate`, the panel sat on screen while the page
+ * still scrolled sideways by the distance it had moved: seen in CI on
+ * Chromium 156 (186px and 242px at 320 and 390 wide), not on Chromium 153.
+ * A box that is laid out inside the screen cannot do that in any browser.
+ * `--acct-shift` is therefore the offset of the pinned edge: the distance to
+ * move right when that edge is the left one, its negative when it is the
+ * right one (which edge it is depends on `align` and the text direction).
+ */
+function placePanel(panel: HTMLElement) {
+  panel.style.removeProperty("--acct-shift");
+  const viewport = document.documentElement.clientWidth || window.innerWidth;
+  const { left, right, width } = panel.getBoundingClientRect();
+  const gap = Math.max(0, Math.min(EDGE_GAP, (viewport - width) / 2));
+  let shift = 0;
+  if (right > viewport) shift = viewport - gap - right;
+  if (left + shift < 0) shift = gap - left;
+  if (shift === 0) return;
+  const start = panel.closest(".acct")?.getAttribute("data-align") === "start";
+  const rtl = getComputedStyle(panel).direction === "rtl";
+  const pinnedLeft = start !== rtl;
+  panel.style.setProperty("--acct-shift", `${pinnedLeft ? shift : -shift}px`);
+}
+
+/**
+ * The row the menu sits in: the nearest ancestor laid out as a flex or grid
+ * container (a header row), so a wrapper `<div>` around the menu is looked
+ * through. Falls back to the parent element. At most a few levels up.
+ */
+function headerRowOf(root: HTMLElement): HTMLElement | null {
+  let node = root.parentElement;
+  for (let depth = 0; node && depth < 4; depth++) {
+    const display = getComputedStyle(node).display;
+    if (/flex|grid/.test(display)) return node;
+    node = node.parentElement;
+  }
+  return root.parentElement;
+}
 
 function defaultLink(props: RenderLinkProps): ReactNode {
   return <a {...props} />;
@@ -289,6 +351,48 @@ export function AccountMenu({
       document.removeEventListener("keydown", onKeyDown);
     };
   }, [open, close]);
+
+  // Placed on open, and again whenever the answer could change while it is
+  // open: the window resizes, the panel changes size, or the header row
+  // reflows (a font loads, a sibling grows, a control is added or removed).
+  // A move without a resize is invisible to a ResizeObserver, so the row's
+  // children are watched for being added or removed as well.
+  useIsomorphicLayoutEffect(() => {
+    const panel = panelRef.current;
+    const root = rootRef.current;
+    if (!open || !panel) return;
+    placePanel(panel);
+    const onResize = () => placePanel(panel);
+    window.addEventListener("resize", onResize);
+    const row = root ? headerRowOf(root) : null;
+    let resizes: ResizeObserver | undefined;
+    let mutations: MutationObserver | undefined;
+    if (typeof ResizeObserver === "function") {
+      resizes = new ResizeObserver(onResize);
+      resizes.observe(panel);
+      if (row) {
+        resizes.observe(row);
+        for (const child of Array.from(row.children)) resizes.observe(child);
+      }
+    }
+    if (row && typeof MutationObserver === "function") {
+      mutations = new MutationObserver((records) => {
+        for (const record of records) {
+          if (record.target !== row) continue;
+          for (const node of Array.from(record.addedNodes)) {
+            if (node instanceof Element) resizes?.observe(node);
+          }
+        }
+        placePanel(panel);
+      });
+      mutations.observe(row, { childList: true, subtree: true });
+    }
+    return () => {
+      window.removeEventListener("resize", onResize);
+      resizes?.disconnect();
+      mutations?.disconnect();
+    };
+  }, [open]);
 
   function focusAt(index: number) {
     const list = items();
