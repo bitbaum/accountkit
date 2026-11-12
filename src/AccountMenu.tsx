@@ -39,6 +39,20 @@ export type AccountItem = AccountLinkItem | AccountActionItem;
 /** Items are grouped; a divider separates groups. */
 export type AccountGroup = { id: string; items: AccountItem[] };
 
+/**
+ * Another account the signed-in person can become: a second identity, a work
+ * account. The app decides which ones exist; the menu shows them and switches.
+ */
+export type AccountSwitchTarget = {
+  id: string;
+  user: AccountUser;
+  /**
+   * What this account is to the person, in a word or two ("Main account").
+   * Leads the second line, so it is what survives a long handle.
+   */
+  note?: string;
+};
+
 export type AccountMenuLabels = {
   /** Accessible name of the trigger; "{name}" is replaced. */
   trigger: string;
@@ -46,6 +60,10 @@ export type AccountMenuLabels = {
   signOut: string;
   signingOut: string;
   signOutFailed: string;
+  /** Heading over the other accounts. */
+  switchAccount: string;
+  switching: string;
+  switchFailed: string;
 };
 
 const DEFAULT_LABELS: AccountMenuLabels = {
@@ -54,6 +72,9 @@ const DEFAULT_LABELS: AccountMenuLabels = {
   signOut: "Sign out",
   signingOut: "Signing out…",
   signOutFailed: "Sign-out did not complete. Try again.",
+  switchAccount: "Switch account",
+  switching: "Switching…",
+  switchFailed: "The switch did not complete. Try again.",
 };
 
 export type RenderLinkProps = {
@@ -75,6 +96,19 @@ export type AccountMenuProps = {
    */
   onSignOut: () => void | Promise<unknown>;
   groups?: AccountGroup[];
+  /**
+   * The other accounts this person can become, listed under who is signed in.
+   * Omit or pass none and the menu is unchanged. Their email is never shown:
+   * the second line is the note and the handle.
+   */
+  accounts?: AccountSwitchTarget[];
+  /**
+   * Called with the account to become. May return a promise; while it is
+   * pending the row says so, and if it rejects the menu stays open and says
+   * the switch did not complete, exactly as sign-out does. On success the app
+   * usually reloads as the other account.
+   */
+  onSwitchAccount?: (id: string) => void | Promise<unknown>;
   /**
    * Rows that are not menu items — a theme switch, a status line. Rendered
    * between the groups and Sign out, not navigable by arrow keys.
@@ -117,6 +151,33 @@ function PersonGlyph() {
   );
 }
 
+/** The second line of another account: its note, then its handle. Never its email. */
+function switchLineFor(target: AccountSwitchTarget): string | null {
+  const handle = target.user.handle?.trim().replace(/^@/, "");
+  // A handle that is already the display name is not said twice.
+  const shownHandle =
+    handle && displayNameFor(target.user) !== `@${handle}` ? `@${handle}` : "";
+  const parts = [target.note?.trim(), shownHandle].filter(Boolean);
+  return parts.length > 0 ? parts.join(" · ") : null;
+}
+
+/** The small face on an account row: photo, else initials, else a glyph. */
+function AccountFace({ user }: { user: AccountUser }) {
+  const [failed, setFailed] = useState(false);
+  const initials = initialsFor(user);
+  return (
+    <span className="acct-face" aria-hidden="true">
+      {user.image && !failed ? (
+        <img src={user.image} alt="" onError={() => setFailed(true)} />
+      ) : initials ? (
+        initials
+      ) : (
+        <PersonGlyph />
+      )}
+    </span>
+  );
+}
+
 /**
  * The account menu: who is signed in, where to go, how to sign out.
  *
@@ -135,6 +196,8 @@ export function AccountMenu({
   user,
   onSignOut,
   groups = [],
+  accounts = [],
+  onSwitchAccount,
   extra,
   renderLink = defaultLink,
   labels: labelOverrides,
@@ -146,6 +209,8 @@ export function AccountMenu({
   const [imageFailed, setImageFailed] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
   const [signOutError, setSignOutError] = useState(false);
+  const [switchingTo, setSwitchingTo] = useState<string | null>(null);
+  const [switchError, setSwitchError] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -207,6 +272,7 @@ export function AccountMenu({
   function openWithFocus(index: "first" | "last") {
     setOpen(true);
     setSignOutError(false);
+    setSwitchError(false);
     // After render: the panel does not exist yet.
     requestAnimationFrame(() => {
       const list = items();
@@ -258,6 +324,23 @@ export function AccountMenu({
     }
   }
 
+  async function switchTo(id: string) {
+    if (!onSwitchAccount) return;
+    setSwitchingTo(id);
+    setSwitchError(false);
+    try {
+      await onSwitchAccount(id);
+      // On success the app usually reloads; closing covers when it does not.
+      setOpen(false);
+    } catch {
+      setSwitchError(true);
+    } finally {
+      setSwitchingTo(null);
+    }
+  }
+
+  const switchable = onSwitchAccount ? accounts : [];
+
   return (
     <div
       ref={rootRef}
@@ -276,6 +359,7 @@ export function AccountMenu({
         onClick={() => {
           setOpen((v) => !v);
           setSignOutError(false);
+          setSwitchError(false);
         }}
         onKeyDown={onTriggerKeyDown}
       >
@@ -308,6 +392,49 @@ export function AccountMenu({
             <p className="acct-name">{name}</p>
             {secondary && <p className="acct-secondary">{secondary}</p>}
           </div>
+
+          {switchable.length > 0 && (
+            <div
+              className="acct-group acct-accounts"
+              role="group"
+              aria-label={labels.switchAccount}
+            >
+              <p className="acct-heading">{labels.switchAccount}</p>
+              {switchable.map((target) => {
+                const line =
+                  switchingTo === target.id
+                    ? labels.switching
+                    : switchLineFor(target);
+                return (
+                  <button
+                    key={target.id}
+                    type="button"
+                    className="acct-row acct-account"
+                    role="menuitem"
+                    tabIndex={-1}
+                    disabled={switchingTo !== null}
+                    aria-busy={switchingTo === target.id}
+                    onClick={() => void switchTo(target.id)}
+                  >
+                    <AccountFace user={target.user} />
+                    <span className="acct-account-text">
+                      <span className="acct-account-name">
+                        {displayNameFor(target.user)}
+                      </span>
+                      {line && (
+                        <span className="acct-account-line">{line}</span>
+                      )}
+                    </span>
+                  </button>
+                );
+              })}
+              {switchError && (
+                <p className="acct-error" role="alert">
+                  {labels.switchFailed}
+                </p>
+              )}
+            </div>
+          )}
 
           {groups
             .filter((g) => g.items.length > 0)

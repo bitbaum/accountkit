@@ -116,3 +116,29 @@ test("SignInError: no retry when sign-in is not configured; denial says so", asy
   assert.equal(signInErrorKind("Verification"), "failed");
   assert.equal(signInErrorKind(undefined), "failed");
 });
+
+test("other accounts change nothing until there are some and a way to switch", () => {
+  // The panel is closed on the server, so what can be pinned here is that
+  // the new props are accepted and the trigger is the same either way.
+  const plain = renderToStaticMarkup(
+    h(AccountMenu, { user: { name: "Cato" }, onSignOut: noop }),
+  );
+  const withAccounts = renderToStaticMarkup(
+    h(AccountMenu, {
+      user: { name: "Cato" },
+      onSignOut: noop,
+      accounts: [{ id: "a", user: { name: "Alberto Caeiro" } }],
+      onSwitchAccount: noop,
+    }),
+  );
+  assert.equal(withAccounts, plain);
+});
+
+test("the stylesheet keeps an account row to one line each for name and handle", () => {
+  const css = readFileSync(new URL("../styles.css", import.meta.url), "utf8");
+  assert.match(
+    css,
+    /\.acct-account-name,\s*\.acct-account-line\s*\{[^}]*white-space:\s*nowrap/,
+  );
+  assert.match(css, /\.acct-account-text\s*\{[^}]*min-inline-size:\s*0/);
+});

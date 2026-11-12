@@ -357,6 +357,36 @@ mount(
   />,
 );
 
+// Other accounts: the first switches, the second fails like a dropped
+// connection, the third has neither a name nor a photo.
+mount(
+  "switching",
+  <AccountMenu
+    user={{ name: "Bernardo Soares", handle: "soares" }}
+    groups={groups}
+    accounts={[
+      {
+        id: "main",
+        note: "Main account",
+        user: { name: "George Botsmann", handle: "cato", email: "x@y.z" },
+      },
+      {
+        id: "failing",
+        user: {
+          name: "Ricardo Reis de Almeida e Vasconcelos",
+          handle: "a_very_long_handle_indeed_1234567890",
+        },
+      },
+      { id: "bare", user: { handle: "campos" } },
+    ]}
+    onSwitchAccount={(id) => {
+      if (id === "failing") return Promise.reject(new Error("network"));
+      document.body.dataset.switchedTo = id;
+    }}
+    onSignOut={() => undefined}
+  />,
+);
+
 // The sign-in error screen: Try again restarts sign-in.
 mount(
   "signin-error",

@@ -20,6 +20,19 @@ export type AccountGroup = {
     id: string;
     items: AccountItem[];
 };
+/**
+ * Another account the signed-in person can become: a second identity, a work
+ * account. The app decides which ones exist; the menu shows them and switches.
+ */
+export type AccountSwitchTarget = {
+    id: string;
+    user: AccountUser;
+    /**
+     * What this account is to the person, in a word or two ("Main account").
+     * Leads the second line, so it is what survives a long handle.
+     */
+    note?: string;
+};
 export type AccountMenuLabels = {
     /** Accessible name of the trigger; "{name}" is replaced. */
     trigger: string;
@@ -27,6 +40,10 @@ export type AccountMenuLabels = {
     signOut: string;
     signingOut: string;
     signOutFailed: string;
+    /** Heading over the other accounts. */
+    switchAccount: string;
+    switching: string;
+    switchFailed: string;
 };
 export type RenderLinkProps = {
     href: string;
@@ -46,6 +63,19 @@ export type AccountMenuProps = {
      */
     onSignOut: () => void | Promise<unknown>;
     groups?: AccountGroup[];
+    /**
+     * The other accounts this person can become, listed under who is signed in.
+     * Omit or pass none and the menu is unchanged. Their email is never shown:
+     * the second line is the note and the handle.
+     */
+    accounts?: AccountSwitchTarget[];
+    /**
+     * Called with the account to become. May return a promise; while it is
+     * pending the row says so, and if it rejects the menu stays open and says
+     * the switch did not complete, exactly as sign-out does. On success the app
+     * usually reloads as the other account.
+     */
+    onSwitchAccount?: (id: string) => void | Promise<unknown>;
     /**
      * Rows that are not menu items — a theme switch, a status line. Rendered
      * between the groups and Sign out, not navigable by arrow keys.
@@ -72,5 +102,5 @@ export type AccountMenuProps = {
  *    move between items; a click outside closes;
  *  - sign-out shows that it is happening, and says so when it fails.
  */
-export declare function AccountMenu({ user, onSignOut, groups, extra, renderLink, labels: labelOverrides, align, className, }: AccountMenuProps): import("react").JSX.Element;
+export declare function AccountMenu({ user, onSignOut, groups, accounts, onSwitchAccount, extra, renderLink, labels: labelOverrides, align, className, }: AccountMenuProps): import("react").JSX.Element;
 //# sourceMappingURL=AccountMenu.d.ts.map
