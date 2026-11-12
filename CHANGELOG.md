@@ -17,7 +17,10 @@ entries" below predate it (some of them shipped in 0.29.0).
   at -112px and its text was cut off. The panel was pinned to the trigger's
   edge, which fits only when nothing follows it. The menu now measures the
   open panel and, only if it crosses an edge, moves it back inside the screen
-  (`--acct-shift`); a panel that already fits is not moved, so a trigger that
+  (`--acct-shift`, an offset of the edge the panel is pinned by, so the move
+  is made in layout: moved with a transform, the panel sat on screen while the
+  page still scrolled sideways on Chromium 156, and it follows the text
+  direction); a panel that already fits is not moved, so a trigger that
   is last looks exactly as before. The browser check opens four new demo rows
   (a 44px control before or after the trigger, `align` end and start) at 320
   and 390px, light and dark: the panel's left is at least 0, its right at most

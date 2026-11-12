@@ -170,6 +170,41 @@ try {
         );
       }
 
+      // The same rows read right to left. The panel is moved on the edge it
+      // is pinned by, and in a right-to-left page that edge is the other one:
+      // a move with the wrong sign pushes the panel further off the screen.
+      await page.evaluate(() =>
+        document.documentElement.setAttribute("dir", "rtl"),
+      );
+      for (const id of [
+        "row-followed-end",
+        "row-followed-start",
+        "row-preceded-end",
+        "row-preceded-start",
+      ]) {
+        const trigger = page.locator(`#${id} .acct-trigger`);
+        await trigger.click();
+        const panel = page.locator(`#${id} .acct-panel`);
+        await panel.waitFor();
+        const placed = await panel.evaluate((el) => {
+          const r = el.getBoundingClientRect();
+          return {
+            left: Math.round(r.left * 10) / 10,
+            right: Math.round(r.right * 10) / 10,
+            inner: window.innerWidth,
+            wide: document.documentElement.scrollWidth - window.innerWidth,
+          };
+        });
+        check(
+          placed.left >= 0 && placed.right <= placed.inner && placed.wide <= 0,
+          `[${width} ${scheme} rtl] #${id}: the open panel is inside the viewport and nothing scrolls sideways (left ${placed.left}, right ${placed.right}, width ${placed.inner}, ${placed.wide}px over)`,
+        );
+        await page.keyboard.press("Escape");
+      }
+      await page.evaluate(() =>
+        document.documentElement.removeAttribute("dir"),
+      );
+
       // Where the trigger IS last, the panel looks exactly as it always did:
       // its end edge on the trigger's end edge, not moved.
       for (const id of ["named", "row-preceded-end"]) {

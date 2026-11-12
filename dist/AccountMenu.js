@@ -27,6 +27,15 @@ const EDGE_GAP = 16;
  * the trigger sits in its row, so the panel is measured and, only if it
  * crosses an edge, moved back inside by `--acct-shift`. A panel that already
  * fits is not touched, so it looks exactly as it always did.
+ *
+ * The move is made in layout, on the edge the panel is pinned by, not with a
+ * transform. Moved by `translate`, the panel sat on screen while the page
+ * still scrolled sideways by the distance it had moved: seen in CI on
+ * Chromium 156 (186px and 242px at 320 and 390 wide), not on Chromium 153.
+ * A box that is laid out inside the screen cannot do that in any browser.
+ * `--acct-shift` is therefore the offset of the pinned edge: the distance to
+ * move right when that edge is the left one, its negative when it is the
+ * right one (which edge it is depends on `align` and the text direction).
  */
 function placePanel(panel) {
     panel.style.removeProperty("--acct-shift");
@@ -38,8 +47,12 @@ function placePanel(panel) {
         shift = viewport - gap - right;
     if (left + shift < 0)
         shift = gap - left;
-    if (shift !== 0)
-        panel.style.setProperty("--acct-shift", `${shift}px`);
+    if (shift === 0)
+        return;
+    const start = panel.closest(".acct")?.getAttribute("data-align") === "start";
+    const rtl = getComputedStyle(panel).direction === "rtl";
+    const pinnedLeft = start !== rtl;
+    panel.style.setProperty("--acct-shift", `${pinnedLeft ? shift : -shift}px`);
 }
 /**
  * The row the menu sits in: the nearest ancestor laid out as a flex or grid

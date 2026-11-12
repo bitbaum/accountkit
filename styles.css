@@ -145,15 +145,17 @@
   background: var(--acct-panel);
   color: var(--acct-fg);
   box-shadow: var(--acct-shadow);
-  /* Set by the menu only when the panel would cross the screen's edge (the
-     trigger is not the last control in its row); otherwise nothing moves. */
-  translate: var(--acct-shift, 0) 0;
 }
+/* --acct-shift is set by the menu only when the panel would cross the
+   screen's edge (the trigger is not the last control in its row); otherwise
+   nothing moves. It offsets the edge the panel is pinned by, in layout. With
+   a transform the panel sat on screen while the page still scrolled sideways
+   by the distance it had moved (Chromium 156). */
 .acct[data-align="end"] .acct-panel {
-  inset-inline-end: 0;
+  inset-inline-end: var(--acct-shift, 0px);
 }
 .acct[data-align="start"] .acct-panel {
-  inset-inline-start: 0;
+  inset-inline-start: var(--acct-shift, 0px);
 }
 
 .acct-identity {
