@@ -6,6 +6,13 @@ records, not claims that this file existed at release time.
 
 ## Unreleased
 
+- `AccountMenu` shows what waits in another account. An account in
+  `accounts` may carry `waiting`, a count (unread messages, notifications).
+  It is shown at the end of that account's row, capped at 99+, and as a dot
+  beside the trigger, so a person knows before opening the menu. The trigger's
+  accessible name says so too. Zero, absent or not a positive number shows
+  nothing, and so does a count with no `onSwitchAccount`. Two new labels
+  (`waiting`, `waitingElsewhere`).
 - The shared sign-in (Morulia) and OrangeCat are told the page's language.
   `OidcButtons`, `SignInForm` and `SignUpForm` send OIDC `ui_locales` on
   their authorize request: the new optional `locale` prop, or else the

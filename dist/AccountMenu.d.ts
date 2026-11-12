@@ -32,6 +32,13 @@ export type AccountSwitchTarget = {
      * Leads the second line, so it is what survives a long handle.
      */
     note?: string;
+    /**
+     * How many things wait for the person in this account (unread messages,
+     * notifications). Shown as a count on its row, and as a dot on the trigger
+     * so it is known without opening the menu. Zero, absent or not a positive
+     * number: nothing is shown.
+     */
+    waiting?: number;
 };
 export type AccountMenuLabels = {
     /** Accessible name of the trigger; "{name}" is replaced. */
@@ -44,6 +51,10 @@ export type AccountMenuLabels = {
     switchAccount: string;
     switching: string;
     switchFailed: string;
+    /** Read out for an account's count; "{count}" is replaced. */
+    waiting: string;
+    /** Added to the trigger's name when another account has something waiting. */
+    waitingElsewhere: string;
 };
 export type RenderLinkProps = {
     href: string;

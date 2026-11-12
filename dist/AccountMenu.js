@@ -11,6 +11,8 @@ const DEFAULT_LABELS = {
     switchAccount: "Switch account",
     switching: "Switching…",
     switchFailed: "The switch did not complete. Try again.",
+    waiting: "{count} waiting",
+    waitingElsewhere: "something is waiting in another account",
 };
 function defaultLink(props) {
     return _jsx("a", { ...props });
@@ -29,6 +31,17 @@ function switchLineFor(target) {
     const shownHandle = handle && displayNameFor(target.user) !== `@${handle}` ? `@${handle}` : "";
     const parts = [target.note?.trim(), shownHandle].filter(Boolean);
     return parts.length > 0 ? parts.join(" · ") : null;
+}
+/** A whole positive count, or 0 for anything else an app might pass. */
+function waitingCount(target) {
+    const n = target.waiting;
+    return typeof n === "number" && Number.isFinite(n) && n >= 1
+        ? Math.floor(n)
+        : 0;
+}
+/** What the count shows: the number, capped so the row never grows with it. */
+function waitingText(count) {
+    return count > 99 ? "99+" : String(count);
 }
 /** The small face on an account row: photo, else initials, else a glyph. */
 function AccountFace({ user }) {
@@ -174,15 +187,19 @@ export function AccountMenu({ user, onSignOut, groups = [], accounts = [], onSwi
         }
     }
     const switchable = onSwitchAccount ? accounts : [];
-    return (_jsxs("div", { ref: rootRef, className: ["acct", className].filter(Boolean).join(" "), "data-align": align, children: [_jsx("button", { ref: triggerRef, type: "button", className: "acct-trigger", "aria-haspopup": "menu", "aria-expanded": open, "aria-controls": open ? panelId : undefined, "aria-label": labels.trigger.replace("{name}", name), title: name, onClick: () => {
+    const waitingElsewhere = switchable.some((t) => waitingCount(t) > 0);
+    const triggerName = labels.trigger.replace("{name}", name);
+    return (_jsxs("div", { ref: rootRef, className: ["acct", className].filter(Boolean).join(" "), "data-align": align, children: [_jsx("button", { ref: triggerRef, type: "button", className: "acct-trigger", "aria-haspopup": "menu", "aria-expanded": open, "aria-controls": open ? panelId : undefined, "aria-label": waitingElsewhere
+                    ? `${triggerName}, ${labels.waitingElsewhere}`
+                    : triggerName, title: name, onClick: () => {
                     setOpen((v) => !v);
                     setSignOutError(false);
                     setSwitchError(false);
-                }, onKeyDown: onTriggerKeyDown, children: showImage ? (_jsx("img", { className: "acct-avatar", src: user.image ?? undefined, alt: "", onError: () => setImageFailed(true) })) : initials ? (_jsx("span", { className: "acct-initials", "aria-hidden": "true", children: initials })) : (_jsx(PersonGlyph, {})) }), open && (_jsxs("div", { ref: panelRef, id: panelId, className: "acct-panel", role: "menu", "aria-label": labels.menu, onKeyDown: onPanelKeyDown, children: [_jsxs("div", { className: "acct-identity", children: [_jsx("p", { className: "acct-name", children: name }), secondary && _jsx("p", { className: "acct-secondary", children: secondary })] }), switchable.length > 0 && (_jsxs("div", { className: "acct-group acct-accounts", role: "group", "aria-label": labels.switchAccount, children: [_jsx("p", { className: "acct-heading", children: labels.switchAccount }), switchable.map((target) => {
+                }, onKeyDown: onTriggerKeyDown, children: showImage ? (_jsx("img", { className: "acct-avatar", src: user.image ?? undefined, alt: "", onError: () => setImageFailed(true) })) : initials ? (_jsx("span", { className: "acct-initials", "aria-hidden": "true", children: initials })) : (_jsx(PersonGlyph, {})) }), waitingElsewhere && (_jsx("span", { className: "acct-trigger-dot", "aria-hidden": "true" })), open && (_jsxs("div", { ref: panelRef, id: panelId, className: "acct-panel", role: "menu", "aria-label": labels.menu, onKeyDown: onPanelKeyDown, children: [_jsxs("div", { className: "acct-identity", children: [_jsx("p", { className: "acct-name", children: name }), secondary && _jsx("p", { className: "acct-secondary", children: secondary })] }), switchable.length > 0 && (_jsxs("div", { className: "acct-group acct-accounts", role: "group", "aria-label": labels.switchAccount, children: [_jsx("p", { className: "acct-heading", children: labels.switchAccount }), switchable.map((target) => {
                                 const line = switchingTo === target.id
                                     ? labels.switching
                                     : switchLineFor(target);
-                                return (_jsxs("button", { type: "button", className: "acct-row acct-account", role: "menuitem", tabIndex: -1, disabled: switchingTo !== null, "aria-busy": switchingTo === target.id, onClick: () => void switchTo(target.id), children: [_jsx(AccountFace, { user: target.user }), _jsxs("span", { className: "acct-account-text", children: [_jsx("span", { className: "acct-account-name", children: displayNameFor(target.user) }), line && (_jsx("span", { className: "acct-account-line", children: line }))] })] }, target.id));
+                                return (_jsxs("button", { type: "button", className: "acct-row acct-account", role: "menuitem", tabIndex: -1, disabled: switchingTo !== null, "aria-busy": switchingTo === target.id, onClick: () => void switchTo(target.id), children: [_jsx(AccountFace, { user: target.user }), _jsxs("span", { className: "acct-account-text", children: [_jsx("span", { className: "acct-account-name", children: displayNameFor(target.user) }), line && (_jsx("span", { className: "acct-account-line", children: line }))] }), waitingCount(target) > 0 && (_jsx("span", { className: "acct-waiting", "aria-label": labels.waiting.replace("{count}", String(waitingCount(target))), children: waitingText(waitingCount(target)) }))] }, target.id));
                             }), switchError && (_jsx("p", { className: "acct-error", role: "alert", children: labels.switchFailed }))] })), groups
                         .filter((g) => g.items.length > 0)
                         .map((group) => (_jsx("div", { className: "acct-group", role: "group", children: group.items.map((item) => isLink(item) ? (_jsx(Fragment, { children: renderLink({
