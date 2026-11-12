@@ -353,7 +353,13 @@ function CodeSignIn({
   );
 }
 
-/** "Continue with …" for each OIDC method this deployment has switched on. */
+/**
+ * "Continue with …" for each OIDC method this deployment has switched on.
+ * OrangeCat, the fleet's own account, comes first; the shared sign-in
+ * ("Continue with Google or GitHub") follows it. In the other order the
+ * shared button read as a heading over the OrangeCat one (BiasLens sign-in,
+ * 2026-11-12).
+ */
 export function OidcButtons({
   client,
   methods,
@@ -371,13 +377,13 @@ export function OidcButtons({
   const c = merge(classes);
   const [busy, setBusy] = useState<string | null>(null);
   const providers = [
+    methods.orangecat ? { id: "orangecat", label: labels.withOrangecat } : null,
     methods.signin
       ? {
           id: "bitbaum-signin",
           label: signinButtonLabel(labels, methods.signinProviders),
         }
       : null,
-    methods.orangecat ? { id: "orangecat", label: labels.withOrangecat } : null,
     methods.github
       ? {
           id: "github",
