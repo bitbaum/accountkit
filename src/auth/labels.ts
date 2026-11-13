@@ -380,6 +380,27 @@ export function authErrorText(
  * word for "or" are taken from their `withSignin` when it has the shape every
  * shipped one had ("<words> Google, …, <or> <last>"); otherwise English.
  */
+/**
+ * The providers the shared sign-in button NAMES, beside the product's other
+ * buttons. A product with its own GitHub app draws "Continue with GitHub";
+ * with the shared button also reading "Continue with Google or GitHub", the
+ * screen offered GitHub twice and a reader could not tell which one was
+ * theirs (Loki's sign-in, 2026-11-12). The shared button then names the
+ * others only. Both ways in stay: an account made through either still signs
+ * in the way it was made. Where GitHub is the ONLY shared provider the list
+ * is left as it is, since a button has to say where it leads.
+ */
+export function signinProvidersBeside(
+  providers: readonly string[] | undefined,
+  beside: { github?: boolean },
+): readonly string[] | undefined {
+  if (!providers || !beside.github) return providers;
+  const others = providers.filter(
+    (name) => name.trim().toLowerCase() !== "github",
+  );
+  return others.length > 0 ? others : providers;
+}
+
 export function signinButtonLabel(
   labels: AuthLabels,
   providers: readonly string[] | undefined,

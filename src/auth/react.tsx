@@ -17,6 +17,7 @@ import {
   authErrorText,
   fill,
   signinButtonLabel,
+  signinProvidersBeside,
   type AuthError,
   type AuthLabels,
 } from "./labels.js";
@@ -381,7 +382,12 @@ export function OidcButtons({
     methods.signin
       ? {
           id: "bitbaum-signin",
-          label: signinButtonLabel(labels, methods.signinProviders),
+          label: signinButtonLabel(
+            labels,
+            signinProvidersBeside(methods.signinProviders, {
+              github: methods.github,
+            }),
+          ),
         }
       : null,
     methods.github
@@ -1270,7 +1276,12 @@ export function AccountPanel({
   const oidc = [
     {
       id: "bitbaum-signin",
-      label: signinButtonLabel(labels, methods.signinProviders),
+      label: signinButtonLabel(
+        labels,
+        signinProvidersBeside(methods.signinProviders, {
+          github: methods.github,
+        }),
+      ),
       on: methods.signin,
     },
     { id: "orangecat", label: labels.withOrangecat, on: methods.orangecat },
