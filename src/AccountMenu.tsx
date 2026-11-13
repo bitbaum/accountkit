@@ -19,12 +19,22 @@ import {
   type AccountUser,
 } from "./identity.js";
 
+/**
+ * At which widths a row is shown. `"always"` (the default) at every width;
+ * `"narrow"` only below 768px, for a row that repeats a control the header
+ * itself shows from that width up (a theme toggle, a search button). Hidden
+ * by the package's stylesheet, in a media query, so the row is right on the
+ * first paint and on the server: no width read in script, no flash.
+ */
+export type AccountRowShown = "always" | "narrow";
+
 /** A place to go. Rendered through `renderLink` so a Next app keeps <Link>. */
 export type AccountLinkItem = {
   id: string;
   label: string;
   href: string;
   icon?: ReactNode;
+  shown?: AccountRowShown;
 };
 
 /** Something to do. Closes the menu, then runs. */
@@ -33,12 +43,36 @@ export type AccountActionItem = {
   label: string;
   onSelect: () => void | Promise<unknown>;
   icon?: ReactNode;
+  shown?: AccountRowShown;
 };
 
 export type AccountItem = AccountLinkItem | AccountActionItem;
 
-/** Items are grouped; a divider separates groups. */
-export type AccountGroup = { id: string; items: AccountItem[] };
+/**
+ * Items are grouped; a divider separates groups. A group whose `shown` is
+ * `"narrow"`, or whose every item's is, goes from 768px up with its divider.
+ */
+export type AccountGroup = {
+  id: string;
+  items: AccountItem[];
+  shown?: AccountRowShown;
+};
+
+/** The class a narrow-only row or group carries; styles.css hides it wide. */
+const NARROW_CLASS = "acct-narrow";
+
+function rowClass(base: string, shown: AccountRowShown | undefined): string {
+  return shown === "narrow" ? `${base} ${NARROW_CLASS}` : base;
+}
+
+/** A group goes wide when it says so, or when every one of its items does. */
+export function groupShown(group: AccountGroup): AccountRowShown {
+  if (group.shown === "narrow") return "narrow";
+  return group.items.length > 0 &&
+    group.items.every((item) => item.shown === "narrow")
+    ? "narrow"
+    : "always";
+}
 
 /**
  * Another account the signed-in person can become: a second identity, a work
@@ -134,6 +168,11 @@ export type AccountMenuProps = {
    * between the groups and Sign out, not navigable by arrow keys.
    */
   extra?: ReactNode;
+  /**
+   * At which widths `extra` is shown. `"narrow"` for a theme switch the
+   * header itself carries from 768px up. Default `"always"`.
+   */
+  extraShown?: AccountRowShown;
   /** Defaults to a plain <a>. Pass `(p) => <Link {...p} />` in a Next app. */
   renderLink?: (props: RenderLinkProps) => ReactNode;
   labels?: Partial<AccountMenuLabels>;
@@ -287,6 +326,7 @@ export function AccountMenu({
   accounts = [],
   onSwitchAccount,
   extra,
+  extraShown = "always",
   renderLink = defaultLink,
   labels: labelOverrides,
   align = "end",
@@ -312,13 +352,15 @@ export function AccountMenu({
   // A new image URL deserves a fresh attempt.
   useEffect(() => setImageFailed(false), [user.image]);
 
+  // Only rows that are laid out: a `shown: "narrow"` row hidden by the
+  // stylesheet at this width cannot take focus, so arrows step over it.
   const items = useCallback(
     () =>
       Array.from(
         panelRef.current?.querySelectorAll<HTMLElement>(
           '[role="menuitem"]:not([disabled])',
         ) ?? [],
-      ),
+      ).filter((el) => el.getClientRects().length > 0),
     [],
   );
 
@@ -591,13 +633,17 @@ export function AccountMenu({
           {groups
             .filter((g) => g.items.length > 0)
             .map((group) => (
-              <div key={group.id} className="acct-group" role="group">
+              <div
+                key={group.id}
+                className={rowClass("acct-group", groupShown(group))}
+                role="group"
+              >
                 {group.items.map((item) =>
                   isLink(item) ? (
                     <Fragment key={item.id}>
                       {renderLink({
                         href: item.href,
-                        className: "acct-row",
+                        className: rowClass("acct-row", item.shown),
                         role: "menuitem",
                         tabIndex: -1,
                         onClick: () => close(false),
@@ -615,7 +661,7 @@ export function AccountMenu({
                     <button
                       key={item.id}
                       type="button"
-                      className="acct-row"
+                      className={rowClass("acct-row", item.shown)}
                       role="menuitem"
                       tabIndex={-1}
                       onClick={() => {
@@ -633,7 +679,11 @@ export function AccountMenu({
               </div>
             ))}
 
-          {extra && <div className="acct-group acct-extra">{extra}</div>}
+          {extra && (
+            <div className={rowClass("acct-group acct-extra", extraShown)}>
+              {extra}
+            </div>
+          )}
 
           <div className="acct-group">
             <button

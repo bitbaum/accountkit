@@ -88,6 +88,14 @@ import { AccountMenu } from "@bitbaum/accountkit";
 - **`onSignOut`** may return a promise. While it runs the row says so; if it rejects, the menu stays open and says sign-out did not complete. A sign-out that fails silently is the one thing this menu must never do.
 - **`renderLink`** keeps your router (Next `<Link>`); the default is a plain `<a>`.
 - **`extra`** is for rows that are not places, such as a theme switch.
+- **`shown`** on an item or a group, and **`extraShown`** for `extra`: `"always"` (the default) or `"narrow"`, shown below 768px only. For a row that repeats a control the header itself carries from that width up, such as a theme toggle that is `hidden md:inline-flex` in the header: on a phone the menu row is the only way to it, on a desktop it would be the same control twice. The package's stylesheet hides it in a media query, so the server render and the first paint are already right (no width is read in script, nothing flashes), the arrow keys step over a hidden row, and a group whose `shown` is `"narrow"`, or whose every item's is, goes with its divider.
+
+  ```tsx
+  groups={[
+    { id: "places", items: places },
+    { id: "appearance", shown: "narrow", items: [{ id: "theme", label: "Appearance: Auto", onSelect: cycleTheme }] },
+  ]}
+  ```
 - **`accounts`** and **`onSwitchAccount`** list the other accounts this person can become (a second identity, a work account) under who is signed in, and switch on a tap. Each is `{ id, user, note? }`; `note` says what the account is to the person ("Main account") and leads its second line. Their email is never shown. `onSwitchAccount(id)` may return a promise: the row says it is switching, and if it rejects the menu stays open and says the switch did not complete, as sign-out does. With no accounts, or no `onSwitchAccount`, the menu is unchanged. An account may carry `waiting`, a count of what waits there (unread messages, notifications): it is shown at the end of its row, capped at 99+, and as a dot on the trigger so it is known before the menu is opened.
 - **`labels`** translates every string: `labels={{ trigger: "Konto: {name}", signOut: "Abmelden" }}`.
 

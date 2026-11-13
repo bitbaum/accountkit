@@ -1,5 +1,5 @@
 export { displayNameFor, initialsFor, nextMenuIndex, secondaryLineFor, PLACEHOLDER_NAME, } from "./identity.js";
-export { AccountMenu, } from "./AccountMenu.js";
+export { AccountMenu, groupShown, } from "./AccountMenu.js";
 export { SignInError, signInErrorKind, } from "./SignInError.js";
 export { AccountControl, accountSignInHtml, } from "./AccountControl.js";
 export { fetchAccountSummary } from "./accountSummary.js";

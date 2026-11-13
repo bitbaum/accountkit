@@ -187,6 +187,23 @@
   border-block-start: 1px solid var(--acct-line);
 }
 
+/* `shown: "narrow"`: a row the header itself shows from 768px up (a theme
+   toggle) is only in the menu below it. A media query, not a width read in
+   script, so the first paint and the server render are already right. 768px
+   is the md breakpoint the fleet's headers switch at. Hidden, a group must
+   not leave its divider behind: the first group still shown after the
+   identity block draws no line of its own (that block's edge is the line).
+   The second selector is a complex :not() (Selectors 4; Chrome 88, Safari 9,
+   Firefox 84). */
+@media (min-width: 768px) {
+  .acct-panel .acct-narrow {
+    display: none;
+  }
+  .acct-group:not(.acct-group:not(.acct-narrow) ~ *) {
+    border-block-start: 0;
+  }
+}
+
 .acct-row {
   display: flex;
   align-items: center;

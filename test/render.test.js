@@ -5,7 +5,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { createElement as h } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { AccountMenu } from "../dist/index.js";
+import { AccountMenu, groupShown } from "../dist/index.js";
 
 const noop = () => {};
 
@@ -186,4 +186,38 @@ test("a count without a way to switch shows nothing: there is nowhere to go", ()
     }),
   );
   assert.ok(!/acct-trigger-dot/.test(html));
+});
+
+test("shown: a group goes wide only when it says so or every item does", () => {
+  const link = { id: "a", label: "A", href: "/a" };
+  const narrow = {
+    id: "t",
+    label: "Appearance",
+    onSelect: noop,
+    shown: "narrow",
+  };
+  assert.equal(groupShown({ id: "g", items: [link] }), "always");
+  assert.equal(groupShown({ id: "g", items: [narrow] }), "narrow");
+  assert.equal(groupShown({ id: "g", items: [link, narrow] }), "always");
+  assert.equal(
+    groupShown({ id: "g", items: [link], shown: "narrow" }),
+    "narrow",
+  );
+  assert.equal(
+    groupShown({ id: "g", items: [{ ...narrow, shown: "always" }] }),
+    "always",
+  );
+  assert.equal(groupShown({ id: "g", items: [] }), "always");
+});
+
+test("the stylesheet hides narrow rows from 768px up, in a media query", () => {
+  const css = readFileSync(new URL("../styles.css", import.meta.url), "utf8");
+  const wide = css.match(/@media \(min-width: 768px\) \{([\s\S]*?)\n\}/);
+  assert.ok(wide, "a 768px media query");
+  assert.match(wide[1], /\.acct-panel \.acct-narrow\s*\{\s*display:\s*none/);
+  assert.match(
+    wide[1],
+    /\.acct-group:not\(\.acct-group:not\(\.acct-narrow\) ~ \*\)\s*\{\s*border-block-start:\s*0/,
+    "a hidden first group takes its divider with it",
+  );
 });

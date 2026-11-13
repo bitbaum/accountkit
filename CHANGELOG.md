@@ -6,6 +6,26 @@ records, not claims that this file existed at release time.
 
 ## Unreleased
 
+### 2026-11-13: rows shown only below 768px (`shown: "narrow"`)
+
+- `AccountMenu`: an item or a group may carry `shown: "always" | "narrow"`
+  (default `"always"`, so every product is unchanged), and `extra` has the
+  same choice as `extraShown`. A `"narrow"` row is in the menu below 768px
+  only. Found in OrangeCat's app-shell audit (2026-11-12): from md up its
+  header carries a theme toggle and the menu also showed "Appearance", the
+  same control twice at one width; on a phone the header toggle is hidden and
+  the menu row is the only one, so it must stay there. OrangeCat hid the row
+  with a width read in script, which is wrong on the server render and
+  flashes. The package's stylesheet now hides it in a
+  `@media (min-width: 768px)` rule; the arrow keys skip a row that is not
+  laid out, and a hidden group takes its divider with it (the first group
+  still shown after the identity block draws no line of its own).
+  `groupShown(group)` and the type `AccountRowShown` are exported. The browser
+  check opens a new demo row at 390, 767, 768 and 1280px, light and dark: the
+  narrow rows are shown and reached by the arrows below 768px, hidden and
+  skipped from 768px, one divider between the groups shown, nothing scrolls
+  sideways. Render tests cover `groupShown` and the media query.
+
 ### 2026-11-12: OrangeCat first among the "Continue with …" buttons
 
 - Fix: on a product with both OrangeCat and the shared sign-in switched on,
