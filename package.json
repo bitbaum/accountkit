@@ -141,8 +141,8 @@
   "devDependencies": {
     "@auth/core": "0.41.3",
     "@better-auth/passkey": "^1.7.10",
-    "@bitbaum/design-tokens": "^1.5.2",
-    "@bitbaum/mail-kit": "0.3.0",
+    "@bitbaum/design-tokens": "^1.7.1",
+    "@bitbaum/mail-kit": "0.4.0",
     "@electric-sql/pglite": "^0.5.10",
     "@eslint/js": "^10.0.1",
     "@types/node": "^26.4.0",
