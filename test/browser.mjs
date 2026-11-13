@@ -374,6 +374,96 @@ try {
     await page.close();
   }
 
+  // shown: "narrow". OrangeCat's header carries a theme toggle from 768px
+  // up and its menu repeated it as "Appearance": the same control twice at
+  // one width. A narrow row is in the menu below 768px only, hidden by the
+  // stylesheet (no flash), skipped by the arrows, and a hidden group takes
+  // its divider with it.
+  for (const [width, wide] of [
+    [390, false],
+    [767, false],
+    [768, true],
+    [1280, true],
+  ]) {
+    for (const scheme of ["light", "dark"]) {
+      const page = await browser.newPage({
+        viewport: { width, height: 844 },
+        colorScheme: scheme,
+      });
+      await page.goto(base);
+      const trigger = page.locator("#narrow .acct-trigger");
+      await trigger.waitFor();
+      await trigger.focus();
+      await page.keyboard.press("ArrowDown");
+      await page.waitForTimeout(50);
+      const order = [];
+      for (let i = 0; i < 6; i++) {
+        order.push(
+          await page.evaluate(() =>
+            document.activeElement?.textContent?.trim(),
+          ),
+        );
+        await page.keyboard.press("ArrowDown");
+      }
+      const expected = wide
+        ? [
+            "Settings",
+            "Projects",
+            "Sign out",
+            "Settings",
+            "Projects",
+            "Sign out",
+          ]
+        : [
+            "Appearance: Auto",
+            "Settings",
+            "Search",
+            "Projects",
+            "Sign out",
+            "Appearance: Auto",
+          ];
+      check(
+        JSON.stringify(order) === JSON.stringify(expected),
+        `[${width} ${scheme}] narrow rows ${wide ? "skipped" : "reached"} by the arrows (${order.join(" > ")})`,
+      );
+      const seen = await page.evaluate(() => {
+        const panel = document.querySelector("#narrow .acct-panel");
+        const shown = (el) => el.getClientRects().length > 0;
+        const groups = [...panel.querySelectorAll(":scope > .acct-group")]
+          .filter(shown)
+          .map((g) => getComputedStyle(g).borderTopWidth);
+        return {
+          appearance: [...panel.querySelectorAll(".acct-row")].some(
+            (el) => shown(el) && el.textContent.includes("Appearance"),
+          ),
+          search: [...panel.querySelectorAll(".acct-row")].some(
+            (el) => shown(el) && el.textContent.includes("Search"),
+          ),
+          extra: shown(panel.querySelector(".acct-extra")),
+          groups,
+          sideways:
+            document.documentElement.scrollWidth >
+            document.documentElement.clientWidth,
+        };
+      });
+      check(
+        seen.appearance === !wide &&
+          seen.search === !wide &&
+          seen.extra === !wide,
+        `[${width} ${scheme}] Appearance, Search and extra ${wide ? "hidden" : "shown"} (${seen.appearance}, ${seen.search}, ${seen.extra})`,
+      );
+      // One line under the identity block (its own edge), then one between
+      // each pair of groups still shown: never two lines in a row.
+      check(
+        seen.groups[0] === "0px" &&
+          seen.groups.slice(1).every((w) => w === "1px"),
+        `[${width} ${scheme}] one divider between shown groups (${seen.groups.join(", ")})`,
+      );
+      check(!seen.sideways, `[${width} ${scheme}] nothing scrolls sideways`);
+      await page.close();
+    }
+  }
+
   const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
   await page.goto(base);
   const named = page.locator("#named .acct-trigger");

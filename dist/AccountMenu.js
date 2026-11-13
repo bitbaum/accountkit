@@ -2,6 +2,20 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
 import { Fragment, useCallback, useEffect, useId, useLayoutEffect, useRef, useState, } from "react";
 import { displayNameFor, initialsFor, nextMenuIndex, secondaryLineFor, } from "./identity.js";
+/** The class a narrow-only row or group carries; styles.css hides it wide. */
+const NARROW_CLASS = "acct-narrow";
+function rowClass(base, shown) {
+    return shown === "narrow" ? `${base} ${NARROW_CLASS}` : base;
+}
+/** A group goes wide when it says so, or when every one of its items does. */
+export function groupShown(group) {
+    if (group.shown === "narrow")
+        return "narrow";
+    return group.items.length > 0 &&
+        group.items.every((item) => item.shown === "narrow")
+        ? "narrow"
+        : "always";
+}
 export const DEFAULT_LABELS = {
     trigger: "Account: {name}",
     menu: "Account",
@@ -118,7 +132,7 @@ function AccountFace({ user }) {
  *    move between items; a click outside closes;
  *  - sign-out shows that it is happening, and says so when it fails.
  */
-export function AccountMenu({ user, onSignOut, groups = [], accounts = [], onSwitchAccount, extra, renderLink = defaultLink, labels: labelOverrides, align = "end", className, }) {
+export function AccountMenu({ user, onSignOut, groups = [], accounts = [], onSwitchAccount, extra, extraShown = "always", renderLink = defaultLink, labels: labelOverrides, align = "end", className, }) {
     const labels = { ...DEFAULT_LABELS, ...labelOverrides };
     const [open, setOpen] = useState(false);
     const [imageFailed, setImageFailed] = useState(false);
@@ -136,7 +150,9 @@ export function AccountMenu({ user, onSignOut, groups = [], accounts = [], onSwi
     const showImage = Boolean(user.image) && !imageFailed;
     // A new image URL deserves a fresh attempt.
     useEffect(() => setImageFailed(false), [user.image]);
-    const items = useCallback(() => Array.from(panelRef.current?.querySelectorAll('[role="menuitem"]:not([disabled])') ?? []), []);
+    // Only rows that are laid out: a `shown: "narrow"` row hidden by the
+    // stylesheet at this width cannot take focus, so arrows step over it.
+    const items = useCallback(() => Array.from(panelRef.current?.querySelectorAll('[role="menuitem"]:not([disabled])') ?? []).filter((el) => el.getClientRects().length > 0), []);
     const close = useCallback((restoreFocus) => {
         setOpen(false);
         if (restoreFocus)
@@ -302,16 +318,16 @@ export function AccountMenu({ user, onSignOut, groups = [], accounts = [], onSwi
                                 return (_jsxs("button", { type: "button", className: "acct-row acct-account", role: "menuitem", tabIndex: -1, disabled: switchingTo !== null, "aria-busy": switchingTo === target.id, onClick: () => void switchTo(target.id), children: [_jsx(AccountFace, { user: target.user }), _jsxs("span", { className: "acct-account-text", children: [_jsx("span", { className: "acct-account-name", children: displayNameFor(target.user) }), line && (_jsx("span", { className: "acct-account-line", children: line }))] }), waitingCount(target) > 0 && (_jsx("span", { className: "acct-waiting", "aria-label": labels.waiting.replace("{count}", String(waitingCount(target))), children: waitingText(waitingCount(target)) }))] }, target.id));
                             }), switchError && (_jsx("p", { className: "acct-error", role: "alert", children: labels.switchFailed }))] })), groups
                         .filter((g) => g.items.length > 0)
-                        .map((group) => (_jsx("div", { className: "acct-group", role: "group", children: group.items.map((item) => isLink(item) ? (_jsx(Fragment, { children: renderLink({
+                        .map((group) => (_jsx("div", { className: rowClass("acct-group", groupShown(group)), role: "group", children: group.items.map((item) => isLink(item) ? (_jsx(Fragment, { children: renderLink({
                                 href: item.href,
-                                className: "acct-row",
+                                className: rowClass("acct-row", item.shown),
                                 role: "menuitem",
                                 tabIndex: -1,
                                 onClick: () => close(false),
                                 children: (_jsxs(_Fragment, { children: [item.icon && (_jsx("span", { className: "acct-icon", children: item.icon })), _jsx("span", { children: item.label })] })),
-                            }) }, item.id)) : (_jsxs("button", { type: "button", className: "acct-row", role: "menuitem", tabIndex: -1, onClick: () => {
+                            }) }, item.id)) : (_jsxs("button", { type: "button", className: rowClass("acct-row", item.shown), role: "menuitem", tabIndex: -1, onClick: () => {
                                 close(false);
                                 void item.onSelect();
-                            }, children: [item.icon && (_jsx("span", { className: "acct-icon", children: item.icon })), _jsx("span", { children: item.label })] }, item.id))) }, group.id))), extra && _jsx("div", { className: "acct-group acct-extra", children: extra }), _jsxs("div", { className: "acct-group", children: [_jsx("button", { type: "button", className: "acct-row acct-signout", role: "menuitem", tabIndex: -1, disabled: signingOut, "aria-busy": signingOut, onClick: () => void signOut(), children: _jsx("span", { children: signingOut ? labels.signingOut : labels.signOut }) }), signOutError && (_jsx("p", { className: "acct-error", role: "alert", children: labels.signOutFailed }))] })] }))] }));
+                            }, children: [item.icon && (_jsx("span", { className: "acct-icon", children: item.icon })), _jsx("span", { children: item.label })] }, item.id))) }, group.id))), extra && (_jsx("div", { className: rowClass("acct-group acct-extra", extraShown), children: extra })), _jsxs("div", { className: "acct-group", children: [_jsx("button", { type: "button", className: "acct-row acct-signout", role: "menuitem", tabIndex: -1, disabled: signingOut, "aria-busy": signingOut, onClick: () => void signOut(), children: _jsx("span", { children: signingOut ? labels.signingOut : labels.signOut }) }), signOutError && (_jsx("p", { className: "acct-error", role: "alert", children: labels.signOutFailed }))] })] }))] }));
 }
 //# sourceMappingURL=AccountMenu.js.map

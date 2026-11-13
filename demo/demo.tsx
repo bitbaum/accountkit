@@ -389,6 +389,40 @@ mount(
   />,
 );
 
+// A header that carries its own theme toggle and search from 768px up: the
+// menu repeats them only below that width. The first group goes whole (its
+// divider with it); "Search" goes alone from the middle of the second.
+mount(
+  "narrow",
+  <AccountMenu
+    user={{ name: "George Botsmann", handle: "cato" }}
+    groups={[
+      {
+        id: "appearance",
+        items: [
+          {
+            id: "theme",
+            label: "Appearance: Auto",
+            onSelect: () => undefined,
+            shown: "narrow",
+          },
+        ],
+      },
+      {
+        id: "nav",
+        items: [
+          { id: "settings", label: "Settings", href: "#settings" },
+          { id: "search", label: "Search", href: "#search", shown: "narrow" },
+          { id: "projects", label: "Projects", href: "#projects" },
+        ],
+      },
+    ]}
+    extra={<span>Theme switch</span>}
+    extraShown="narrow"
+    onSignOut={() => undefined}
+  />,
+);
+
 // The trigger is not always the last control in its row: a header's menu
 // button may follow it, a search button may precede it. The panel must stay
 // on screen wherever it sits, aligned to either edge.

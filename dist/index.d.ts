@@ -1,5 +1,5 @@
 export { displayNameFor, initialsFor, nextMenuIndex, secondaryLineFor, PLACEHOLDER_NAME, type AccountUser, } from "./identity.js";
-export { AccountMenu, type AccountActionItem, type AccountGroup, type AccountItem, type AccountLinkItem, type AccountMenuLabels, type AccountMenuProps, type AccountSwitchTarget, type RenderLinkProps, } from "./AccountMenu.js";
+export { AccountMenu, groupShown, type AccountActionItem, type AccountGroup, type AccountItem, type AccountLinkItem, type AccountMenuLabels, type AccountMenuProps, type AccountRowShown, type AccountSwitchTarget, type RenderLinkProps, } from "./AccountMenu.js";
 export { SignInError, signInErrorKind, type SignInErrorKind, type SignInErrorLabels, type SignInErrorProps, } from "./SignInError.js";
 export { AccountControl, accountSignInHtml, type AccountControlProps, type AccountSignIn, } from "./AccountControl.js";
 export { fetchAccountSummary } from "./accountSummary.js";

@@ -1,11 +1,20 @@
 import { type ReactNode } from "react";
 import { type AccountUser } from "./identity.js";
+/**
+ * At which widths a row is shown. `"always"` (the default) at every width;
+ * `"narrow"` only below 768px, for a row that repeats a control the header
+ * itself shows from that width up (a theme toggle, a search button). Hidden
+ * by the package's stylesheet, in a media query, so the row is right on the
+ * first paint and on the server: no width read in script, no flash.
+ */
+export type AccountRowShown = "always" | "narrow";
 /** A place to go. Rendered through `renderLink` so a Next app keeps <Link>. */
 export type AccountLinkItem = {
     id: string;
     label: string;
     href: string;
     icon?: ReactNode;
+    shown?: AccountRowShown;
 };
 /** Something to do. Closes the menu, then runs. */
 export type AccountActionItem = {
@@ -13,13 +22,20 @@ export type AccountActionItem = {
     label: string;
     onSelect: () => void | Promise<unknown>;
     icon?: ReactNode;
+    shown?: AccountRowShown;
 };
 export type AccountItem = AccountLinkItem | AccountActionItem;
-/** Items are grouped; a divider separates groups. */
+/**
+ * Items are grouped; a divider separates groups. A group whose `shown` is
+ * `"narrow"`, or whose every item's is, goes from 768px up with its divider.
+ */
 export type AccountGroup = {
     id: string;
     items: AccountItem[];
+    shown?: AccountRowShown;
 };
+/** A group goes wide when it says so, or when every one of its items does. */
+export declare function groupShown(group: AccountGroup): AccountRowShown;
 /**
  * Another account the signed-in person can become: a second identity, a work
  * account. The app decides which ones exist; the menu shows them and switches.
@@ -98,6 +114,11 @@ export type AccountMenuProps = {
      * between the groups and Sign out, not navigable by arrow keys.
      */
     extra?: ReactNode;
+    /**
+     * At which widths `extra` is shown. `"narrow"` for a theme switch the
+     * header itself carries from 768px up. Default `"always"`.
+     */
+    extraShown?: AccountRowShown;
     /** Defaults to a plain <a>. Pass `(p) => <Link {...p} />` in a Next app. */
     renderLink?: (props: RenderLinkProps) => ReactNode;
     labels?: Partial<AccountMenuLabels>;
@@ -119,5 +140,5 @@ export type AccountMenuProps = {
  *    move between items; a click outside closes;
  *  - sign-out shows that it is happening, and says so when it fails.
  */
-export declare function AccountMenu({ user, onSignOut, groups, accounts, onSwitchAccount, extra, renderLink, labels: labelOverrides, align, className, }: AccountMenuProps): import("react").JSX.Element;
+export declare function AccountMenu({ user, onSignOut, groups, accounts, onSwitchAccount, extra, extraShown, renderLink, labels: labelOverrides, align, className, }: AccountMenuProps): import("react").JSX.Element;
 //# sourceMappingURL=AccountMenu.d.ts.map
