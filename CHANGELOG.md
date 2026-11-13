@@ -6,6 +6,19 @@ records, not claims that this file existed at release time.
 
 ## Unreleased
 
+### 2026-11-13: GitHub is offered once on a sign-in screen
+
+- `SignInForm` and `SignUpForm` draw a GitHub button when `methods.github` is
+  on, and a shared "Continue with …" button that names every provider in
+  `methods.signinProviders`. A product whose shared sign-in lists GitHub and
+  that also turns `github` on showed "Continue with GitHub" twice, one above
+  the other, each going a different way. Seen on Loki's sign-in screen at
+  390px on 2026-11-13. `signinProvidersBeside(providers, { github })` now
+  leaves GitHub out of the shared button's name when the screen draws
+  GitHub's own button; when GitHub is the only provider listed the name is
+  kept, so the button never reads as an empty "Continue with". Exported from
+  `@bitbaum/accountkit/auth`. Regression test in `test/github-button.test.js`.
+
 ### 2026-11-13: rows shown only below 768px (`shown: "narrow"`)
 
 - `AccountMenu`: an item or a group may carry `shown: "always" | "narrow"`

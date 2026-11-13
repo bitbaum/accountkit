@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState, } from "react";
 import { PasswordRecoveryForm } from "./recovery.js";
 import { unbroken } from "./unbroken.js";
 import { UI_LOCALES_PROVIDERS, uiLocalesFor } from "./ui-locales.js";
-import { DEFAULT_AUTH_LABELS, authErrorText, fill, signinButtonLabel, } from "./labels.js";
+import { DEFAULT_AUTH_LABELS, authErrorText, fill, signinButtonLabel, signinProvidersBeside, } from "./labels.js";
 import { PasswordField } from "./password-field.js";
 import { LightningLogin, lightningWords, } from "./lightning-login.js";
 /** Class names styled by @bitbaum/accountkit/styles.css on --acct-* variables. */
@@ -114,7 +114,9 @@ export function OidcButtons({ client, methods, labels = DEFAULT_AUTH_LABELS, cla
         methods.signin
             ? {
                 id: "bitbaum-signin",
-                label: signinButtonLabel(labels, methods.signinProviders),
+                label: signinButtonLabel(labels, signinProvidersBeside(methods.signinProviders, {
+                    github: methods.github,
+                })),
             }
             : null,
         methods.github
@@ -537,7 +539,9 @@ export function AccountPanel({ client, methods, labels = DEFAULT_AUTH_LABELS, cl
     const oidc = [
         {
             id: "bitbaum-signin",
-            label: signinButtonLabel(labels, methods.signinProviders),
+            label: signinButtonLabel(labels, signinProvidersBeside(methods.signinProviders, {
+                github: methods.github,
+            })),
             on: methods.signin,
         },
         { id: "orangecat", label: labels.withOrangecat, on: methods.orangecat },

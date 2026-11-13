@@ -12,6 +12,7 @@ export {
   authErrorText,
   fill,
   signinButtonLabel,
+  signinProvidersBeside,
   type AuthError,
   type AuthLabels,
   type RecoveryLabels,
