@@ -6,6 +6,10 @@ records, not claims that this file existed at release time.
 
 ## Unreleased
 
+### 2026-11-14: a text action is centred in any form layout
+
+- `.acct-auth-text-action` is a full-width flex row with its words centred. As an inline box it sat at the left edge in a product whose form is a plain block stack (Loki's sign-in, live 2026-11-14), while the demo's grid centred it.
+
 ### 2026-11-14: one thing the sign-in screen asks for
 
 - `SignInForm`: "Email me a sign-in link instead" and "Forgot your password?"
