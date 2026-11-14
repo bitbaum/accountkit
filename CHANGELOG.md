@@ -6,6 +6,18 @@ records, not claims that this file existed at release time.
 
 ## Unreleased
 
+### 2026-11-14: one thing the sign-in screen asks for
+
+- `SignInForm`: "Email me a sign-in link instead" and "Forgot your password?"
+  are text actions (`classes.textAction`, default `acct-auth-text-action`),
+  not outlined boxes. Loki's sign-in at 390px on 2026-11-13 stacked nine
+  outlined boxes of equal weight, and the filled "Sign in" read as one of
+  many. A text action is still a full touch target (`--acct-target` tall),
+  underlined, in the secondary ink, with the focus ring every control has. A
+  product that styles its own auth classes keeps its buttons and gets the
+  package's text action until it names its own. Test:
+  `test/sign-in-hierarchy.test.js`.
+
 ### 2026-11-13: GitHub is offered once on a sign-in screen
 
 - `SignInForm` and `SignUpForm` draw a GitHub button when `methods.github` is
