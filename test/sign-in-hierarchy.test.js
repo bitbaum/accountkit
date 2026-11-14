@@ -79,4 +79,9 @@ test("the stylesheet keeps a text action a full touch target", () => {
   const rule = /\.acct-auth-text-action \{([^}]*)\}/.exec(css)?.[1] ?? "";
   assert.match(rule, /min-height: var\(--acct-target\)/);
   assert.match(rule, /border: 0/);
+  assert.match(
+    rule,
+    /width: 100%/,
+    "centred in a block stack too, not left at its edge",
+  );
 });
