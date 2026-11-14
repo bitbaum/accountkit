@@ -508,6 +508,35 @@ a.acct-auth-button-quiet {
   color: var(--acct-fg);
   border: 1px solid var(--acct-line-2);
 }
+/* A way round the form, not its action: text the size of a target, no box.
+   Nine outlined boxes of equal weight on Loki's sign-in (2026-11-13) left
+   the filled "Sign in" as one of many; these two read as what they are. */
+.acct-auth-text-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--acct-target);
+  padding: 0 0.5rem;
+  font: 500 0.9375rem/1.3 var(--acct-font);
+  color: var(--acct-fg-2);
+  background: none;
+  border: 0;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  cursor: pointer;
+}
+.acct-auth-text-action:hover {
+  color: var(--acct-fg);
+}
+.acct-auth-text-action:focus-visible {
+  outline: 2px solid var(--acct-focus);
+  outline-offset: 2px;
+  border-radius: var(--acct-radius-sm);
+}
+.acct-auth-text-action:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
 .acct-auth-button:disabled,
 .acct-auth-button-quiet:disabled {
   opacity: 0.6;

@@ -143,6 +143,12 @@ export interface AuthClasses {
     inputWrap: string;
     /** The eye inside the password field. */
     reveal: string;
+    /**
+     * A way round the form that is not the form's own action ("Email me a
+     * sign-in link instead", "Forgot your password?"): text, not a box, so the
+     * filled button above it is the one thing the screen asks for.
+     */
+    textAction: string;
 }
 /** Class names styled by @bitbaum/accountkit/styles.css on --acct-* variables. */
 export declare const DEFAULT_AUTH_CLASSES: AuthClasses;

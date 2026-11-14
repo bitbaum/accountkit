@@ -133,6 +133,12 @@ export interface AuthClasses {
   inputWrap: string;
   /** The eye inside the password field. */
   reveal: string;
+  /**
+   * A way round the form that is not the form's own action ("Email me a
+   * sign-in link instead", "Forgot your password?"): text, not a box, so the
+   * filled button above it is the one thing the screen asks for.
+   */
+  textAction: string;
 }
 
 /** Class names styled by @bitbaum/accountkit/styles.css on --acct-* variables. */
@@ -153,6 +159,7 @@ export const DEFAULT_AUTH_CLASSES: AuthClasses = {
   check: "acct-auth-check",
   inputWrap: "acct-auth-input-wrap",
   reveal: "acct-auth-reveal",
+  textAction: "acct-auth-text-action",
 };
 
 interface Common {
@@ -865,7 +872,7 @@ export function SignInForm({
         {methods.magicLink && (
           <button
             type="button"
-            className={c.buttonQuiet}
+            className={c.textAction}
             onClick={withLink}
             disabled={busy}
           >
@@ -877,7 +884,7 @@ export function SignInForm({
           client.resetPassword && (
             <button
               type="button"
-              className={c.buttonQuiet}
+              className={c.textAction}
               disabled={busy}
               onClick={() => setRecovery({})}
             >
